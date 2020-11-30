@@ -1,13 +1,16 @@
 {
-	"extends": "@sindresorhus/tsconfig",
-	"include": [
-		"source",
-		"test"
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"skipLibCheck": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es2017"
+  },
+  "compileOnSave": true,
+  "include": [
+		"src",
+		"functions/src"
 	],
-	"compilerOptions": {
-		"declaration": false,
-		"sourceMap": true,
-		"target": "ES2019",
-		"outDir": "dist"
-	}
 }

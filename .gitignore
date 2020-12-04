@@ -8,3 +8,4 @@ node_modules
 bot-token.txt
 persist
 firebase-debug.log
+ui-debug.log

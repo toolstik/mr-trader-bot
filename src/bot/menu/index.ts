@@ -1,7 +1,5 @@
 import {MenuTemplate} from 'telegraf-inline-menu';
-
 import {MyContext} from '../my-context';
-
 import {menu as settingsMenu} from './settings';
 
 export const menu = new MenuTemplate<MyContext>(context => context.i18n.t('welcome'));

@@ -7,7 +7,7 @@ import * as admin from 'firebase-admin';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase'
 
 import { MyContext } from './my-context';
-import { menu } from './menu';
+import { menu, setupMenu } from './menu';
 
 admin.initializeApp();
 
@@ -18,7 +18,7 @@ const bot = new Telegraf<MyContext>(token);
 
 const i18n = new TelegrafI18n({
 	directory: 'locales',
-	defaultLanguage: 'en',
+	defaultLanguage: 'ru',
 	defaultLanguageOnMissing: true,
 	useSession: true,
 });
@@ -51,10 +51,7 @@ bot.command('getid', async context => {
 	await context.reply(`${context.chat.id}`);
 });
 
-const menuMiddleware = new MenuMiddleware('/', menu);
-bot.command('start', async context => menuMiddleware.replyToContext(context));
-bot.command('settings', async context => menuMiddleware.replyToContext(context, '/settings/'));
-bot.use(menuMiddleware.middleware());
+setupMenu(bot);
 
 // TODO: wait for release of telegraf 3.39. Then the bot.catch is properly typed in TypeScript
 // Merged but not released yet: https://github.com/telegraf/telegraf/pull/1015

@@ -1325,7 +1325,7 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.11.0.tgz#d61f46d83b2519250e2784daf5b09479a8b41c59"
   integrity sha512-xh1Rl34h6Fi1DC2WWKfxUTVqRsNnr6LsKz2+hfwDxQJWmrx8+c7ylaqBMcHfl1U1r2dsifOvKX3LQuLNZ+XSvA==
 
-axios@*, axios@^0.21.0:
+axios@*:
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.0.tgz#26df088803a2350dff2c27f96fef99fe49442aca"
   integrity sha512-fmkJBknJKoZwem3/IKSSLpkdNXZeBu5Q7GA/aRsr2btgrptmSCxi2oFjZHqGdK9DoTil9PIHlPIZw2EcRJXRvw==
@@ -8016,6 +8016,13 @@ telegraf-session-local@^2.0.0:
     "@types/lowdb" "^1.0.9"
     lowdb "^1.0.0"
 
+telegraf-stateless-question@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/telegraf-stateless-question/-/telegraf-stateless-question-1.0.0.tgz#34286b9db6eceb7548c9be7c491a0774afec94aa"
+  integrity sha512-uKixLana4RAFq7N7kGU4A7GNwRx0eQ4ybz1SJuy0xtrECv9jmJJNmNRFIY25zfANI+SklLRBKh9Tc1oRfhWUkg==
+  dependencies:
+    telegram-format "^2.0.0"
+
 telegraf@^3.38.0:
   version "3.38.0"
   resolved "https://registry.yarnpkg.com/telegraf/-/telegraf-3.38.0.tgz#745b447547a8e6cdb626055e4d616058aaae0759"
@@ -8027,6 +8034,11 @@ telegraf@^3.38.0:
     node-fetch "^2.2.0"
     sandwich-stream "^2.0.1"
     telegram-typings "^3.6.0"
+
+telegram-format@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/telegram-format/-/telegram-format-2.0.1.tgz#0f29ebdbf98a63da03487efae1b4cb4b79195252"
+  integrity sha512-U0pJ7mV+6Nq0EcvrUU/dtluM0BX0bhUOIG4+vaIcyy4w1e2/+0424SEfsMx0ecn8IwKHbGN/Gj4LDU+CbsFovg==
 
 telegram-typings@^3.6.0:
   version "3.6.1"

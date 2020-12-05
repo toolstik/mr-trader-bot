@@ -47,11 +47,13 @@ export class Storage {
 		const symbols = _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
 		const histories = await getHistory(symbols, daysBack);
 
+		const value = await this.getRefValue('tickers');
 		const newValue = Object.entries(histories)
-			.reduce((prev, [key, value]) => {
+			.reduce((prev, [key, val]) => {
 				prev[key] = {
+					...value[key],
 					symbol: key,
-					history: value,
+					history: val,
 				};
 				return prev;
 			}, {} as RefEntity<TickerEntity>);

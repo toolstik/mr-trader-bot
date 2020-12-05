@@ -1,13 +1,13 @@
 welcome: >
   Hey ${from.first_name}!
 
-  Writing translations for your bot is relativly easy once you know how to write propper yaml files.
+  Writing translations for your bot is relatively easy once you know how to write propper yaml files.
 help: This is some example help text.
 menu:
-  back: back…
-  main: main…
-  settings: Settings
-  language: Language
+  back: Назад…
+  main: На главную…
+  settings: Настройки
+  language: Язык
 settings:
   body: >
     Feel free to set the settings you prefer.

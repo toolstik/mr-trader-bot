@@ -67,7 +67,7 @@ export async function getHistory(symbols: string[], daysBack: number = 20) {
 export async function getSummary<T extends SummaryModuleKey>(
 	symbol: string,
 	modules: T[] = ['price' as any],
-): Promise<SymbolSummary<T>> {
-	const x = await yahoo.quote(symbol, modules);
+) {
+	const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
 	return x;
 }

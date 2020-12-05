@@ -1,15 +1,18 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "noImplicitReturns": true,
+	"compilerOptions": {
+		"module": "commonjs",
+		"noImplicitReturns": true,
 		"skipLibCheck": true,
-    "outDir": "dist",
-    "sourceMap": true,
-    "target": "es2017"
-  },
-  "compileOnSave": true,
-  "include": [
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"outDir": "dist",
+		"sourceMap": true,
+		"target": "es2017"
+	},
+	"compileOnSave": true,
+	"include": [
 		"src",
-		"functions/src", "src/test.ts"
+		"functions/src",
+		"src/test.ts"
 	],
 }

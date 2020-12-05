@@ -1,6 +1,6 @@
-import * as yahoo from 'yahoo-finance';
+import { Injectable } from '@nestjs/common';
 import * as moment from 'moment-timezone';
-import * as _ from 'lodash';
+import * as yahoo from 'yahoo-finance';
 
 type SummaryModuleKey = 'price' | 'summaryDetail' | 'financialData';
 
@@ -43,31 +43,38 @@ function normalizeHistory(hist: History) {
 	return hist;
 }
 
-export async function getHistory(symbols: string[], daysBack: number = 20) {
-	const today = moment().startOf('day');
-	const toDate = today.clone();
-	const fromDate = toDate.clone().add({ days: -(daysBack + 10) });
+@Injectable()
+export class FinanceService {
 
-	const opts = {
-		symbols: symbols,
-		from: fromDate.format("YYYY-MM-DD"),
-		to: toDate.format("YYYY-MM-DD"),
-		period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
-	};
-	const x: MultipleHistory = await yahoo.historical(opts);
+	async getHistory(symbols: string[], daysBack: number = 20) {
+		const today = moment().startOf('day');
+		const toDate = today.clone();
+		const fromDate = toDate.clone().add({ days: -(daysBack + 10) });
 
-	for (const [key, val] of Object.entries(x)) {
-		val.forEach(normalizeHistory);
-		x[key] = val.slice(0, daysBack);
+		const opts = {
+			symbols: symbols,
+			from: fromDate.format("YYYY-MM-DD"),
+			to: toDate.format("YYYY-MM-DD"),
+			period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
+		};
+		const x: MultipleHistory = await yahoo.historical(opts);
+
+		for (const [key, val] of Object.entries(x)) {
+			val.forEach(normalizeHistory);
+			x[key] = val.slice(0, daysBack);
+		}
+
+		return x;
 	}
 
-	return x;
+	async getSummary<T extends SummaryModuleKey>(
+		symbol: string,
+		modules: T[] = ['price' as any],
+	) {
+		const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
+		return x;
+	}
+	
 }
 
-export async function getSummary<T extends SummaryModuleKey>(
-	symbol: string,
-	modules: T[] = ['price' as any],
-) {
-	const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
-	return x;
-}
+

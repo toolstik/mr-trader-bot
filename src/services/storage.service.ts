@@ -1,7 +1,9 @@
-import { Session } from './my-context';
-import { database } from "firebase-admin";
-import * as _ from 'lodash';
-import { getHistory, SymbolHistory } from './finance';
+import { FirebaseService } from './firebase.service';
+import { Injectable } from "@nestjs/common";
+import { database } from 'firebase-admin';
+import _ = require('lodash');
+import { Session } from '../bot/my-context';
+import { FinanceService, SymbolHistory } from './finance.service';
 
 type RefEntity<T> = Record<string, T>;
 
@@ -23,10 +25,12 @@ type RefEntityType<T extends RefNames> =
 	'sessions' extends T ? SessionEntity :
 	never;
 
-export class Storage {
+@Injectable()
+export class StorageService {
+	private readonly db: database.Database;
 
-	constructor(private db: database.Database) {
-
+	constructor(firebase: FirebaseService, private finance: FinanceService) {
+		this.db = firebase.getDatabase();
 	}
 
 	private async getRefValue<T extends RefNames>(ref: T) {
@@ -45,7 +49,7 @@ export class Storage {
 	async updateTickersHistory(daysBack: number) {
 		const sessions = await this.getSessions();
 		const symbols = _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
-		const histories = await getHistory(symbols, daysBack);
+		const histories = await this.finance.getHistory(symbols, daysBack);
 
 		const value = await this.getRefValue('tickers');
 		const newValue = Object.entries(histories)
@@ -65,7 +69,5 @@ export class Storage {
 	async getTickerData(symbol: string) {
 		return await this.getRefItemValue('tickers', symbol);
 	}
-
-
 
 }

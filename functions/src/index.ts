@@ -1,11 +1,22 @@
-import { BOT } from './../../src/bot/index';
+import { MyContext } from './../../src/bot/my-context';
+import { Telegraf } from 'telegraf';
 import * as functions from 'firebase-functions';
+import { start } from '../../src';
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-const bot = BOT;
-void bot.launch();
+
+let bot: Telegraf<MyContext>;
+
+async function main() {
+
+	const b = await start();
+	bot = b;
+	await b.launch();
+}
+
+void main();
 
 exports.bot = functions.https.onRequest(async (req, res) => {
 	await bot.handleUpdate(req.body, res);

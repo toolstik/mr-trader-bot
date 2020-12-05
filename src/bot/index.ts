@@ -1,3 +1,4 @@
+import { Storage } from './storage';
 import { existsSync, readFileSync } from 'fs';
 import { I18n as TelegrafI18n } from '@edjopato/telegraf-i18n';
 import { MenuMiddleware } from 'telegraf-inline-menu';
@@ -26,8 +27,29 @@ bot.use(i18n.middleware());
 const database = admin.database();
 const databaseSession = TelegrafSessionFirebase(database.ref('sessions'));
 bot.use(databaseSession);
+bot.on('text', (ctx, next) => {
+	ctx.session = {
+		...ctx.session,
+		username: ctx.chat.username,
+		chatId: ctx.chat.id,
+		enabled: ctx.session?.enabled ?? true,
+		subscriptionTickers: ctx.session?.subscriptionTickers ?? [],
+	};
+	return next()
+})
 
-bot.command('getid', async context => context.reply(`${context.chat.id}`));
+
+bot.command('getid', async context => {
+	const testRef = database.ref('session');
+	// console.log(context.session);
+	// console.log(testRef.toString());
+	// await testRef.child("key1").set("value");
+	// context.session.subscriptionTickers.push("AAPL");
+	const storage = new Storage(database)
+	await storage.updateTickersHistory(20);
+	console.log(await storage.getTickerData('AAPL'));
+	await context.reply(`${context.chat.id}`);
+});
 
 const menuMiddleware = new MenuMiddleware('/', menu);
 bot.command('start', async context => menuMiddleware.replyToContext(context));

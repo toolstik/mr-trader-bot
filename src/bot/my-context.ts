@@ -2,8 +2,9 @@ import {Context as TelegrafContext} from 'telegraf';
 import {I18nContext} from '@edjopato/telegraf-i18n';
 
 export interface Session {
+	username: string;
 	chatId: number;
-	tickers: string[];
+	subscriptionTickers: string[];
 	enabled: boolean;
 }
 

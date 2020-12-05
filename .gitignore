@@ -9,3 +9,4 @@ bot-token.txt
 persist
 firebase-debug.log
 ui-debug.log
+database-debug.log

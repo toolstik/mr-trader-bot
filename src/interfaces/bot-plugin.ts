@@ -1,4 +1,4 @@
-import { MyContext } from './../bot/my-context';
+import { MyContext } from './my-context';
 import { Telegraf } from 'telegraf';
 
 export interface BotPlugin {

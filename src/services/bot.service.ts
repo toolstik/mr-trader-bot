@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { existsSync, readFileSync } from 'fs';
 import Telegraf from 'telegraf';
 
-import { MyContext } from '../bot/my-context';
+import { MyContext } from '../interfaces/my-context';
 import { FirebaseService } from './firebase.service';
 
 @Injectable()

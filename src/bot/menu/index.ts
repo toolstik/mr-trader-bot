@@ -1,6 +1,6 @@
 import Telegraf from 'telegraf';
 import { MenuMiddleware, MenuTemplate } from 'telegraf-inline-menu';
-import { MyContext } from '../my-context';
+import { MyContext } from '../../interfaces/my-context';
 import { menu as settingsMenu } from './settings';
 import TelegrafStatelessQuestion from 'telegraf-stateless-question';
 

@@ -1,4 +1,4 @@
-import { MyContext } from './../../src/bot/my-context';
+import { MyContext } from '../../src/interfaces/my-context';
 import { Telegraf } from 'telegraf';
 import * as functions from 'firebase-functions';
 import { start } from '../../src';

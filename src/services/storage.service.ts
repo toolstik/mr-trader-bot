@@ -2,7 +2,7 @@ import { FirebaseService } from './firebase.service';
 import { Injectable } from "@nestjs/common";
 import { database } from 'firebase-admin';
 import _ = require('lodash');
-import { Session } from '../bot/my-context';
+import { Session } from '../interfaces/my-context';
 import { FinanceService, SymbolHistory } from './finance.service';
 
 type RefEntity<T> = Record<string, T>;

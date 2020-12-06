@@ -1,9 +1,8 @@
 import { I18n as TelegrafI18n } from '@edjopato/telegraf-i18n';
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
-import { MyContext } from '../interfaces/my-context';
 import { BotPlugin } from '../interfaces/bot-plugin';
-import { FirebaseService } from "../services/firebase.service";
+import { MyContext } from '../interfaces/my-context';
 
 
 @Injectable()

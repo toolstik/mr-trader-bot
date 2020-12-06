@@ -17,21 +17,6 @@ export class BotService {
 		this.bot = new Telegraf<MyContext>(token);
 	}
 
-
-	private registerCommands() {
-		const bot = this.bot;
-
-		bot.command('getid', async context => {
-			await context.reply(`${context.chat.id}`);
-		});
-
-		bot.catch((error: any) => {
-			console.error('telegraf error ocurred', error);
-		});
-
-		return this.bot;
-	}
-
 	private registerPlugins(plugins: BotPlugin[]) {
 		for (const plugin of plugins) {
 			plugin.register(this.bot);
@@ -47,7 +32,9 @@ export class BotService {
 	}
 
 	async createBot(plugins?: BotPlugin[]) {
-		this.registerCommands();
+		this.bot.catch((error: any) => {
+			console.error('telegraf error ocurred', error);
+		});
 
 		if (plugins) {
 			this.registerPlugins(plugins);

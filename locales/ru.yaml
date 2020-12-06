@@ -8,6 +8,11 @@ menu:
   main: На главную…
   settings: Настройки
   language: Язык
+commands:
+  add-ticker:
+    no-ticker-specified: Не задан тикер
+    duplicate: Вы уже подписаны на обновления по этому активу
+    success: Вы успешно подписались на обновления по активу ${ticker}
 settings:
   body: >
     Feel free to set the settings you prefer.

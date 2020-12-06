@@ -11,4 +11,13 @@ export interface Session {
 export interface MyContext extends TelegrafContext {
 	i18n: I18nContext;
 	session: Session;
+	state: {
+		command: {
+			text: string;
+			command: string;
+			bot: string;
+			args: string;
+			splitArgs: readonly string[];
+		}
+	}
 }

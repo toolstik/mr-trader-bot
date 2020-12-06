@@ -1,3 +1,5 @@
+import { AddTickerCommand } from './plugins/commands/add-ticker.command';
+import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { I18nPlugin } from './plugins/i18n.plugin';
 import { SessionPlugin } from './plugins/session.plugin';
 import { BotPlugin } from './interfaces/bot-plugin';
@@ -15,6 +17,8 @@ export async function start() {
 	const pluginTypes = [
 		SessionPlugin,
 		I18nPlugin,
+		CommandArgsPlugin,
+		AddTickerCommand,
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 

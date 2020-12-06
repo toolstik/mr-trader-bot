@@ -44,7 +44,7 @@ function normalizeHistory(hist: History) {
 }
 
 @Injectable()
-export class FinanceService {
+export class YahooService {
 
 	async getHistory(symbols: string[], daysBack: number = 20) {
 		const today = moment().startOf('day');
@@ -74,7 +74,7 @@ export class FinanceService {
 		const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
 		return x;
 	}
-	
+
 }
 
 

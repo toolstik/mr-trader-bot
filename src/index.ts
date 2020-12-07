@@ -1,3 +1,4 @@
+import { NotifyCommand } from './plugins/commands/notify.command';
 import { AssetService } from './services/asset.service';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
@@ -27,6 +28,7 @@ export async function start() {
 		ListTickerCommand,
 		TestTickerCommand,
 		UpdateHistoryCommand,
+		NotifyCommand,
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 

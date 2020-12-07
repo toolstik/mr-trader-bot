@@ -160,14 +160,20 @@ export function recursiveUpdateTransition(state: FsmStateKey, context: FsmContex
 
 	let curState = fsm.initialState;
 
-	do {
-		const event: FsmEvent<'update'> = {
-			type: 'update',
-			payload: data,
-		}
-		curState = fsm.transition(curState, event);
+	const event: FsmEvent<'update'> = {
+		type: 'update',
+		payload: data,
+	};
 
-	} while (curState.changed);
+	curState = fsm.transition(curState, event);
+
+	while (curState.changed) {
+		const newState = fsm.transition(curState, event);
+		if (!newState.changed) {
+			break;
+		}
+		curState = newState;
+	}
 
 	return curState;
 }

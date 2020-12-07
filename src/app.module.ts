@@ -1,3 +1,4 @@
+import { NotifyCommand } from './plugins/commands/notify.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 import { AnalysisService } from './services/analysis.service';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
@@ -33,6 +34,7 @@ import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 		ListTickerCommand,
 		TestTickerCommand,
 		UpdateHistoryCommand,
+		NotifyCommand,
 	],
 })
 export class AppModule {

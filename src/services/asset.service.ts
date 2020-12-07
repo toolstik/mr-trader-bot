@@ -48,6 +48,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 			.reduce((prev, [key, val]) => {
 				prev[key] = {
 					state: 'NONE',
+					symbol: key,
 					...value[key],
 					history: val,
 				};

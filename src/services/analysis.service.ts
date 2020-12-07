@@ -2,8 +2,15 @@ import { MarketData, Donchian } from './../types/market-data';
 import { YahooService } from './yahoo.service';
 import { AssetService } from './asset.service';
 import { Injectable } from "@nestjs/common";
-import { recursiveUpdateTransition } from './fsm';
+import { recursiveUpdateTransition, FsmStateKey } from './fsm';
 import * as _ from 'lodash';
+
+export type AssetStatus = {
+	ticker: string;
+	status: FsmStateKey;
+	changed: boolean;
+	marketData: MarketData;
+};
 
 @Injectable()
 export class AnalysisService {
@@ -18,11 +25,26 @@ export class AnalysisService {
 		const asset = await this.assetService.getOne(symbol);
 		const marketData = await this.getMarketData(symbol);
 
-		return recursiveUpdateTransition(asset.state ?? 'NONE', { marketData }, marketData);
+		if (asset == null || marketData === null) {
+			return null;
+		}
+
+		const status = recursiveUpdateTransition(asset.state ?? 'NONE', { marketData }, marketData);
+		return {
+			ticker: asset.symbol,
+			status: status.value,
+			changed: status.changed,
+			marketData: marketData,
+		} as AssetStatus
 	}
 
 	private async getMarketData(symbol: string) {
 		const price = await this.yahooService.getPrices(symbol);
+		// console.log(symbol, price);
+		if (!price?.regularMarketPrice) {
+			return null;
+		}
+
 		const donchian20 = await this.getDonchian(symbol, 20);
 		const donchian5 = await this.getDonchian(symbol, 5);
 		return {

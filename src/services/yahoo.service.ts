@@ -69,16 +69,23 @@ export class YahooService {
 	}
 
 	async getPrices(symbol: string) {
-		const { price } = await this.getQuote(symbol, ['price']);
-		return price;
+		const quote = await this.getQuote(symbol, ['price']);
+		return quote?.price;
 	}
 
 	private async getQuote<T extends SummaryModuleKey>(
 		symbol: string,
 		modules: T[],
 	) {
-		const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
-		return x;
+		try {
+			const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
+			return x;
+		}
+		catch (e) {
+			console.error(e);
+			return null;
+		}
+
 	}
 
 }

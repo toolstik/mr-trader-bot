@@ -20,7 +20,10 @@ commands:
       ${tickers}
   test-ticker:
     no-ticker-specified: Не задан тикер
+    ticker-not-found: Тикер ${ticker} не найден
     success: >
+      Тикер: ${ticker}
+
       Статус: ${status}
 
       Цена: ${price}

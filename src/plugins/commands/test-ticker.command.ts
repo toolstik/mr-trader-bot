@@ -14,20 +14,29 @@ export class TestTickerCommand implements BotPlugin {
 
 	register(bot: Telegraf<MyContext>) {
 		bot.command('test', async ctx => {
-			let ticker = ctx.state.command.splitArgs[0];
+			const args = ctx.state.command.splitArgs;
 
-			if (!ticker) {
+			const tickers = args.map(t => t.toUpperCase());
+
+			if (!tickers?.length) {
 				await ctx.reply(ctx.i18n.t('commands.test-ticker.no-ticker-specified'));
 				return;
 			}
 
-			ticker = ticker.toUpperCase();
+			for (const ticker of tickers) {
+				const status = await this.analysisService.getAssetStatus(ticker);
 
-			const status = await this.analysisService.getAssetStatus(ticker);
-			await ctx.reply(ctx.i18n.t('commands.test-ticker.success', {
-				...status.context.marketData,
-				status: status.value,
-			}));
+				if (!status) {
+					await ctx.reply(ctx.i18n.t('commands.test-ticker.ticker-not-found', { ticker }));
+					return;
+				}
+
+				await ctx.reply(ctx.i18n.t('commands.test-ticker.success', {
+					...status.marketData,
+					status: status.status,
+					ticker,
+				}));
+			}
 		})
 	}
 

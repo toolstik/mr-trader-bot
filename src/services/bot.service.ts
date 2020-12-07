@@ -111,7 +111,7 @@ export class BotService {
 
 	async notifyAll() {
 		const data = await this.prepareNotifications();
-		console.log(data);
+
 		// send notifications
 		for (const n of data.notifications) {
 			const message = `

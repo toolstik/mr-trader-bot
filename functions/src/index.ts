@@ -1,4 +1,4 @@
-import { MyContext } from '../../src/interfaces/my-context';
+import { MyContext } from '../../src/types/my-context';
 import { Telegraf } from 'telegraf';
 import * as functions from 'firebase-functions';
 import { start } from '../../src';
@@ -22,6 +22,7 @@ exports.bot = functions.https.onRequest(async (req, res) => {
 	await bot.handleUpdate(req.body, res);
 });
 
-exports.scheduler = functions.pubsub.schedule('* * * * *').onRun(async (context) => {
-	await bot.telegram.sendMessage(259957285, `${new Date()}`);
-});
+exports.scheduler = functions.pubsub.schedule('* * * * *')
+	.onRun(async () => {
+		await bot.telegram.sendMessage(259957285, `${new Date()}`);
+	});

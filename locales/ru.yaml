@@ -13,6 +13,21 @@ commands:
     no-ticker-specified: Не задан тикер
     duplicate: Вы уже подписаны на обновления по этому активу
     success: Вы успешно подписались на обновления по активу ${ticker}
+  list-ticker:
+    success: >
+      Вы подписаны на следующие активы:
+
+      ${tickers}
+  test-ticker:
+    no-ticker-specified: Не задан тикер
+    success: >
+      Статус: ${status}
+
+      Цена: ${price}
+
+      Верхняя граница: ${donchian.max}
+
+      Нижняя граница: ${donchian.min}
 settings:
   body: >
     Feel free to set the settings you prefer.

@@ -1,9 +1,9 @@
-import { BotPlugin } from './../interfaces/bot-plugin';
+import { BotPlugin } from '../types/bot-plugin';
 import { Injectable } from "@nestjs/common";
 import { existsSync, readFileSync } from 'fs';
 import Telegraf from 'telegraf';
 
-import { MyContext } from '../interfaces/my-context';
+import { MyContext } from '../types/my-context';
 import { FirebaseService } from './firebase.service';
 
 @Injectable()
@@ -25,9 +25,8 @@ export class BotService {
 
 	private async configure() {
 		await this.bot.telegram.setMyCommands([
-			{ command: 'start', description: 'open the menu' },
-			{ command: 'help', description: 'show the help' },
-			{ command: 'settings', description: 'open the settings' },
+			{ command: 'add', description: 'Добавить тикер для отслеживания' },
+			{ command: 'list', description: 'Показать список тикеров в подписке' },
 		]);
 	}
 

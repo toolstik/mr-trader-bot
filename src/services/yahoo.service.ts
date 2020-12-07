@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import * as yahoo from 'yahoo-finance';
+import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
 
 type SummaryModuleKey = 'price' | 'summaryDetail' | 'financialData';
 
 type PriceModule = {
-	price: {},
+	price: {
+		regularMarketPrice: number,
+	},
 };
 type SummaryDetailModule = {
 	summaryDetail: {},
@@ -19,26 +23,11 @@ type SymbolSummary<M extends SummaryModuleKey> = {}
 	& ('summaryDetail' extends M ? SummaryDetailModule : {})
 	& ('financialData' extends M ? FinancialDataModule : {})
 
-type History = {
-	date: Date;
-	open: number;
-	high: number;
-	low: number;
-	close: number;
-	adjClose: number;
-	volume: number;
-	symbol: string;
-}
-
-export type SymbolHistory = History[];
-
-type MultipleHistory = Record<string, SymbolHistory>;
-
 function convertDateBackToUtc(date: Date) {
 	return moment.tz(date, 'America/New_York').utc(true).toDate();
 }
 
-function normalizeHistory(hist: History) {
+function normalizeHistory(hist: MarketHistory) {
 	hist.date = convertDateBackToUtc(hist.date);
 	return hist;
 }
@@ -57,8 +46,20 @@ export class YahooService {
 			to: toDate.format("YYYY-MM-DD"),
 			period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
 		};
-		const x: MultipleHistory = await yahoo.historical(opts);
-
+		const hist = await yahoo.historical(opts);
+		const x = plainToClass(MultipleHistoryClass, hist, {
+			targetMaps: [
+				{
+					target: MultipleHistoryClass,
+					properties: Object.keys(hist).reduce((prev, cur) => {
+						return {
+							...prev,
+							[cur]: MarketHistory,
+						};
+					}, {}),
+				},
+			],
+		}) as MultipleHistory;
 		for (const [key, val] of Object.entries(x)) {
 			val.forEach(normalizeHistory);
 			x[key] = val.slice(0, daysBack);
@@ -67,9 +68,14 @@ export class YahooService {
 		return x;
 	}
 
-	async getSummary<T extends SummaryModuleKey>(
+	async getPrices(symbol: string) {
+		const { price } = await this.getQuote(symbol, ['price']);
+		return price;
+	}
+
+	private async getQuote<T extends SummaryModuleKey>(
 		symbol: string,
-		modules: T[] = ['price' as any],
+		modules: T[],
 	) {
 		const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
 		return x;

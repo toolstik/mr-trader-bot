@@ -1,15 +1,20 @@
 import { Injectable } from "@nestjs/common";
-import { Session } from "../interfaces/my-context";
+import { Session } from "../types/my-context";
 import { FirebaseService } from "./firebase.service";
 import { ReferenceService } from "./reference.service";
 import _ = require('lodash');
+import { ClassType } from "class-transformer/ClassTransformer";
 
-export type SessionEntity<C extends string = any> = {
-	[key in C]: Session;
+export class SessionEntity {
+	[key: string]: Session;
 }
 
 @Injectable()
 export class SessionService extends ReferenceService<SessionEntity>{
+
+	protected getEntityType() {
+		return SessionEntity;
+	}
 
 	constructor(firebase: FirebaseService) {
 		super(firebase);

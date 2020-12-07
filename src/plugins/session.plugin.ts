@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase';
-import { MyContext } from '../interfaces/my-context';
+import { MyContext } from '../types/my-context';
 import { FirebaseService } from "../services/firebase.service";
-import { BotPlugin } from './../interfaces/bot-plugin';
+import { BotPlugin } from '../types/bot-plugin';
 
 @Injectable()
 export class SessionPlugin implements BotPlugin {

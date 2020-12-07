@@ -1,11 +1,14 @@
+import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { I18nPlugin } from './plugins/i18n.plugin';
 import { SessionPlugin } from './plugins/session.plugin';
-import { BotPlugin } from './interfaces/bot-plugin';
+import { BotPlugin } from './types/bot-plugin';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BotService } from './services/bot.service';
+import { TestTickerCommand } from './plugins/commands/test-ticker.command';
+import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 
 
 
@@ -18,7 +21,11 @@ export async function start() {
 		SessionPlugin,
 		I18nPlugin,
 		CommandArgsPlugin,
+
 		AddTickerCommand,
+		ListTickerCommand,
+		TestTickerCommand,
+		UpdateHistoryCommand,
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 

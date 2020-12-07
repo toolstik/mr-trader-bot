@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
-import { BotPlugin } from "../../interfaces/bot-plugin";
-import { MyContext } from "../../interfaces/my-context";
+import { BotPlugin } from "../../types/bot-plugin";
+import { MyContext } from "../../types/my-context";
 import * as _ from 'lodash';
 
 @Injectable()

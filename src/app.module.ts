@@ -1,3 +1,6 @@
+import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
+import { AnalysisService } from './services/analysis.service';
+import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { SessionService } from './services/session.service';
 import { AssetService } from './services/asset.service';
 import { I18nPlugin } from './plugins/i18n.plugin';
@@ -9,6 +12,7 @@ import { FirebaseService } from './services/firebase.service';
 import { ReferenceService } from './services/reference.service';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
+import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 
 
 @Module({
@@ -19,12 +23,16 @@ import { AddTickerCommand } from './plugins/commands/add-ticker.command';
 		YahooService,
 		AssetService,
 		BotService,
+		AnalysisService,
 
 		SessionPlugin,
 		I18nPlugin,
 		CommandArgsPlugin,
 
 		AddTickerCommand,
+		ListTickerCommand,
+		TestTickerCommand,
+		UpdateHistoryCommand,
 	],
 })
 export class AppModule {

@@ -13,7 +13,7 @@ commands:
     no-ticker-specified: Не задан тикер
     not-found: Тикер ${ticker} не найден
     not-tradable: Рыночные данные по тикеру ${ticker} недоступны
-    duplicate: Вы уже подписаны на обновления по этому активу
+    duplicate: Вы уже подписаны на обновления по этим активам
     success: Вы успешно подписались на обновления по активу ${ticker}
   list-ticker:
     success: >

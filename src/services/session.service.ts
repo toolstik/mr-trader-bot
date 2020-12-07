@@ -3,7 +3,6 @@ import { Session } from "../types/my-context";
 import { FirebaseService } from "./firebase.service";
 import { ReferenceService } from "./reference.service";
 import _ = require('lodash');
-import { ClassType } from "class-transformer/ClassTransformer";
 
 export class SessionEntity {
 	[key: string]: Session;
@@ -27,6 +26,11 @@ export class SessionService extends ReferenceService<SessionEntity>{
 	async getSessions() {
 		const sessionRefValue = await this.getAll();
 		return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
+	}
+
+	async getAllSessionTickers(){
+		const sessions = await this.getSessions();
+		return  _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
 	}
 
 }

@@ -38,22 +38,25 @@ export class AddTickerCommand implements BotPlugin {
 				.for(reallyNew)
 				.withConcurrency(10)
 				.process(async t => {
+					const asset = await this.assetService.getOne(t);
 					const price = await this.yahooService.getPrices(t);
+					
+					if (!asset) {
+						if (!price) {
+							await ctx.reply(ctx.i18n.t('commands.add-ticker.not-found', { ticker: t }));
+							return {
+								ticker: t,
+								apply: false,
+							};
+						}
 
-					if (!price) {
-						await ctx.reply(ctx.i18n.t('commands.add-ticker.not-found', { ticker: t }));
-						return {
-							ticker: t,
-							apply: false,
-						};
-					}
-
-					if (!price.regularMarketPrice) {
-						await ctx.reply(ctx.i18n.t('commands.add-ticker.not-tradable', { ticker: t }));
-						return {
-							ticker: t,
-							apply: false,
-						};
+						if (!price.regularMarketPrice) {
+							await ctx.reply(ctx.i18n.t('commands.add-ticker.not-tradable', { ticker: t }));
+							return {
+								ticker: t,
+								apply: false,
+							};
+						}
 					}
 
 					return {

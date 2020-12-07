@@ -41,8 +41,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 	}
 
 	async updateHistory(symbols?: string[]) {
-		const sessions = await this.sessionService.getSessions();
-		const symbs = symbols ?? _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
+		const symbs = symbols ?? await this.sessionService.getAllSessionTickers();
 		const histories = await this.finance.getHistory(symbs, this.HISTORY_DAYS_BACK);
 
 		const value = (await this.getAll()) ?? {};

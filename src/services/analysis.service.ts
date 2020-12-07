@@ -63,7 +63,7 @@ export class AnalysisService {
 	private async getDonchian(symbol: string, daysBack: number) {
 		const asset = await this.assetService.getOne(symbol);
 
-		if (!asset) {
+		if (!asset?.history) {
 			return null;
 		}
 

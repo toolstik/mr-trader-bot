@@ -1,11 +1,12 @@
-import { SessionService } from './session.service';
-import { AssetService } from './asset.service';
 import { Injectable } from "@nestjs/common";
 import { existsSync, readFileSync } from 'fs';
 import Telegraf from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';
 import { MyContext, Session } from '../types/my-context';
 import { AnalysisService, AssetStatus } from './analysis.service';
+import { AssetService } from './asset.service';
+import { SessionService } from './session.service';
+import PromisePool = require('@supercharge/promise-pool')
 
 export type AssetStatusNotification = {
 	session: Session,
@@ -57,19 +58,33 @@ export class BotService {
 
 	private async prepareNotifications() {
 		const sessions = await this.sessionService.getSessions();
-		const statuses: Record<string, AssetStatus> = {};
+		const tickers = await this.sessionService.getAllSessionTickers();
+
+		const statuses = await PromisePool
+			.withConcurrency(10)
+			.for(tickers)
+			.process(async ticker => {
+				return await this.analysisService.getAssetStatus(ticker);
+			})
+			.then(r => {
+				return r.results
+					.filter(i => !!i)
+					.reduce((prev, cur) => {
+						return {
+							...prev,
+							[cur.ticker]: cur,
+						}
+					}, {} as Record<string, AssetStatus>)
+			});
 
 		const notifications: AssetStatusNotification[] = [];
-		let i = 0;
+
 		for (const session of sessions) {
 			if (!session?.subscriptionTickers) {
 				continue;
 			}
 
 			for (const ticker of session.subscriptionTickers) {
-				if (!statuses[ticker]) {
-					statuses[ticker] = await this.analysisService.getAssetStatus(ticker);
-				}
 
 				const status = statuses[ticker];
 
@@ -111,13 +126,13 @@ export class BotService {
 
 		// update statuses
 		for (const [key, value] of Object.entries(data.statuses)) {
-			if (!value.changed) {
+			if (!value?.changed) {
 				continue;
 			}
 
 			await this.assetService.updateOne(key, v => ({
 				...v,
-				status: value.status,
+				state: value.status,
 			}));
 		}
 

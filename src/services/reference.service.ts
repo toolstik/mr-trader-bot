@@ -82,14 +82,14 @@ export abstract class ReferenceService<T> {
 
 	async setOne(key: string, value: T) {
 		const goodKey = normalizeKey(key);
-		await this.ref.child(goodKey).set(value);
+		const plainValue = classToPlain(value);
+		await this.ref.child(goodKey).set(plainValue);
 	}
 
 	async updateOne(key: string, updateFn: (currentValue: T) => T) {
 		const current = await this.getOne(key);
 		const newValue = updateFn(current);
-		const goodKey = normalizeKey(key);
-		await this.ref.child(goodKey).set(newValue);
+		await this.setOne(key, newValue);
 		return newValue;
 	}
 

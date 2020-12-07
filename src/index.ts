@@ -35,7 +35,7 @@ export async function start() {
 	const assetService = module.get(AssetService);
 
 	return {
-		bot: await botService.createBot(plugins),
+		bot: botService.createBot(plugins),
 		updateHistory: async () => {
 			await assetService.updateHistory();
 		},

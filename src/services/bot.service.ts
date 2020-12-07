@@ -41,17 +41,21 @@ export class BotService {
 		]);
 	}
 
-	async createBot(plugins?: BotPlugin[]) {
+	createBot(plugins?: BotPlugin[]) {
 		this.bot.catch(async (error: any, ctx: MyContext) => {
 			console.error('telegraf error ocurred', error);
 			await ctx.reply(`Error: \n${error}`);
+		});
+
+		this.bot.start(async ctx => {
+			await this.configure();
 		});
 
 		if (plugins) {
 			this.registerPlugins(plugins);
 		}
 
-		await this.configure();
+		// await this.configure();
 
 		return this.bot;
 	}

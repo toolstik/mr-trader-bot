@@ -20,7 +20,7 @@ export class SessionPlugin implements BotPlugin {
 		bot.on('text', (ctx, next) => {
 			ctx.session = {
 				...ctx.session,
-				username: ctx.chat.username,
+				username: ctx.chat.username ?? '',
 				chatId: ctx.chat.id,
 				enabled: ctx.session?.enabled ?? true,
 				subscriptionTickers: ctx.session?.subscriptionTickers ?? [],

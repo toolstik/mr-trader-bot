@@ -8,6 +8,10 @@ export type RefEntity<T> = Record<string, T>;
 class RefEntityObject {
 	[key: string]: Object;
 }
+// ".", "#", "$", "/", "[", or "]"
+function normalizeKey(key: string) {
+	return key ? key.replace(/[.#$/\[\]]/, '_') : key;
+}
 
 export abstract class ReferenceService<T> {
 	protected readonly db: database.Database;
@@ -42,7 +46,8 @@ export abstract class ReferenceService<T> {
 	}
 
 	async getOne(key: string) {
-		const snapshot = await this.ref.child(key).once('value');
+		const goodKey = normalizeKey(key);
+		const snapshot = await this.ref.child(goodKey).once('value');
 		const value = snapshot.val() as Object;
 		const entityType = this.getEntityType();
 		return plainToClass(entityType, value);
@@ -50,11 +55,20 @@ export abstract class ReferenceService<T> {
 
 	async setAll(value: RefEntity<T>) {
 		const entityType = this.getEntityType();
-		const plain = classToPlain(value, {
+
+		const goodValue = Object.entries(value)
+			.reduce((prev, [key, val]) => {
+				return {
+					...prev,
+					[normalizeKey(key)]: val,
+				}
+			}, {});
+
+		const plain = classToPlain(goodValue, {
 			targetMaps: [
 				{
 					target: RefEntityObject,
-					properties: Object.keys(value).reduce((prev, cur) => {
+					properties: Object.keys(goodValue).reduce((prev, cur) => {
 						return {
 							...prev,
 							[cur]: entityType,
@@ -67,7 +81,8 @@ export abstract class ReferenceService<T> {
 	}
 
 	async setOne(key: string, value: T) {
-		await this.ref.child(key).set(value);
+		const goodKey = normalizeKey(key);
+		await this.ref.child(goodKey).set(value);
 	}
 
 

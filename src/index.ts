@@ -1,3 +1,4 @@
+import { AssetService } from './services/asset.service';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
@@ -29,5 +30,12 @@ export async function start() {
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 
-	return await service.createBot(plugins);
+	const assetService = module.get(AssetService);
+
+	return {
+		bot: await service.createBot(plugins),
+		updateHistory: async () => {
+			await assetService.updateHistoryAll(20);
+		},
+	};
 }

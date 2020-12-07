@@ -29,19 +29,19 @@ type FsmState = _FsmState<FsmStateKey, FsmContext>
 
 function getMarketState(data: MarketData): FsmStateKey {
 
-	if (data.price >= data.donchian.max) {
+	if (data.price >= data.donchian.maxValue) {
 		return 'REACH_TOP';
 	}
 
-	if (data.price * (1 + APPROACH_RATE) >= data.donchian.max) {
+	if (data.price * (1 + APPROACH_RATE) >= data.donchian.maxValue) {
 		return 'APPROACH_TOP';
 	}
 
-	if (data.price <= data.donchian.min) {
+	if (data.price <= data.donchian.minValue) {
 		return 'REACH_BOTTOM';
 	}
 
-	if (data.price * (1 - APPROACH_RATE) <= data.donchian.min) {
+	if (data.price * (1 - APPROACH_RATE) <= data.donchian.minValue) {
 		return 'APPROACH_BOTTOM';
 	}
 
@@ -156,6 +156,7 @@ export function createFsm(state: FsmStateKey, context: FsmContext) {
 }
 
 export function recursiveUpdateTransition(state: FsmStateKey, context: FsmContext, data: MarketData) {
+	// console.time('fsm');
 	const fsm = createFsm(state, context);
 
 	let curState = fsm.initialState;
@@ -166,14 +167,19 @@ export function recursiveUpdateTransition(state: FsmStateKey, context: FsmContex
 	};
 
 	curState = fsm.transition(curState, event);
+	// console.timeLog('fsm', 'transition', curState.value, curState.changed);
 
-	while (curState.changed) {
+	let i = 0;
+	while (i < 5 && curState.changed) {
 		const newState = fsm.transition(curState, event);
+		// console.timeLog('fsm', 'transition', newState.value, newState.changed);
+
 		if (!newState.changed) {
 			break;
 		}
 		curState = newState;
+		i++;
 	}
-
+	// console.timeEnd('fsm');
 	return curState;
 }

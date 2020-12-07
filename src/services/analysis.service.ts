@@ -47,28 +47,40 @@ export class AnalysisService {
 
 		const donchian20 = await this.getDonchian(symbol, 20);
 		const donchian5 = await this.getDonchian(symbol, 5);
+
+		if (!donchian20 || !donchian5) {
+			return null;
+		}
+
 		return {
 			price: price.regularMarketPrice,
 			donchian: donchian20,
-			stopLoss: donchian5.max,
-			takeProfit: donchian5.min,
+			stopLoss: donchian5.minValue,
+			takeProfit: donchian5.maxValue,
 		} as MarketData;
 	}
 
 	private async getDonchian(symbol: string, daysBack: number) {
 		const asset = await this.assetService.getOne(symbol);
-		// console.log(asset);
+
+		if (!asset) {
+			return null;
+		}
+
 		const donchian = asset.history
 			.sort((a, b) => b.date.getTime() - a.date.getTime())
 			.slice(0, daysBack)
 			.reduce((prev, cur) => {
 				return {
-					min: Math.min(prev.min, cur.low),
-					max: Math.max(prev.max, cur.high),
+					...prev,
+					minValue: Math.min(prev.minValue, cur.low),
+					maxValue: Math.max(prev.maxValue, cur.high),
 				};
 			}, {
-				min: Number.MAX_VALUE,
-				max: Number.MIN_VALUE,
+				minDays: daysBack,
+				minValue: Number.MAX_VALUE,
+				maxDays: daysBack,
+				maxValue: Number.MIN_VALUE,
 			} as Donchian);
 
 		return donchian;

@@ -73,7 +73,7 @@ export class BotService {
 
 				const status = statuses[ticker];
 
-				console.log(++i, session.chatId, ticker, status.changed, status.status);
+				// console.log(++i, session.chatId, ticker, status.changed, status.status);
 
 				if (!status || !status.changed || status.status === 'NONE') {
 					continue;
@@ -86,8 +86,6 @@ export class BotService {
 
 			}
 		}
-
-		console.log(notifications);
 
 		return {
 			notifications,
@@ -105,8 +103,8 @@ export class BotService {
 Тикер: ${n.status.ticker}
 Статус: ${n.status.status}
 Цена: ${n.status.marketData.price}
-Верхняя граница: ${n.status.marketData.donchian.max}
-Нижняя граница: ${n.status.marketData.donchian.min}
+Верхняя граница: ${n.status.marketData.donchian.maxValue}
+Нижняя граница: ${n.status.marketData.donchian.minValue}
 			`
 			await this.bot.telegram.sendMessage(n.session.chatId, message);
 		}

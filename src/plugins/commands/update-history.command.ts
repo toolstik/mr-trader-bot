@@ -24,7 +24,7 @@ export class UpdateHistoryCommand implements BotPlugin {
 
 			// ticker = ticker.toUpperCase();
 
-			const status = await this.assetService.updateHistoryAll(20);
+			const status = await this.assetService.updateHistory();
 			const keys = Object.keys(status);
 			await ctx.reply(`Обновлены данные по ${keys.length} активам`);
 		})

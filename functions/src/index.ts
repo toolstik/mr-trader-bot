@@ -7,16 +7,21 @@ import { start } from '../../src';
 
 async function main() {
 
-	const { bot, updateHistory } = await start();
+	const { bot, updateHistory, notify } = await start();
 	await bot.launch();
 
 	exports.bot = functions.https.onRequest(async (req, res) => {
 		await bot.handleUpdate(req.body, res);
 	});
 
-	exports.scheduler = functions.pubsub.schedule('0 0/4 * * *')
+	exports.updateHistoryScheduler = functions.pubsub.schedule('0 0/4 * * *')
 		.onRun(async () => {
 			await updateHistory();
+		});
+
+	exports.updateHistoryScheduler = functions.pubsub.schedule('0/5 * * * *')
+		.onRun(async () => {
+			await notify();
 		});
 }
 

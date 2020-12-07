@@ -16,7 +16,7 @@ export class TestTickerCommand implements BotPlugin {
 		bot.command('test', async ctx => {
 			const args = ctx.state.command.splitArgs;
 
-			const tickers = args.map(t => t.toUpperCase());
+			const tickers = args.filter(t => !!t).map(t => t.toUpperCase());
 
 			if (!tickers?.length) {
 				await ctx.reply(ctx.i18n.t('commands.test-ticker.no-ticker-specified'));

@@ -82,7 +82,6 @@ export class YahooService {
 			return x;
 		}
 		catch (e) {
-			console.error(e);
 			return null;
 		}
 

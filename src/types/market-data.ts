@@ -1,7 +1,9 @@
 
 export type Donchian = {
-	min: number;
-	max: number;
+	minDays: number;
+	minValue: number;
+	maxDays: number;
+	maxValue: number;
 }
 
 export type MarketData = {

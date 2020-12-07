@@ -19,6 +19,7 @@
 		"@edjopato/telegraf-i18n": "^0.1.0",
 		"@nestjs/common": "^7.5.5",
 		"@nestjs/core": "^7.5.5",
+		"@supercharge/promise-pool": "^1.6.0",
 		"@xstate/fsm": "^1.5.2",
 		"class-transformer": "^0.3.1",
 		"firebase-admin": "^9.2.0",

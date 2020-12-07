@@ -22,6 +22,8 @@ class AssetEntity {
 @Injectable()
 export class AssetService extends ReferenceService<AssetEntity> {
 
+	private readonly HISTORY_DAYS_BACK = 20;
+
 	constructor(
 		firebase: FirebaseService,
 		private finance: YahooService,
@@ -38,10 +40,10 @@ export class AssetService extends ReferenceService<AssetEntity> {
 		return 'tickers';
 	}
 
-	async updateHistoryAll(daysBack: number) {
+	async updateHistory(symbols?: string[]) {
 		const sessions = await this.sessionService.getSessions();
-		const symbols = _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
-		const histories = await this.finance.getHistory(symbols, daysBack);
+		const symbs = symbols ?? _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
+		const histories = await this.finance.getHistory(symbs, this.HISTORY_DAYS_BACK);
 
 		const value = (await this.getAll()) ?? {};
 		const newValue = Object.entries(histories)
@@ -55,7 +57,15 @@ export class AssetService extends ReferenceService<AssetEntity> {
 				return prev;
 			}, {} as RefEntity<AssetEntity>);
 
-		await this.setAll(newValue);
+		if (symbols) {
+			await this.setAll({
+				...value,
+				...newValue,
+			});
+		}
+		else {
+			await this.setAll(newValue);
+		}
 		return newValue;
 	}
 

@@ -31,11 +31,13 @@ export class TestTickerCommand implements BotPlugin {
 					return;
 				}
 
-				await ctx.reply(ctx.i18n.t('commands.test-ticker.success', {
-					...status.marketData,
-					status: status.status,
-					ticker,
-				}));
+				await ctx.reply(
+					ctx.i18n.t('commands.test-ticker.success', {
+						...status.marketData,
+						status: status.status,
+						ticker,
+					}),
+				);
 			}
 		})
 	}

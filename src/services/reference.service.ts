@@ -9,7 +9,7 @@ class RefEntityObject {
 	[key: string]: Object;
 }
 // ".", "#", "$", "/", "[", or "]"
-function normalizeKey(key: string) {
+export function normalizeKey(key: string) {
 	return key ? key.replace(/[.#$/\[\]]/, '_') : key;
 }
 

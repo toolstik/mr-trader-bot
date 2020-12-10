@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "fir-1-b18cd"
+    "production": "fir-1-b18cd",
+    "staging": "mr-trading-tg-bot-test"
   }
 }

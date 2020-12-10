@@ -29,7 +29,7 @@ export class AnalysisService {
 			return null;
 		}
 
-		const status = recursiveUpdateTransition(asset.state ?? 'NONE', { marketData }, marketData);
+		const status = recursiveUpdateTransition(asset.state ?? 'NONE', { asset }, marketData);
 		return {
 			ticker: asset.symbol,
 			status: status.value,

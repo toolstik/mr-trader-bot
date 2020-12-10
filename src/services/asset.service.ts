@@ -3,16 +3,17 @@ import { Type } from 'class-transformer';
 import { MarketHistory, SymbolHistory } from "../types/history";
 import { FirebaseService } from "./firebase.service";
 import { FsmStateKey } from './fsm';
-import { RefEntity, ReferenceService } from "./reference.service";
+import { normalizeKey, RefEntity, ReferenceService } from "./reference.service";
 import { SessionService } from './session.service';
 import { YahooService } from "./yahoo.service";
 import _ = require("lodash");
 
 type AssetHistoryEntity = SymbolHistory;
 
-class AssetEntity {
+export class AssetEntity {
 	symbol: string;
 
+	@Type(() => String)
 	state: FsmStateKey;
 
 	@Type(() => MarketHistory)
@@ -45,12 +46,14 @@ export class AssetService extends ReferenceService<AssetEntity> {
 		const histories = await this.finance.getHistory(symbs, this.HISTORY_DAYS_BACK);
 
 		const value = (await this.getAll()) ?? {};
+
 		const newValue = Object.entries(histories)
 			.reduce((prev, [key, val]) => {
-				prev[key] = {
+				const normKey = normalizeKey(key);
+				prev[normKey] = {
 					state: 'NONE',
 					symbol: key,
-					...value[key],
+					...value[normKey],
 					history: val,
 				};
 				return prev;

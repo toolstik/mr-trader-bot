@@ -23,7 +23,8 @@ export class BotService {
 		private sessionService: SessionService,
 		private analysisService: AnalysisService,
 	) {
-		const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt';
+		const mode : 'staging' | 'production' = 'production';
+		const tokenFilePath = `bot-token-${mode}.txt`;
 		const token = readFileSync(tokenFilePath, 'utf8').trim();
 		this.bot = new Telegraf<MyContext>(token);
 	}

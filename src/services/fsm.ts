@@ -1,9 +1,10 @@
+import { AssetEntity } from './asset.service';
 import { createMachine } from '@xstate/fsm';
 import { MarketData } from '../types/market-data';
 const APPROACH_RATE = 0.005;
 
 type FsmContext = {
-	marketData: MarketData;
+	asset: AssetEntity;
 }
 
 type _FsmEvent<K extends string, T> = {

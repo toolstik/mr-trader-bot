@@ -30,9 +30,9 @@ commands:
 
       Цена: ${price}
 
-      Верхняя граница: ${donchian.max}
+      Верхняя граница: ${donchian.maxValue}
 
-      Нижняя граница: ${donchian.min}
+      Нижняя граница: ${donchian.minValue}
 settings:
   body: >
     Feel free to set the settings you prefer.

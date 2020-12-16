@@ -13,6 +13,6 @@
 	"include": [
 		"src",
 		"functions/src",
-		"src/test.ts"
+		"gulpfile.ts"
 	],
 }

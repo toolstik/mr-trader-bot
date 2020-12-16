@@ -23,10 +23,8 @@ export class BotService {
 		private sessionService: SessionService,
 		private analysisService: AnalysisService,
 	) {
-		const mode : 'staging' | 'production' = 'production';
-		const tokenFilePath = `bot-token-${mode}.txt`;
-		const token = readFileSync(tokenFilePath, 'utf8').trim();
-		this.bot = new Telegraf<MyContext>(token);
+		const { bot_token } = require('../../secret.json');
+		this.bot = new Telegraf<MyContext>(bot_token);
 	}
 
 	private registerPlugins(plugins: BotPlugin[]) {

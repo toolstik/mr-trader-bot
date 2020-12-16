@@ -12,8 +12,6 @@ import { AssetService } from './services/asset.service';
 import { BotService } from './services/bot.service';
 import { BotPlugin } from './types/bot-plugin';
 
-
-
 export async function start() {
 	const app = await NestFactory.createApplicationContext(AppModule);
 	const module = app.select(AppModule);

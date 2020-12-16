@@ -1,4 +1,3 @@
-import { MyContext } from './../types/my-context';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
@@ -6,31 +5,14 @@ import { readDirDeepSync } from 'read-dir-deep';
 import { Injectable, Logger } from '@nestjs/common';
 
 type SUPPORTED_LANGUAGES = 'ru';
-type TemplateResolver = (ctx: MyContext, data: any) => string;
-type LangTranslate = Map<string, TemplateResolver>;
-type TranslateMap = Record<SUPPORTED_LANGUAGES, LangTranslate>;
+type TemplateResolver = (data: any) => string;
+type TranslateMap = Map<string, TemplateResolver>;
 
-function splitLimit(input: string, splitter: string, limit: number = -1): string[] {
-	if (limit === 0) {
-		return [input];
-	}
-
-	const index = input.indexOf(splitter);
-
-	if (index < 0) {
-		return [input];
-	}
-
-	const head = input.slice(0, index);
-	const tail = input.slice(index + splitter.length);
-
-	return [head, ...splitLimit(tail, splitter, limit - 1)];
-}
+const DEFAULT_LANG: SUPPORTED_LANGUAGES = 'ru';
+const TEMPLATE_PATH: string = 'templates';
 
 @Injectable()
 export class TemplateService {
-	private readonly DEFAULT_LANG: SUPPORTED_LANGUAGES = 'ru';
-	private readonly TEMPLATE_PATH: string = 'templates';
 
 	private logger: Logger;
 	private templatesMap: TranslateMap;
@@ -41,16 +23,15 @@ export class TemplateService {
 		this.load();
 	}
 
-	public apply(key: string, data: any): string {
+	public apply(key: string, lang: SUPPORTED_LANGUAGES, data: any): string {
 		this.logger.debug(
 			`apply template: ${key}`,
 		);
 
-		let template = this.getTemplate(params);
+		let template = this.getTemplate(key, lang);
 
 		if (!template) {
-			params.lang = this.DEFAULT_LANG;
-			template = this.getTemplate(params);
+			template = this.getTemplate(key, DEFAULT_LANG);
 		}
 
 		if (!template) {
@@ -60,15 +41,15 @@ export class TemplateService {
 		return template(data);
 	}
 
-	private getTemplate(key: string): (data: any) => string {
-		const templateKey = this.getTemplateKey()
-		return this.templatesMap.get(key);
+	private getTemplate(key: string, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): TemplateResolver {
+		const templateKey = this.getTemplateKey(lang, key)
+		return this.templatesMap.get(templateKey);
 	}
 
 	private load() {
 		const templatesDir: string = path.join(
 			process.cwd(),
-			this.TEMPLATE_PATH,
+			TEMPLATE_PATH,
 		);
 		const templateFileNames: string[] = readDirDeepSync(templatesDir, {
 			patterns: ['**/*.md'],
@@ -77,27 +58,19 @@ export class TemplateService {
 		this.templatesMap = templateFileNames.reduce((acc, fileName) => {
 			const template = fs.readFileSync(fileName, { encoding: 'utf-8' });
 
-			const relative = path.relative(templatesDir, fileName)
-				.replace(/\\/, '/')
+			const key = path.relative(templatesDir, fileName)
+				.replace(/\\/g, '/')
 				.replace(/\.md$/, '');
 
-			const [lang, key] = splitLimit(relative, '/', 1);
-
-			const langObj: LangTranslate = acc[lang] || new Map();
-
-			langObj.set(
+			return acc.set(
 				key,
 				handlebars.compile(template),
 			);
-
-			acc[lang] = langObj;
-
-			return acc;
-		}, {} as TranslateMap);
+		}, new Map());
 	}
 
 	private getTemplateKey(
-		lang: string,
+		lang: SUPPORTED_LANGUAGES,
 		key: string
 	): string {
 		return `${lang}/${key}`;

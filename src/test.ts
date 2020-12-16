@@ -1,3 +1,4 @@
+import { TemplateService } from './services/template.service';
 import { BotService } from './services/bot.service';
 import { AnalysisService } from './services/analysis.service';
 import { NestFactory } from "@nestjs/core";
@@ -29,16 +30,18 @@ async function test1() {
 	const app = await NestFactory.createApplicationContext(AppModule);
 	const module = app.select(AppModule);
 
-	const a = module.get(BotService);
+	const a = module.get(TemplateService);
+	const x = a.apply('test/template', 'ru', {data: 'HELLO!'});
+	console.log(x);
 	// const y = await a.prepareNotifications();
 	// console.log(y);
 }
 
 async function test() {
 
-	// await test1()
+	await test1()
 	// console.log(normalizeKey('GAZP.ME'));
-	console.log(splitLimit('level1/level2/level3', '/'));
+	// console.log(splitLimit('level1/level2/level3', '/'));
 	// console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));
 }
 

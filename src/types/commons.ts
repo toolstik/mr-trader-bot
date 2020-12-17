@@ -3,11 +3,6 @@ import { MarketData } from "./market-data";
 
 export type AssetStateKey = 'NONE' | 'APPROACH_TOP' | 'APPROACH_BOTTOM' | 'REACH_TOP' | 'REACH_BOTTOM';
 
-export type AssetStatusNotification = {
-	session: TgSession,
-	status: AssetStatus,
-}
-
 export type AssetStatus = {
 	ticker: string;
 	status: AssetStateKey;

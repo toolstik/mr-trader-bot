@@ -1,11 +1,10 @@
-import { TemplateService } from './../../services/template.service';
-import { AnalysisService } from './../../services/analysis.service';
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
 import { BotPlugin } from "../../types/bot-plugin";
 import { MyContext } from "../../types/my-context";
-import * as _ from 'lodash';
-import { AssetStatusNotification } from '../../types/commons';
+import { AnalysisService } from './../../services/analysis.service';
+import { NotificationService } from './../../services/notification.service';
+import { TemplateService } from './../../services/template.service';
 
 @Injectable()
 export class TestTickerCommand implements BotPlugin {
@@ -13,6 +12,7 @@ export class TestTickerCommand implements BotPlugin {
 	constructor(
 		private analysisService: AnalysisService,
 		private templateService: TemplateService,
+		private notificationService: NotificationService,
 	) { }
 
 	register(bot: Telegraf<MyContext>) {
@@ -34,14 +34,7 @@ export class TestTickerCommand implements BotPlugin {
 					return;
 				}
 
-				const notification = {
-					session: ctx.session,
-					status,
-				} as AssetStatusNotification;
-
-				await ctx.replyWithMarkdown(
-					this.templateService.apply(`asset-status/${notification.status.status}`, notification.status),
-				);
+				await this.notificationService.sendAssetStatus(ctx, status);
 			}
 		})
 	}

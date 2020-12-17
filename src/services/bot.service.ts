@@ -1,24 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';
-import { AssetStatus, AssetStatusNotification } from "../types/commons";
 import { MyContext } from '../types/my-context';
-import { AnalysisService } from './analysis.service';
-import { AssetService } from './asset.service';
-import { SessionService } from './session.service';
-import PromisePool = require('@supercharge/promise-pool')
-
-
 
 @Injectable()
 export class BotService {
 
-	private readonly bot: Telegraf<MyContext>;
+	readonly bot: Telegraf<MyContext>;
 
 	constructor(
-		private assetService: AssetService,
-		private sessionService: SessionService,
-		private analysisService: AnalysisService,
 	) {
 		const { bot_token } = require('../../secret.json');
 		this.bot = new Telegraf<MyContext>(bot_token);
@@ -54,89 +44,6 @@ export class BotService {
 		// await this.configure();
 
 		return this.bot;
-	}
-
-	private async prepareNotifications() {
-		const sessions = await this.sessionService.getSessions();
-		const tickers = await this.sessionService.getAllSessionTickers();
-
-		const statuses = await PromisePool
-			.withConcurrency(10)
-			.for(tickers)
-			.process(async ticker => {
-				return await this.analysisService.getAssetStatus(ticker);
-			})
-			.then(r => {
-				return r.results
-					.filter(i => !!i)
-					.reduce((prev, cur) => {
-						return {
-							...prev,
-							[cur.ticker]: cur,
-						}
-					}, {} as Record<string, AssetStatus>)
-			});
-
-		const notifications: AssetStatusNotification[] = [];
-
-		for (const session of sessions) {
-			if (!session?.subscriptionTickers) {
-				continue;
-			}
-
-			for (const ticker of session.subscriptionTickers) {
-
-				const status = statuses[ticker];
-
-				// console.log(++i, session.chatId, ticker, status.changed, status.status);
-
-				if (!status || !status.changed || status.status === 'NONE') {
-					continue;
-				}
-
-				notifications.push({
-					session,
-					status,
-				});
-
-			}
-		}
-
-		return {
-			notifications,
-			statuses,
-		};
-
-	}
-
-	async notifyAll() {
-		const data = await this.prepareNotifications();
-
-		// send notifications
-		for (const n of data.notifications) {
-			const message = `
-Тикер: ${n.status.ticker}
-Статус: ${n.status.status}
-Цена: ${n.status.marketData.price}
-Верхняя граница: ${n.status.marketData.donchian.maxValue}
-Нижняя граница: ${n.status.marketData.donchian.minValue}
-			`
-			await this.bot.telegram.sendMessage(n.session.chatId, message);
-		}
-
-		// update statuses
-		for (const [key, value] of Object.entries(data.statuses)) {
-			if (!value?.changed) {
-				continue;
-			}
-
-			await this.assetService.updateOne(key, v => ({
-				...v,
-				state: value.status,
-			}));
-		}
-
-		return data;
 	}
 
 }

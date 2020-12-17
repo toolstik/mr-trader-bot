@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import * as _ from 'lodash';
+import * as moment from 'moment-timezone';
 import { AssetStatus } from '../types/commons';
 import { Donchian, MarketData } from './../types/market-data';
 import { AssetService } from './asset.service';
@@ -62,7 +63,10 @@ export class AnalysisService {
 			return null;
 		}
 
+		const today = moment().startOf('day').toDate().getTime();
+
 		const donchian = asset.history
+			.filter(a => a.date.getDate() < today)
 			.sort((a, b) => b.date.getTime() - a.date.getTime())
 			.slice(0, daysBack)
 			.reduce((prev, cur) => {

@@ -10,6 +10,7 @@ import { I18nPlugin } from './plugins/i18n.plugin';
 import { SessionPlugin } from './plugins/session.plugin';
 import { AssetService } from './services/asset.service';
 import { BotService } from './services/bot.service';
+import { NotificationService } from './services/notification.service';
 import { BotPlugin } from './types/bot-plugin';
 
 export async function start() {
@@ -30,6 +31,7 @@ export async function start() {
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 
 	const botService = module.get(BotService);
+	const notificationService = module.get(NotificationService);
 	const assetService = module.get(AssetService);
 
 	return {
@@ -38,7 +40,7 @@ export async function start() {
 			await assetService.updateHistory();
 		},
 		notify: async () => {
-			await botService.notifyAll();
+			await notificationService.sentAssetStatusAll();
 		},
 	};
 }

@@ -3,10 +3,10 @@
 {{#with marketData}}
 Приближение к порогу {{donchian.minDays}}-дневный MIN
 
-Текущее значение: {{price}} {{asset.currencySymbol}}
-{{donchian.minDays}}-дневный MIN: {{donchian.minValue}} {{asset.currencySymbol}}
-Take-profit: {{takeProfit}} {{asset.currencySymbol}}
-Разница: 0,00 %
+Текущее значение: {{format price}} {{asset.currencySymbol}}
+{{donchian.minDays}}-дневный MIN: {{format donchian.minValue}} {{asset.currencySymbol}}
+Take-profit: {{format takeProfit}} {{asset.currencySymbol}}
+Разница: {{diff price donchian.minValue}} %
 {{/with}}
 
 

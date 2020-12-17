@@ -3,10 +3,10 @@
 {{#with marketData}}
 Пробитие {{donchian.maxDays}}-дневный MAX
 
-Текущее значение: {{price}} {{asset.currencySymbol}}
-{{donchian.maxDays}}-дневный MAX: {{donchian.maxValue}} {{asset.currencySymbol}}
-Stop-loss: {{stopLoss}} {{asset.currencySymbol}}
-Разница: 0,00 %
+Текущее значение: {{format price}} {{asset.currencySymbol}}
+{{donchian.maxDays}}-дневный MAX: {{format donchian.maxValue}} {{asset.currencySymbol}}
+Stop-loss: {{format stopLoss}} {{asset.currencySymbol}}
+Разница: {{diff price donchian.maxValue}} %
 {{/with}}
 
 

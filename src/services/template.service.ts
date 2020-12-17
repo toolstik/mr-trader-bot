@@ -1,8 +1,8 @@
-import * as path from 'path';
+import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
+import * as path from 'path';
 import { readDirDeepSync } from 'read-dir-deep';
-import { Injectable, Logger } from '@nestjs/common';
 
 type SUPPORTED_LANGUAGES = 'ru';
 type TemplateResolver = (data: any) => string;
@@ -10,6 +10,17 @@ type TranslateMap = Map<string, TemplateResolver>;
 
 const DEFAULT_LANG: SUPPORTED_LANGUAGES = 'ru';
 const TEMPLATE_PATH: string = 'templates';
+
+function diff(value: number, target: number) {
+	const result = value && Math.abs(1 - target / value);
+	return result !== null ? format(result * 100, 2) : '----';
+}
+
+function format(value: number, decimals: number | handlebars.HelperOptions) {
+	const maximumFractionDigits = (typeof decimals === 'number') ? decimals : 3;
+	return new Intl.NumberFormat('ru-RU', { maximumFractionDigits })
+		.format(value);
+}
 
 @Injectable()
 export class TemplateService {
@@ -19,6 +30,7 @@ export class TemplateService {
 
 	constructor(logger: Logger) {
 		this.logger = logger;
+		this.helpers();
 		this.load();
 	}
 
@@ -43,6 +55,11 @@ export class TemplateService {
 	private getTemplate(key: string, lang: SUPPORTED_LANGUAGES): TemplateResolver {
 		const templateKey = this.getTemplateKey(lang, key)
 		return this.templatesMap.get(templateKey);
+	}
+
+	private helpers() {
+		handlebars.registerHelper('diff', diff);
+		handlebars.registerHelper('format', format);
 	}
 
 	private load() {

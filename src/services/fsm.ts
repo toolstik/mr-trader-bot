@@ -1,34 +1,11 @@
-import { AssetEntity } from './asset.service';
 import { createMachine } from '@xstate/fsm';
+import { AssetStateKey } from '../types/commons';
+import { FsmContext, FsmEvent, FsmState } from '../types/fsm-types';
 import { MarketData } from '../types/market-data';
 const APPROACH_RATE = 0.005;
 
-type FsmContext = {
-	asset: AssetEntity;
-}
 
-type _FsmEvent<K extends string, T> = {
-	type: K;
-	payload: T;
-};
-type FsmEventKey = 'update' | 'reset';
-type FsmEventPayload<K extends FsmEventKey> =
-	'update' extends K ? MarketData :
-	'reset' extends K ? {} :
-	never;
-
-type FsmEvent<K extends FsmEventKey = any> = _FsmEvent<K, FsmEventPayload<K>>;
-
-
-type _FsmState<K extends string, T extends FsmContext> = {
-	value: K,
-	context: T,
-};
-
-export type FsmStateKey = 'NONE' | 'APPROACH_TOP' | 'APPROACH_BOTTOM' | 'REACH_TOP' | 'REACH_BOTTOM';
-type FsmState = _FsmState<FsmStateKey, FsmContext>
-
-function getMarketState(data: MarketData): FsmStateKey {
+function getMarketState(data: MarketData): AssetStateKey {
 
 	if (data.price >= data.donchian.maxValue) {
 		return 'REACH_TOP';
@@ -57,7 +34,7 @@ function takeProfit(data: MarketData) {
 	return data.price >= data.takeProfit;
 }
 
-export function createFsm(state: FsmStateKey, context: FsmContext) {
+export function createFsm(state: AssetStateKey, context: FsmContext) {
 	return createMachine<FsmContext, FsmEvent, FsmState>({
 		initial: state,
 		context: context,
@@ -156,7 +133,7 @@ export function createFsm(state: FsmStateKey, context: FsmContext) {
 	});
 }
 
-export function recursiveUpdateTransition(state: FsmStateKey, context: FsmContext, data: MarketData) {
+export function deepTransition(state: AssetStateKey, context: FsmContext, data: MarketData) {
 	// console.time('fsm');
 	const fsm = createFsm(state, context);
 

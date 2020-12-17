@@ -23,7 +23,7 @@ export class TemplateService {
 		this.load();
 	}
 
-	public apply(key: string, lang: SUPPORTED_LANGUAGES, data: any): string {
+	public apply(key: string, data: any, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): string {
 		this.logger.debug(
 			`apply template: ${key}`,
 		);
@@ -41,7 +41,7 @@ export class TemplateService {
 		return template(data);
 	}
 
-	private getTemplate(key: string, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): TemplateResolver {
+	private getTemplate(key: string, lang: SUPPORTED_LANGUAGES): TemplateResolver {
 		const templateKey = this.getTemplateKey(lang, key)
 		return this.templatesMap.get(templateKey);
 	}
@@ -60,7 +60,8 @@ export class TemplateService {
 
 			const key = path.relative(templatesDir, fileName)
 				.replace(/\\/g, '/')
-				.replace(/\.md$/, '');
+				.replace(/\.md$/, '')
+				.toLowerCase();
 
 			return acc.set(
 				key,
@@ -73,6 +74,6 @@ export class TemplateService {
 		lang: SUPPORTED_LANGUAGES,
 		key: string
 	): string {
-		return `${lang}/${key}`;
+		return `${lang}/${key}`.toLowerCase();
 	}
 }

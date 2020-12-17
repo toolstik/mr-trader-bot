@@ -4,21 +4,31 @@ import * as moment from 'moment-timezone';
 import * as yahoo from 'yahoo-finance';
 import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
 
-type SummaryModuleKey = 'price' | 'summaryDetail' | 'financialData';
+export type SummaryModuleKey = 'price' | 'summaryDetail' | 'financialData';
 
-type PriceModule = {
+export type PriceModule = {
 	price: {
 		regularMarketPrice: number,
+		exchange: string, // "NMS",
+		exchangeName: string, //"NasdaqGS",
+		quoteType: string, // "EQUITY",
+		symbol: string, // "TSLA",
+		shortName: string, //"Tesla, Inc.",
+		longName: string, // "Tesla, Inc.",
+		currency: string, // "USD",
+		quoteSourceName: string, //"Nasdaq Real Time Price",
+		currencySymbol: string, // "$"
 	},
 };
-type SummaryDetailModule = {
+
+export type SummaryDetailModule = {
 	summaryDetail: {},
 };
-type FinancialDataModule = {
+export type FinancialDataModule = {
 	financialData: {},
 };
 
-type SymbolSummary<M extends SummaryModuleKey> = {}
+export type SymbolSummary<M extends SummaryModuleKey> = {}
 	& ('price' extends M ? PriceModule : {})
 	& ('summaryDetail' extends M ? SummaryDetailModule : {})
 	& ('financialData' extends M ? FinancialDataModule : {})

@@ -1,16 +1,10 @@
-import { MarketData, Donchian } from './../types/market-data';
-import { YahooService } from './yahoo.service';
-import { AssetService } from './asset.service';
 import { Injectable } from "@nestjs/common";
-import { recursiveUpdateTransition, FsmStateKey } from './fsm';
 import * as _ from 'lodash';
-
-export type AssetStatus = {
-	ticker: string;
-	status: FsmStateKey;
-	changed: boolean;
-	marketData: MarketData;
-};
+import { AssetStatus } from '../types/commons';
+import { Donchian, MarketData } from './../types/market-data';
+import { AssetService } from './asset.service';
+import { deepTransition } from './fsm';
+import { YahooService } from './yahoo.service';
 
 @Injectable()
 export class AnalysisService {
@@ -29,7 +23,7 @@ export class AnalysisService {
 			return null;
 		}
 
-		const status = recursiveUpdateTransition(asset.state ?? 'NONE', { asset }, marketData);
+		const status = deepTransition(asset.state ?? 'NONE', { asset }, marketData);
 		return {
 			ticker: asset.symbol,
 			status: status.value,
@@ -54,6 +48,7 @@ export class AnalysisService {
 
 		return {
 			price: price.regularMarketPrice,
+			asset: _.omit(price, 'regularMarketPrice'),
 			donchian: donchian20,
 			stopLoss: donchian5.minValue,
 			takeProfit: donchian5.maxValue,

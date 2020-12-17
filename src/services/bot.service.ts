@@ -1,17 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { existsSync, readFileSync } from 'fs';
 import Telegraf from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';
-import { MyContext, Session } from '../types/my-context';
-import { AnalysisService, AssetStatus } from './analysis.service';
+import { AssetStatus, AssetStatusNotification } from "../types/commons";
+import { MyContext } from '../types/my-context';
+import { AnalysisService } from './analysis.service';
 import { AssetService } from './asset.service';
 import { SessionService } from './session.service';
 import PromisePool = require('@supercharge/promise-pool')
 
-export type AssetStatusNotification = {
-	session: Session,
-	status: AssetStatus,
-}
+
 
 @Injectable()
 export class BotService {

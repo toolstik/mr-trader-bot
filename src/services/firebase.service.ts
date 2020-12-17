@@ -5,7 +5,7 @@ import * as admin from 'firebase-admin';
 export class FirebaseService {
 
 	constructor() {
-		admin.initializeApp();
+		// admin.initializeApp();
 	}
 
 	getDatabase() {

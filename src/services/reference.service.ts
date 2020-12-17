@@ -1,13 +1,10 @@
-import { classToPlain, plainToClass, Type } from 'class-transformer';
+import { classToPlain, plainToClass } from 'class-transformer';
 import { ClassType } from 'class-transformer/ClassTransformer';
 import { database } from 'firebase-admin';
+import { RefEntity, RefEntityObject } from '../types/commons';
 import { FirebaseService } from './firebase.service';
 
-export type RefEntity<T> = Record<string, T>;
 
-class RefEntityObject {
-	[key: string]: Object;
-}
 // ".", "#", "$", "/", "[", or "]"
 export function normalizeKey(key: string) {
 	return key ? key.replace(/[.#$/\[\]]/, '_') : key;
@@ -18,8 +15,8 @@ export abstract class ReferenceService<T> {
 	protected readonly ref: database.Reference;
 
 	constructor(firebase: FirebaseService) {
-		this.db = firebase.getDatabase();
-		this.ref = this.db.ref(this.getRefName());
+		// this.db = firebase.getDatabase();
+		// this.ref = this.db.ref(this.getRefName());
 	}
 
 	protected abstract getRefName(): string;

@@ -36,8 +36,13 @@ export class Gulpfile {
 	}
 
 	@Task()
-	build() {
+	tsc() {
 		return shell.task(`tsc`)();
+	}
+
+	@SequenceTask()
+	build() {
+		return ['clean_dist', 'tsc', 'copy_secret'];
 	}
 
 	@Task()
@@ -52,12 +57,12 @@ export class Gulpfile {
 
 	@SequenceTask()
 	deploy() {
-		return ['clean_dist', 'build', 'copy_secret', 'fb_deploy'];
+		return ['build', 'fb_deploy'];
 	}
 
 	@SequenceTask()
 	serve() {
-		return ['clean_dist', 'build', 'copy_secret', 'fb_serve'];
+		return ['build', 'fb_serve'];
 	}
 
 }

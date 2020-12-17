@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { Type } from 'class-transformer';
+import { AssetStateKey, RefEntity } from "../types/commons";
 import { MarketHistory, SymbolHistory } from "../types/history";
 import { FirebaseService } from "./firebase.service";
-import { FsmStateKey } from './fsm';
-import { normalizeKey, RefEntity, ReferenceService } from "./reference.service";
+import { normalizeKey, ReferenceService } from "./reference.service";
 import { SessionService } from './session.service';
 import { YahooService } from "./yahoo.service";
 import _ = require("lodash");
@@ -14,7 +14,7 @@ export class AssetEntity {
 	symbol: string;
 
 	@Type(() => String)
-	state: FsmStateKey;
+	state: AssetStateKey;
 
 	@Type(() => MarketHistory)
 	history: AssetHistoryEntity;

@@ -31,7 +31,7 @@ async function test1() {
 	const module = app.select(AppModule);
 
 	const a = module.get(TemplateService);
-	const x = a.apply('test/template', 'ru', {data: 'HELLO!'});
+	const x = a.apply('test/template', {data: 'HELLO!'});
 	console.log(x);
 	// const y = await a.prepareNotifications();
 	// console.log(y);

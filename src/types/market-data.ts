@@ -1,3 +1,4 @@
+import { PriceModule } from './../services/yahoo.service';
 
 export type Donchian = {
 	minDays: number;
@@ -8,6 +9,7 @@ export type Donchian = {
 
 export type MarketData = {
 	price: number;
+	asset: Omit<PriceModule['price'], 'regularMarketPrice'>
 	donchian: Donchian;
 	stopLoss: number;
 	takeProfit: number;

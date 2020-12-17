@@ -1,7 +1,7 @@
 {{> ru/asset-status/header}}
 
 {{#with marketData}}
-Пробитие {{donchian.minDays}}-дневный MIN
+Приближение к порогу {{donchian.minDays}}-дневный MIN
 
 Текущее значение: {{price}} {{asset.currencySymbol}}
 {{donchian.minDays}}-дневный MIN: {{donchian.minValue}} {{asset.currencySymbol}}

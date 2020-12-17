@@ -19,7 +19,6 @@ export class TemplateService {
 
 	constructor(logger: Logger) {
 		this.logger = logger;
-
 		this.load();
 	}
 
@@ -62,6 +61,8 @@ export class TemplateService {
 				.replace(/\\/g, '/')
 				.replace(/\.md$/, '')
 				.toLowerCase();
+
+			handlebars.registerPartial(key, template);
 
 			return acc.set(
 				key,

@@ -15,8 +15,8 @@ export abstract class ReferenceService<T> {
 	protected readonly ref: database.Reference;
 
 	constructor(firebase: FirebaseService) {
-		// this.db = firebase.getDatabase();
-		// this.ref = this.db.ref(this.getRefName());
+		this.db = firebase.getDatabase();
+		this.ref = this.db.ref(this.getRefName());
 	}
 
 	protected abstract getRefName(): string;

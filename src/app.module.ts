@@ -3,6 +3,7 @@ import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { NotifyCommand } from './plugins/commands/notify.command';
+import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 import { I18nPlugin } from './plugins/i18n.plugin';
@@ -34,6 +35,7 @@ import { YahooService } from './services/yahoo.service';
 		CommandArgsPlugin,
 
 		AddTickerCommand,
+		RemoveTickerCommand,
 		ListTickerCommand,
 		TestTickerCommand,
 		UpdateHistoryCommand,

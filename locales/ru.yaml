@@ -14,7 +14,14 @@ commands:
     not-found: Тикер ${ticker} не найден
     not-tradable: Рыночные данные по тикеру ${ticker} недоступны
     duplicate: Вы уже подписаны на обновления по этим активам
-    success: Вы успешно подписались на обновления по активу ${ticker}
+    success: >
+      Вы успешно подписались на обновления по активам: ${ticker}
+  remove-ticker:
+    no-ticker-specified: Не задан тикер
+    not-found: >
+      Тикеры не найдены в вашей подписке: ${ticker}
+    success: >
+      Вы успешно отписались от обновлений по активам: ${ticker}
   list-ticker:
     success: >
       Вы подписаны на следующие активы:
@@ -23,16 +30,6 @@ commands:
   test-ticker:
     no-ticker-specified: Не задан тикер
     ticker-not-found: Тикер ${ticker} не найден
-    success: >
-      Тикер: ${ticker}
-
-      Статус: ${status}
-
-      Цена: ${price}
-
-      Верхняя граница: ${donchian.maxValue}
-
-      Нижняя граница: ${donchian.minValue}
 settings:
   body: >
     Feel free to set the settings you prefer.

@@ -1,3 +1,4 @@
+import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
@@ -23,6 +24,7 @@ export async function start() {
 		CommandArgsPlugin,
 
 		AddTickerCommand,
+		RemoveTickerCommand,
 		ListTickerCommand,
 		TestTickerCommand,
 		UpdateHistoryCommand,

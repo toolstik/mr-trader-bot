@@ -1,10 +1,9 @@
-import { BotService } from './bot.service';
 import { Injectable } from "@nestjs/common";
-import Telegraf from 'telegraf';
 import { AssetStatus } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
 import { AnalysisService } from './analysis.service';
 import { AssetService } from './asset.service';
+import { BotService } from './bot.service';
 import { SessionService } from './session.service';
 import { TemplateService } from './template.service';
 import PromisePool = require('@supercharge/promise-pool')

@@ -28,9 +28,9 @@ export class SessionService extends ReferenceService<SessionEntity>{
 		return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
 	}
 
-	async getAllSessionTickers(){
+	async getAllSessionTickers() {
 		const sessions = await this.getSessions();
-		return  _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
+		return _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
 	}
 
 }

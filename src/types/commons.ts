@@ -29,3 +29,5 @@ export type FundamentalData = {
 	rsi13: number;
 
 }
+
+export type ListKey = 'nasdaq' | 'snp500';

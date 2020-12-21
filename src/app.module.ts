@@ -1,3 +1,6 @@
+import { AssetListService } from './services/asset-list.service';
+import { DatahubService } from './services/datahub.service';
+import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
 import { Logger, Module } from "@nestjs/common";
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
@@ -17,6 +20,7 @@ import { SessionService } from './services/session.service';
 import { TemplateService } from './services/template.service';
 import { YahooService } from './services/yahoo.service';
 import { FundamentalsCommand } from "./plugins/commands/fundamentals.command";
+import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.command';
 
 
 @Module({
@@ -30,6 +34,8 @@ import { FundamentalsCommand } from "./plugins/commands/fundamentals.command";
 		AnalysisService,
 		TemplateService,
 		NotificationService,
+		DatahubService,
+		AssetListService,
 
 		SessionPlugin,
 		I18nPlugin,
@@ -42,6 +48,8 @@ import { FundamentalsCommand } from "./plugins/commands/fundamentals.command";
 		UpdateHistoryCommand,
 		NotifyCommand,
 		FundamentalsCommand,
+		AddTickerListCommand,
+		RemoveTickerListCommand,
 
 		{
 			provide: Logger,

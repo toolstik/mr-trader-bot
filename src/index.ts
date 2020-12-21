@@ -1,11 +1,13 @@
-import { FundamentalsCommand } from './plugins/commands/fundamentals.command';
-import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
+import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
+import { FundamentalsCommand } from './plugins/commands/fundamentals.command';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { NotifyCommand } from './plugins/commands/notify.command';
+import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.command';
+import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 import { I18nPlugin } from './plugins/i18n.plugin';
@@ -31,6 +33,8 @@ export async function start() {
 		UpdateHistoryCommand,
 		NotifyCommand,
 		FundamentalsCommand,
+		AddTickerListCommand,
+		RemoveTickerListCommand,
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 

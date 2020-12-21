@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Type } from 'class-transformer';
-import { AssetStateKey, RefEntity } from "../types/commons";
+import { AssetStateKey, RefEntity, FundamentalData } from "../types/commons";
 import { MarketHistory, SymbolHistory } from "../types/history";
 import { FirebaseService } from "./firebase.service";
 import { normalizeKey, ReferenceService } from "./reference.service";
@@ -27,7 +27,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 
 	constructor(
 		firebase: FirebaseService,
-		private finance: YahooService,
+		private yahoo: YahooService,
 		private sessionService: SessionService,
 	) {
 		super(firebase);
@@ -43,7 +43,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 
 	async updateHistory(symbols?: string[]) {
 		const symbs = symbols ?? await this.sessionService.getAllSessionTickers();
-		const histories = await this.finance.getHistory(symbs, this.HISTORY_DAYS_BACK);
+		const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
 
 		const value = (await this.getAll()) ?? {};
 
@@ -69,6 +69,23 @@ export class AssetService extends ReferenceService<AssetEntity> {
 			await this.setAll(newValue);
 		}
 		return newValue;
+	}
+
+	async getFundamentals(symbol: string) {
+		const x = await this.yahoo.getFundamentals(symbol);
+
+		return {
+			ticker: symbol,
+			trailingPE: x.trailingPE,
+			priceToBook: x.priceToBook,
+			priceToSales: x.priceToSalesTrailing12Months,
+			trailingEps: x.trailingEps,
+			currentRatio: x.currentRatio,
+			dividentAnnualPercent: x.trailingAnnualDividendYield * 100,
+			sma50: x.fiftyDayAverage,
+			sma200: x.twoHundredDayAverage,
+			rsi13: null,
+		} as FundamentalData;
 	}
 
 }

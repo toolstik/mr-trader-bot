@@ -1,3 +1,4 @@
+import { FundamentalData } from './../types/commons';
 import { Injectable } from "@nestjs/common";
 import { AssetStatus } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
@@ -108,6 +109,16 @@ export class NotificationService {
 
 	async sendAssetStatus(ctx: MyContext, status: AssetStatus) {
 		const message = this.getAssetStatusMessage(status);
+		return await ctx.replyWithMarkdown(
+			message,
+			{
+				disable_web_page_preview: true,
+			},
+		);
+	}
+
+	async sendAssetFundamendals(ctx: MyContext, data: FundamentalData){
+		const message = this.templateService.apply('fundamentals', data);
 		return await ctx.replyWithMarkdown(
 			message,
 			{

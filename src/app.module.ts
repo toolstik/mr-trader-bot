@@ -16,6 +16,7 @@ import { NotificationService } from './services/notification.service';
 import { SessionService } from './services/session.service';
 import { TemplateService } from './services/template.service';
 import { YahooService } from './services/yahoo.service';
+import { FundamentalsCommand } from "./plugins/commands/fundamentals.command";
 
 
 @Module({
@@ -40,6 +41,7 @@ import { YahooService } from './services/yahoo.service';
 		TestTickerCommand,
 		UpdateHistoryCommand,
 		NotifyCommand,
+		FundamentalsCommand,
 
 		{
 			provide: Logger,

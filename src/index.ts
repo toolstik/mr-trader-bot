@@ -1,3 +1,4 @@
+import { FundamentalsCommand } from './plugins/commands/fundamentals.command';
 import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -29,6 +30,7 @@ export async function start() {
 		TestTickerCommand,
 		UpdateHistoryCommand,
 		NotifyCommand,
+		FundamentalsCommand,
 	];
 	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 

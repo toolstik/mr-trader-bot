@@ -9,10 +9,11 @@
 	"license": "MIT",
 	"scripts": {
 		"preinstall": "node use-yarn.js",
-		"build": "tsc",
+		"build": "gulp build",
+		"build:prod": "gulp build -p=production",
 		"serve": "gulp serve",
 		"deploy": "gulp deploy",
-		"deploy-prod": "gulp deploy -p=production"
+		"deploy:prod": "gulp deploy -p=production"
 	},
 	"dependencies": {
 		"@edjopato/telegraf-i18n": "^0.1.0",
@@ -63,33 +64,9 @@
 		"typescript": "^3.8.0",
 		"xo": "^0.35.0"
 	},
-	"files": [
-		"dist/source",
-		"!*.test.*"
-	],
 	"main": "dist/functions/src/index.js",
-	"types": "dist/src",
-	"nyc": {
-		"all": true,
-		"extension": [
-			".ts"
-		],
-		"include": [
-			"dist/src",
-			"src"
-		],
-		"exclude": [
-			"**/*.d.ts",
-			"**/*.test.ts"
-		],
-		"reporter": [
-			"lcov",
-			"text"
-		]
-	},
-	"xo": {
-		"rules": {
-			"ava/no-ignored-test-files": "off"
-		}
-	}
+	"files": [
+		"dist"
+	]
+	
 }

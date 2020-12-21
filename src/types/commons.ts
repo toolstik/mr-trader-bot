@@ -15,3 +15,17 @@ export type RefEntity<T> = Record<string, T>;
 export class RefEntityObject {
 	[key: string]: Object;
 }
+
+export type FundamentalData = {
+	ticker: string;
+	trailingPE: number;
+	priceToBook: number;
+	priceToSales: number;
+	trailingEps: number;
+	currentRatio: number;
+	dividentAnnualPercent: number;
+	sma50: number;
+	sma200: number;
+	rsi13: number;
+
+}

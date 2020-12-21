@@ -4,34 +4,125 @@ import * as moment from 'moment-timezone';
 import * as yahoo from 'yahoo-finance';
 import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
 
-export type SummaryModuleKey = 'price' | 'summaryDetail' | 'financialData';
+export type SummaryModuleKey = 'price' | 'summaryDetail' | 'defaultKeyStatistics' | 'financialData';
 
 export type PriceModule = {
-	price: {
-		regularMarketPrice: number,
-		exchange: string, // "NMS",
-		exchangeName: string, //"NasdaqGS",
-		quoteType: string, // "EQUITY",
-		symbol: string, // "TSLA",
-		shortName: string, //"Tesla, Inc.",
-		longName: string, // "Tesla, Inc.",
-		currency: string, // "USD",
-		quoteSourceName: string, //"Nasdaq Real Time Price",
-		currencySymbol: string, // "$"
-	},
+	regularMarketPrice: number,
+	exchange: string, // "NMS",
+	exchangeName: string, //"NasdaqGS",
+	quoteType: string, // "EQUITY",
+	symbol: string, // "TSLA",
+	shortName: string, //"Tesla, Inc.",
+	longName: string, // "Tesla, Inc.",
+	currency: string, // "USD",
+	quoteSourceName: string, //"Nasdaq Real Time Price",
+	currencySymbol: string, // "$"
 };
 
 export type SummaryDetailModule = {
-	summaryDetail: {},
+	maxAge: number,
+	priceHint: number,
+	previousClose: number,
+	open: number,
+	dayLow: number,
+	dayHigh: number,
+	regularMarketPreviousClose: number,
+	regularMarketOpen: number,
+	regularMarketDayLow: number,
+	regularMarketDayHigh: number,
+	dividendRate: number,
+	dividendYield: number,
+	exDividendDate: Date,
+	payoutRatio: number,
+	fiveYearAvgDividendYield: number,
+	beta: number,
+	trailingPE: number,
+	forwardPE: number,
+	volume: number,
+	regularMarketVolume: number,
+	averageVolume: number,
+	averageVolume10days: number,
+	averageDailyVolume10Day: number,
+	bid: number,
+	ask: number,
+	bidSize: number,
+	askSize: number,
+	marketCap: number,
+	fiftyTwoWeekLow: number,
+	fiftyTwoWeekHigh: number,
+	priceToSalesTrailing12Months: number,
+	fiftyDayAverage: number,
+	twoHundredDayAverage: number,
+	trailingAnnualDividendRate: number,
+	trailingAnnualDividendYield: number,
 };
+
 export type FinancialDataModule = {
-	financialData: {},
+	currentPrice: number,
+	targetHighPrice: number,
+	targetLowPrice: number,
+	targetMeanPrice: number,
+	targetMedianPrice: number,
+	recommendationMean: number,
+	recommendationKey: number,
+	numberOfAnalystOpinions: number,
+	totalCash: number,
+	totalCashPerShare: number,
+	ebitda: number,
+	totalDebt: number,
+	quickRatio: number,
+	currentRatio: number,
+	totalRevenue: number,
+	debtToEquity: number,
+	revenuePerShare: number,
+	returnOnAssets: number,
+	returnOnEquity: number,
+	grossProfits: number,
+	freeCashflow: number,
+	operatingCashflow: number,
+	revenueGrowth: number,
+	grossMargins: number,
+	ebitdaMargins: number,
+	operatingMargins: number,
+	profitMargins: number,
+}
+
+export type DefaultKeyStatisticsModule = {
+	maxAge: number,
+	forwardPE: number,
+	profitMargins: number,
+	floatShares: number,
+	sharesOutstanding: number,
+	sharesShort: number,
+	sharesShortPriorMonth: number,
+	heldPercentInsiders: number,
+	heldPercentInstitutions: number,
+	shortRatio: number,
+	shortPercentOfFloat: number,
+	beta: number,
+	category: number,
+	bookValue: number,
+	priceToBook: number,
+	fundFamily: number,
+	legalType: number,
+	lastFiscalYearEnd: Date,
+	nextFiscalYearEnd: Date,
+	mostRecentQuarter: Date,
+	netIncomeToCommon: number,
+	trailingEps: number,
+	forwardEps: number,
+	pegRatio: number,
+	lastSplitFactor: number,
+	lastSplitDate: Date,
+	'52WeekChange': number,
+	SandP52WeekChange: number,
 };
 
 export type SymbolSummary<M extends SummaryModuleKey> = {}
-	& ('price' extends M ? PriceModule : {})
-	& ('summaryDetail' extends M ? SummaryDetailModule : {})
-	& ('financialData' extends M ? FinancialDataModule : {})
+	& ('price' extends M ? { price: PriceModule } : {})
+	& ('defaultKeyStatistics' extends M ? { defaultKeyStatistics: DefaultKeyStatisticsModule } : {})
+	& ('financialData' extends M ? { financialData: FinancialDataModule } : {})
+	& ('summaryDetail' extends M ? { summaryDetail: SummaryDetailModule } : {});
 
 function convertDateBackToUtc(date: Date) {
 	return moment.tz(date, 'America/New_York').utc(true).toDate();
@@ -81,6 +172,15 @@ export class YahooService {
 	async getPrices(symbol: string) {
 		const quote = await this.getQuote(symbol, ['price']);
 		return quote?.price;
+	}
+
+	async getFundamentals(symbol: string) {
+		const quote = await this.getQuote(symbol, ['summaryDetail', 'defaultKeyStatistics', 'financialData']);
+		return {
+			...quote.defaultKeyStatistics,
+			...quote.summaryDetail,
+			...quote.financialData,
+		} as SummaryDetailModule & DefaultKeyStatisticsModule & FinancialDataModule;
 	}
 
 	private async getQuote<T extends SummaryModuleKey>(

@@ -17,6 +17,9 @@ function diff(value: number, target: number) {
 }
 
 function format(value: number, decimals: number | handlebars.HelperOptions) {
+	if (value == null) {
+		return "unknown";
+	}
 	const maximumFractionDigits = (typeof decimals === 'number') ? decimals : 3;
 	return new Intl.NumberFormat('ru-RU', { maximumFractionDigits })
 		.format(value);

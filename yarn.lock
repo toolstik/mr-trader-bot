@@ -9063,6 +9063,11 @@ telegram-format@^2.0.0:
   resolved "https://registry.yarnpkg.com/telegram-format/-/telegram-format-2.0.1.tgz#0f29ebdbf98a63da03487efae1b4cb4b79195252"
   integrity sha512-U0pJ7mV+6Nq0EcvrUU/dtluM0BX0bhUOIG4+vaIcyy4w1e2/+0424SEfsMx0ecn8IwKHbGN/Gj4LDU+CbsFovg==
 
+telegram-keyboard@^2.1.7:
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/telegram-keyboard/-/telegram-keyboard-2.1.7.tgz#b3ef1cde8fbfcdb864ed26e3a50395a715e784bd"
+  integrity sha512-DFo6BzwLku+EZGzpSHUy3lfuKdGFUVKvmpggQIov5fTYFc3yr2s5QLX0FK0owCTiLTD7BBrOWdBWaAZRZoTT7A==
+
 telegram-typings@^3.6.0:
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/telegram-typings/-/telegram-typings-3.6.1.tgz#1288d547f8694b61f1c01c2993e295f3114d9e25"
@@ -9412,6 +9417,11 @@ typegram@^2.2.2:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/typegram/-/typegram-2.3.3.tgz#e432f32a950a9d9f7c7f7ea3ed128fe0e1ea22ea"
   integrity sha512-FFUBK8TdEOTHNOwqopmuMptBgqwXolzT9WGaFpcJyoEQScYj5c3AAIvhQnGR3GFKX+eGHFDRjFsHyX/PmYKBYw==
+
+typegram@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/typegram/-/typegram-3.1.1.tgz#ba19f9ddf1240be10513231993e231aaba13cdee"
+  integrity sha512-uXBGUGXhEKDyw1dAqdNWOR98nQO2a/2tnZPvEFruU6zr4t1dQIi+zziZIDNct93rnImOJbAaHH6Bsdc4l8mQoQ==
 
 typescript@^3.8.0:
   version "3.9.7"

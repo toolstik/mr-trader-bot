@@ -1,3 +1,4 @@
+import { MenuPlugin } from './plugins/menu.plugin';
 import { AssetListService } from './services/asset-list.service';
 import { DatahubService } from './services/datahub.service';
 import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
@@ -40,6 +41,7 @@ import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.c
 		SessionPlugin,
 		I18nPlugin,
 		CommandArgsPlugin,
+		MenuPlugin,
 
 		AddTickerCommand,
 		RemoveTickerCommand,

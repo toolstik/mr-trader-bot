@@ -1,5 +1,6 @@
 import {Context as TelegrafContext} from 'telegraf';
 import {I18nContext} from '@edjopato/telegraf-i18n';
+import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
 
 export interface TgSession {
 	username: string;
@@ -8,7 +9,7 @@ export interface TgSession {
 	enabled: boolean;
 }
 
-export interface MyContext extends TelegrafContext {
+export interface MyContext extends TelegrafContext, SceneContextMessageUpdate {
 	i18n: I18nContext;
 	session: TgSession;
 	state: {

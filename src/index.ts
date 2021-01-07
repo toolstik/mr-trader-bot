@@ -11,6 +11,7 @@ import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 import { I18nPlugin } from './plugins/i18n.plugin';
+import { MenuPlugin } from './plugins/menu.plugin';
 import { SessionPlugin } from './plugins/session.plugin';
 import { AssetService } from './services/asset.service';
 import { BotService } from './services/bot.service';
@@ -25,6 +26,8 @@ export async function start() {
 		SessionPlugin,
 		I18nPlugin,
 		CommandArgsPlugin,
+
+		MenuPlugin,
 
 		AddTickerCommand,
 		RemoveTickerCommand,

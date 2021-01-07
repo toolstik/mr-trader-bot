@@ -40,6 +40,7 @@
 		"telegraf-session-firebase": "^0.1.0",
 		"telegraf-session-local": "^2.0.0",
 		"telegraf-stateless-question": "^1.0.0",
+		"telegram-keyboard": "^2.1.7",
 		"yahoo-finance": "^0.3.6"
 	},
 	"devDependencies": {
@@ -62,6 +63,7 @@
 		"minimist": "^1.2.5",
 		"nyc": "^15.0.0",
 		"ts-node": "^9.0.0",
+		"typegram": "^3.1.1",
 		"typescript": "^3.8.0",
 		"xo": "^0.35.0"
 	},

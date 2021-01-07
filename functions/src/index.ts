@@ -27,3 +27,9 @@ exports.notificationScheduler = functions.pubsub.schedule('*/5 * * * *')
 		await values.notify();
 	});
 
+exports.fundamentalsScheduler = functions.pubsub.schedule('5 11 * * *')
+	.timeZone('Europe/Moscow')
+	.onRun(async () => {
+		await values.fundamentals();
+	});
+

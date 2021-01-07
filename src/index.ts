@@ -53,5 +53,8 @@ export async function start() {
 		notify: async () => {
 			await notificationService.sentAssetStatusAll();
 		},
+		fundamentals: async () => {
+			await notificationService.sendAssetFundamendalsAll();
+		},
 	};
 }

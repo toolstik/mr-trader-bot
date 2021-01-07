@@ -1,6 +1,5 @@
-import { FundamentalData } from './../types/commons';
 import { Injectable } from "@nestjs/common";
-import { AssetStatus } from "../types/commons";
+import { AssetStatus, FundamentalData } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
 import { AnalysisService } from './analysis.service';
 import { AssetService } from './asset.service';
@@ -9,9 +8,9 @@ import { SessionService } from './session.service';
 import { TemplateService } from './template.service';
 import PromisePool = require('@supercharge/promise-pool')
 
-type AssetStatusNotification = {
+type AssetNotification<T> = {
 	session: TgSession,
-	status: AssetStatus,
+	data: T,
 }
 
 @Injectable()
@@ -27,15 +26,27 @@ export class NotificationService {
 
 	}
 
-	private async prepareNotifications() {
+	private async collectAndPlay<T>(
+		collect: (ticket: string) => Promise<T | false>,
+		play: (session: TgSession, ticker: string, data: T) => Promise<void>,
+	) {
 		const sessions = await this.sessionService.getSessions();
 		const tickers = await this.sessionService.getAllSessionTickers();
 
-		const statuses = await PromisePool
+		const dict = await PromisePool
 			.withConcurrency(10)
 			.for(tickers)
 			.process(async ticker => {
-				return await this.analysisService.getAssetStatus(ticker);
+				const collected = await collect(ticker);
+
+				if (!collected) {
+					return null;
+				}
+
+				return {
+					ticker,
+					collected,
+				}
 			})
 			.then(r => {
 				return r.results
@@ -43,12 +54,10 @@ export class NotificationService {
 					.reduce((prev, cur) => {
 						return {
 							...prev,
-							[cur.ticker]: cur,
+							[cur.ticker]: cur.collected,
 						}
-					}, {} as Record<string, AssetStatus>)
+					}, {} as Record<string, T>)
 			});
-
-		const notifications: AssetStatusNotification[] = [];
 
 		for (const session of sessions) {
 			if (!session?.subscriptionTickers) {
@@ -56,22 +65,33 @@ export class NotificationService {
 			}
 
 			for (const ticker of session.subscriptionTickers) {
+				const data = dict[ticker];
+				if (data) {
+					await play(session, ticker, data);
+				}
+			}
+		}
 
-				const status = statuses[ticker];
+		return dict;
+	}
 
-				// console.log(++i, session.chatId, ticker, status.changed, status.status);
+	private async prepareNotifications() {
 
-				if (!status || !status.changed || status.status === 'NONE') {
-					continue;
+		const notifications: AssetNotification<AssetStatus>[] = [];
+
+		const statuses = await this.collectAndPlay(
+			async t => await this.analysisService.getAssetStatus(t),
+			async (s, t, d) => {
+				if (!d || !d.changed || d.status === 'NONE') {
+					return;
 				}
 
 				notifications.push({
-					session,
-					status,
+					session: s,
+					data: d,
 				});
-
 			}
-		}
+		);
 
 		return {
 			notifications,
@@ -85,7 +105,7 @@ export class NotificationService {
 
 		// send notifications
 		for (const n of data.notifications) {
-			const message = this.getAssetStatusMessage(n.status);
+			const message = this.getAssetStatusMessage(n.data);
 			await this.botService.bot.telegram.sendMessage(n.session.chatId, message, {
 				parse_mode: 'Markdown',
 				disable_web_page_preview: true,
@@ -117,13 +137,35 @@ export class NotificationService {
 		);
 	}
 
-	async sendAssetFundamendals(ctx: MyContext, data: FundamentalData){
+	async sendAssetFundamendals(ctx: MyContext, data: FundamentalData) {
 		const message = this.templateService.apply('fundamentals', data);
 		return await ctx.replyWithMarkdown(
 			message,
 			{
 				disable_web_page_preview: true,
 			},
+		);
+	}
+
+	async sendAssetFundamendalsAll() {
+		await this.collectAndPlay(
+			async t => {
+				const asset = await this.assetService.getOne(t);
+
+				if (asset.state === 'NONE') {
+					return false;
+				}
+
+				return await this.assetService.getFundamentals(t);
+			},
+			async (s, t, d) => {
+				const message = this.templateService.apply('fundamentals', d);
+
+				await this.botService.bot.telegram.sendMessage(s.chatId, message, {
+					parse_mode: 'Markdown',
+					disable_web_page_preview: true,
+				});
+			}
 		);
 	}
 

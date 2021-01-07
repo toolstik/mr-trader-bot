@@ -8,7 +8,7 @@ let values;
 
 async function main() {
 	values = await start();
-	await values.bot.launch();
+	// await values.bot.launch();
 }
 
 void main();

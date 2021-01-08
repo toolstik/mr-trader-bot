@@ -54,7 +54,7 @@ export async function start() {
 			await assetService.updateHistory();
 		},
 		notify: async () => {
-			await notificationService.sentAssetStatusAll();
+			await notificationService.sendAssetStatusChangesAll();
 		},
 		fundamentals: async () => {
 			await notificationService.sendAssetFundamendalsAll();

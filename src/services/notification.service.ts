@@ -52,10 +52,12 @@ export class NotificationService {
 				return r.results
 					.filter(i => !!i)
 					.reduce((prev, cur) => {
-						return {
-							...prev,
-							[cur.ticker]: cur.collected,
-						}
+						return cur
+							? {
+								...prev,
+								[cur.ticker]: cur.collected,
+							}
+							: prev;
 					}, {} as Record<string, T>)
 			});
 
@@ -100,12 +102,12 @@ export class NotificationService {
 
 	}
 
-	async sentAssetStatusAll() {
+	async sendAssetStatusChangesAll() {
 		const data = await this.prepareNotifications();
 
 		// send notifications
 		for (const n of data.notifications) {
-			const message = this.getAssetStatusMessage(n.data);
+			const message = this.templateService.apply(`change_status`, status);
 			await this.botService.bot.telegram.sendMessage(n.session.chatId, message, {
 				parse_mode: 'Markdown',
 				disable_web_page_preview: true,
@@ -127,8 +129,27 @@ export class NotificationService {
 		return data;
 	}
 
+	async sendAssetStatusStateAll() {
+		await this.collectAndPlay(
+			async t => await this.analysisService.getAssetStatus(t),
+			async (s, t, d) => {
+				if (!d || d.status === 'NONE') {
+					return;
+				}
+
+				const message = this.templateService.apply(`current_status`, d);
+				await this.botService.bot.telegram.sendMessage(s.chatId, message, {
+					parse_mode: 'Markdown',
+					disable_web_page_preview: true,
+				});
+
+			}
+		);
+
+	}
+
 	async sendAssetStatus(ctx: MyContext, status: AssetStatus) {
-		const message = this.getAssetStatusMessage(status);
+		const message = this.templateService.apply(`current_status`, status);
 		return await ctx.replyWithMarkdown(
 			message,
 			{
@@ -167,10 +188,6 @@ export class NotificationService {
 				});
 			}
 		);
-	}
-
-	private getAssetStatusMessage(status: AssetStatus) {
-		return this.templateService.apply(`change_status`, status);
 	}
 
 }

@@ -17,19 +17,25 @@ export class AnalysisService {
 	}
 
 	async getAssetStatus(symbol: string) {
-		const asset = await this.assetService.getOne(symbol);
-		const marketData = await this.getMarketData(symbol);
+
+		const [asset, marketData, fundamentals] = await Promise.all([
+			this.assetService.getOne(symbol),
+			this.getMarketData(symbol),
+			this.assetService.getFundamentals(symbol),
+		]);
 
 		if (asset == null || marketData === null) {
 			return null;
 		}
 
 		const status = deepTransition(asset.state ?? 'NONE', { asset }, marketData);
+
 		return {
 			ticker: asset.symbol,
 			status: status.value,
 			changed: status.changed,
-			marketData: marketData,
+			marketData,
+			fundamentals,
 		} as AssetStatus
 	}
 
@@ -66,7 +72,7 @@ export class AnalysisService {
 		const today = moment().startOf('day').toDate().getTime();
 
 		const donchian = asset.history
-			.filter(a => a.date.getDate() < today)
+			.filter(a => a.date.getDate() < today) //before today only
 			.sort((a, b) => b.date.getTime() - a.date.getTime())
 			.slice(0, daysBack)
 			.reduce((prev, cur) => {

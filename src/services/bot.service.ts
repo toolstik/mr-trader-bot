@@ -1,3 +1,4 @@
+import { ConfigService } from './config.service';
 import { Injectable } from "@nestjs/common";
 import Telegraf from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';
@@ -9,8 +10,9 @@ export class BotService {
 	readonly bot: Telegraf<MyContext>;
 
 	constructor(
+		private configService: ConfigService,
 	) {
-		const { bot_token } = require('../../secret.json');
+		const { bot_token } = this.configService.getEnv();
 		this.bot = new Telegraf<MyContext>(bot_token);
 	}
 

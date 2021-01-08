@@ -11,4 +11,4 @@ firebase-debug.log
 ui-debug.log
 database-debug.log
 yarn-error.log
-secret*.json
+env.*.json

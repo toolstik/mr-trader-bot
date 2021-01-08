@@ -1,1 +1,1 @@
-[{{marketData.asset.shortName}} ({{ticker}})](https://finance.yahoo.com/quote/{{ticker}})
+{{> ru/asset_link}}

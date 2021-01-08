@@ -25,8 +25,8 @@ export class Gulpfile {
 
 	@Task()
 	copy_secret() {
-		return gulp.src(`secret.${args.profile}.json`)
-			.pipe(rename('secret.json'))
+		return gulp.src(`env.${args.profile}.json`)
+			.pipe(rename('env.json'))
 			.pipe(gulp.dest('dist'));
 	}
 

@@ -4,11 +4,13 @@ import { start } from '../../src';
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-let values;
+type ExportObject = ReturnType<typeof start> extends Promise<infer R> ? R : never;
+
+let values: ExportObject;
 
 async function main() {
 	values = await start();
-	// await values.bot.launch();
+	await values.bot.launch();
 }
 
 void main();

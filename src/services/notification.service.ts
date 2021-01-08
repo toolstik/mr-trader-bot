@@ -170,7 +170,7 @@ export class NotificationService {
 	}
 
 	private getAssetStatusMessage(status: AssetStatus) {
-		return this.templateService.apply(`asset-status/${status.status}`, status);
+		return this.templateService.apply(`change_status`, status);
 	}
 
 }

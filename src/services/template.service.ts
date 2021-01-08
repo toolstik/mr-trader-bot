@@ -25,6 +25,15 @@ function format(value: number, decimals: number | handlebars.HelperOptions) {
 		.format(value);
 }
 
+function eq(a, b, opts: handlebars.HelperOptions) {
+	if (a == b) // Or === depending on your needs
+		// eslint-disable-next-line no-invalid-this
+		return opts.fn(this);
+	else
+		// eslint-disable-next-line no-invalid-this
+		return opts.inverse(this);
+}
+
 @Injectable()
 export class TemplateService {
 
@@ -63,6 +72,7 @@ export class TemplateService {
 	private helpers() {
 		handlebars.registerHelper('diff', diff);
 		handlebars.registerHelper('format', format);
+		handlebars.registerHelper('eq', eq);
 	}
 
 	private load() {

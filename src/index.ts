@@ -15,6 +15,7 @@ import { MenuPlugin } from './plugins/menu.plugin';
 import { SessionPlugin } from './plugins/session.plugin';
 import { AssetService } from './services/asset.service';
 import { BotService } from './services/bot.service';
+import { ConfigService } from './services/config.service';
 import { NotificationService } from './services/notification.service';
 import { BotPlugin } from './types/bot-plugin';
 
@@ -44,8 +45,10 @@ export async function start() {
 	const botService = module.get(BotService);
 	const notificationService = module.get(NotificationService);
 	const assetService = module.get(AssetService);
+	const configService = module.get(ConfigService);
 
 	return {
+		env: configService.getEnv(),
 		bot: botService.createBot(plugins),
 		updateHistory: async () => {
 			await assetService.updateHistory();

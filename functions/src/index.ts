@@ -10,7 +10,7 @@ let values: ExportObject;
 
 async function main() {
 	values = await start();
-	await values.bot.launch();
+	// await values.bot.launch();
 }
 
 void main();
@@ -29,9 +29,15 @@ exports.notificationScheduler = functions.pubsub.schedule('*/5 * * * *')
 		await values.notify();
 	});
 
-exports.fundamentalsScheduler = functions.pubsub.schedule('5 11 * * *')
+// exports.fundamentalsScheduler = functions.pubsub.schedule('5 11 * * *')
+// 	.timeZone('Europe/Moscow')
+// 	.onRun(async () => {
+// 		await values.fundamentals();
+// 	});
+
+exports.statusScheduler = functions.pubsub.schedule('5 11 * * *')
 	.timeZone('Europe/Moscow')
 	.onRun(async () => {
-		await values.fundamentals();
+		await values.status();
 	});
 

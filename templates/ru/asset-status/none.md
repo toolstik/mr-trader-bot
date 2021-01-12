@@ -1,5 +1,4 @@
-_Нормальное состояние_
-
+*Нормальное состояние*
 Текущее значение: {{format price}} {{asset.currencySymbol}}
 {{donchian.maxDays}}-дневный MAX: {{format donchian.maxValue}} {{asset.currencySymbol}}
 {{donchian.minDays}}-дневный MIN: {{format donchian.minValue}} {{asset.currencySymbol}}

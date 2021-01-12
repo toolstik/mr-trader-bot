@@ -23,7 +23,7 @@ export class NotifyCommand implements BotPlugin {
 		});
 
 		bot.command('status', async ctx => {
-			await this.notificationService.sendAssetStatusStateAll();
+			await this.notificationService.sendAssetStatusStateAllPages();
 		});
 	}
 

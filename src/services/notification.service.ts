@@ -7,10 +7,37 @@ import { BotService } from './bot.service';
 import { SessionService } from './session.service';
 import { TemplateService } from './template.service';
 import PromisePool = require('@supercharge/promise-pool')
+import _ = require("lodash");
 
 type AssetNotification<T> = {
 	session: TgSession,
 	data: T,
+};
+
+type Page<T> = {
+	pageNum: number;
+	pageSize: number;
+	totalPages: number;
+	totalItems: number;
+	items: T[];
+};
+
+function paginate<T>(array: T[], size = 15): Page<T>[] {
+	return array?.reduce((acc, val, i) => {
+		const idx = Math.floor(i / size);
+		const page = acc[idx] || (acc[idx] = []);
+		page.push(val);
+		return acc;
+	}, [] as T[][])
+		.map((p, i, a) => {
+			return {
+				pageNum: i + 1,
+				pageSize: p.length,
+				totalPages: a.length,
+				totalItems: array.length,
+				items: p,
+			} as Page<T>;
+		});
 }
 
 @Injectable()
@@ -146,6 +173,49 @@ export class NotificationService {
 			}
 		);
 
+	}
+
+	async sendAssetStatusStateAllPages() {
+
+		const sessions: Record<string, AssetStatus[]> = {};
+
+		await this.collectAndPlay(
+			async t => await this.analysisService.getAssetStatus(t),
+			async (s, t, d) => {
+				if (!d || d.status === 'NONE') {
+					return;
+				}
+
+				sessions[s.chatId] = sessions[s.chatId] || [];
+				sessions[s.chatId].push(d);
+
+			}
+		);
+
+		const blocks =
+			Object.entries(sessions)
+				.map(([k, v]) => {
+					return paginate(v)
+						.map(p => {
+							return {
+								chatId: k,
+								page: p,
+							}
+						});
+				});
+
+		await PromisePool
+			.withConcurrency(10)
+			.for(blocks)
+			.process(async pages => {
+				for (const p of pages) {
+					const message = this.templateService.apply(`current_status_page`, p.page);
+					await this.botService.bot.telegram.sendMessage(p.chatId, message, {
+						parse_mode: 'Markdown',
+						disable_web_page_preview: true,
+					});
+				}
+			});
 	}
 
 	async sendAssetStatus(ctx: MyContext, status: AssetStatus) {

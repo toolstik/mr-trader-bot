@@ -134,7 +134,7 @@ export class NotificationService {
 
 		// send notifications
 		for (const n of data.notifications) {
-			const message = this.templateService.apply(`change_status`, status);
+			const message = this.templateService.apply(`change_status`, n.data);
 			await this.botService.bot.telegram.sendMessage(n.session.chatId, message, {
 				parse_mode: 'Markdown',
 				disable_web_page_preview: true,
@@ -188,7 +188,6 @@ export class NotificationService {
 
 				sessions[s.chatId] = sessions[s.chatId] || [];
 				sessions[s.chatId].push(d);
-
 			}
 		);
 
@@ -216,6 +215,7 @@ export class NotificationService {
 					});
 				}
 			});
+
 	}
 
 	async sendAssetStatus(ctx: MyContext, status: AssetStatus) {

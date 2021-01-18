@@ -96,8 +96,9 @@ export class TemplateService {
 
 			return acc.set(
 				key,
-				handlebars.compile(template),
+				handlebars.compile(template, { noEscape: true }),
 			);
+
 		}, new Map());
 	}
 

@@ -40,8 +40,6 @@ commands:
   list-ticker:
     success: >
       Вы подписаны на следующие активы:
-
-      ${tickers}
   test-ticker:
     no-ticker-specified: Не задан тикер
     ticker-not-found: Тикер ${ticker} не найден

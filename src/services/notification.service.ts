@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AssetStatus, FundamentalData } from "../types/commons";
+import { AssetStatus, FundamentalData, paginate } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
 import { AnalysisService } from './analysis.service';
 import { AssetService } from './asset.service';
@@ -13,32 +13,6 @@ type AssetNotification<T> = {
 	session: TgSession,
 	data: T,
 };
-
-type Page<T> = {
-	pageNum: number;
-	pageSize: number;
-	totalPages: number;
-	totalItems: number;
-	items: T[];
-};
-
-function paginate<T>(array: T[], size = 15): Page<T>[] {
-	return array?.reduce((acc, val, i) => {
-		const idx = Math.floor(i / size);
-		const page = acc[idx] || (acc[idx] = []);
-		page.push(val);
-		return acc;
-	}, [] as T[][])
-		.map((p, i, a) => {
-			return {
-				pageNum: i + 1,
-				pageSize: p.length,
-				totalPages: a.length,
-				totalItems: array.length,
-				items: p,
-			} as Page<T>;
-		});
-}
 
 @Injectable()
 export class NotificationService {
@@ -194,7 +168,7 @@ export class NotificationService {
 		const blocks =
 			Object.entries(sessions)
 				.map(([k, v]) => {
-					return paginate(v)
+					return paginate(v, 15)
 						.map(p => {
 							return {
 								chatId: k,

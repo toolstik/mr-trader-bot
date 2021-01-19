@@ -27,6 +27,7 @@ export type FundamentalData = {
 	sma50: number;
 	sma200: number;
 	rsi13: number;
+	rsi14: number;
 
 }
 

@@ -1,3 +1,4 @@
+import { FinvizService } from './finviz.service';
 import { Injectable } from "@nestjs/common";
 import { Type } from 'class-transformer';
 import { AssetStateKey, RefEntity, FundamentalData } from "../types/commons";
@@ -28,6 +29,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 	constructor(
 		firebase: FirebaseService,
 		private yahoo: YahooService,
+		private finviz: FinvizService,
 		private sessionService: SessionService,
 	) {
 		super(firebase);
@@ -72,19 +74,24 @@ export class AssetService extends ReferenceService<AssetEntity> {
 	}
 
 	async getFundamentals(symbol: string) {
-		const x = await this.yahoo.getFundamentals(symbol);
+		const [yh, fv] = await Promise.all([
+			this.yahoo.getFundamentals(symbol),
+			this.finviz.fetchData(symbol),
+		]);
+
+		console.log(fv);
 
 		return {
 			ticker: symbol,
-			trailingPE: x.trailingPE,
-			priceToBook: x.priceToBook,
-			priceToSales: x.priceToSalesTrailing12Months,
-			trailingEps: x.trailingEps,
-			currentRatio: x.currentRatio,
-			dividentAnnualPercent: x.trailingAnnualDividendYield * 100,
-			sma50: x.fiftyDayAverage,
-			sma200: x.twoHundredDayAverage,
-			rsi13: null,
+			trailingPE: yh.trailingPE,
+			priceToBook: yh.priceToBook,
+			priceToSales: yh.priceToSalesTrailing12Months,
+			trailingEps: yh.trailingEps,
+			currentRatio: yh.currentRatio,
+			dividentAnnualPercent: yh.trailingAnnualDividendYield * 100,
+			sma50: yh.fiftyDayAverage,
+			sma200: yh.twoHundredDayAverage,
+			rsi14: fv.rsi14,
 		} as FundamentalData;
 	}
 

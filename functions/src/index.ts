@@ -14,6 +14,23 @@ async function main() {
 
 const exportPromise = main();
 
+const { FUNCTION_TARGET, FUNCTIONS_EMULATOR } = process.env;
+
+// start long-pooling if in emulator mode
+if (FUNCTIONS_EMULATOR === 'true') {
+	void (async () => {
+		const values = await exportPromise;
+		console.log('Start long-pooling...');
+		await values.bot.launch();
+	})();
+}
+
+// if(FUNCTION_TARGET === 'bot'){
+// 	void (async function(){
+// 		const values = await exportPromise;
+// 	})();
+// }
+
 exports.bot = functions.https.onRequest(async (req, res) => {
 	const values = await exportPromise;
 	await values.bot.handleUpdate(req.body, res);

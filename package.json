@@ -41,6 +41,7 @@
 		"telegraf-session-local": "^2.0.0",
 		"telegraf-stateless-question": "^1.0.0",
 		"telegram-keyboard": "^2.1.7",
+		"ts-finviz": "^0.1.1",
 		"yahoo-finance": "^0.3.6"
 	},
 	"devDependencies": {

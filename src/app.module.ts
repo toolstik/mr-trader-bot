@@ -18,6 +18,7 @@ import { AssetService } from './services/asset.service';
 import { BotService } from "./services/bot.service";
 import { ConfigService } from './services/config.service';
 import { DatahubService } from './services/datahub.service';
+import { FinvizService } from './services/finviz.service';
 import { FirebaseService } from './services/firebase.service';
 import { NotificationService } from './services/notification.service';
 import { SessionService } from './services/session.service';
@@ -32,6 +33,7 @@ import { YahooService } from './services/yahoo.service';
 		AssetService,
 		SessionService,
 		YahooService,
+		FinvizService,
 		AssetService,
 		BotService,
 		AnalysisService,

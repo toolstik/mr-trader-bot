@@ -1,8 +1,8 @@
-import * as path from 'path';
+import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
+import * as path from 'path';
 import { readDirDeepSync } from 'read-dir-deep';
-import { Injectable, Logger } from '@nestjs/common';
 
 type SUPPORTED_LANGUAGES = 'ru';
 type TemplateResolver = (data: any) => string;
@@ -10,6 +10,29 @@ type TranslateMap = Map<string, TemplateResolver>;
 
 const DEFAULT_LANG: SUPPORTED_LANGUAGES = 'ru';
 const TEMPLATE_PATH: string = 'templates';
+
+function diff(value: number, target: number) {
+	const result = value && Math.abs(1 - target / value);
+	return result !== null ? format(result * 100, 2) : '----';
+}
+
+function format(value: number, decimals: number | handlebars.HelperOptions) {
+	if (value == null) {
+		return "unknown";
+	}
+	const maximumFractionDigits = (typeof decimals === 'number') ? decimals : 3;
+	return new Intl.NumberFormat('ru-RU', { maximumFractionDigits })
+		.format(value);
+}
+
+function eq(a, b, opts: handlebars.HelperOptions) {
+	if (a == b) // Or === depending on your needs
+		// eslint-disable-next-line no-invalid-this
+		return opts.fn(this);
+	else
+		// eslint-disable-next-line no-invalid-this
+		return opts.inverse(this);
+}
 
 @Injectable()
 export class TemplateService {
@@ -19,6 +42,7 @@ export class TemplateService {
 
 	constructor(logger: Logger) {
 		this.logger = logger;
+		this.helpers();
 		this.load();
 	}
 
@@ -45,6 +69,12 @@ export class TemplateService {
 		return this.templatesMap.get(templateKey);
 	}
 
+	private helpers() {
+		handlebars.registerHelper('diff', diff);
+		handlebars.registerHelper('format', format);
+		handlebars.registerHelper('eq', eq);
+	}
+
 	private load() {
 		const templatesDir: string = path.join(
 			process.cwd(),
@@ -66,8 +96,9 @@ export class TemplateService {
 
 			return acc.set(
 				key,
-				handlebars.compile(template),
+				handlebars.compile(template, { noEscape: true }),
 			);
+
 		}, new Map());
 	}
 

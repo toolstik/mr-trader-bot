@@ -1,24 +1,23 @@
-import { Transform } from "class-transformer";
-import { TransformationType } from "class-transformer/enums";
+import { Transform, TransformationType } from "class-transformer";
 
 export class MarketHistory {
 
-	@Transform((val, obj, type) => {
+	@Transform(({value, obj, type}) => {
 		if (type === TransformationType.PLAIN_TO_CLASS) {
-			if (typeof val !== 'object') {
-				return new Date(val);
+			if (typeof value !== 'object') {
+				return new Date(value);
 			}
-			return val;
+			return value;
 		}
 
 		if (type === TransformationType.CLASS_TO_PLAIN) {
-			if (val instanceof Date) {
-				return val.getTime();
+			if (value instanceof Date) {
+				return value.getTime();
 			}
-			return val;
+			return value;
 		}
 
-		return val;
+		return value;
 	})
 	date: Date;
 	open: number;

@@ -17,10 +17,14 @@ export class NotifyCommand implements BotPlugin {
 
 	register(bot: Telegraf<MyContext>) {
 		bot.command('notify', async ctx => {
-			const data = await this.notificationService.sentAssetStatusAll();
+			const data = await this.notificationService.sendAssetStatusChangesAll();
 			await ctx.reply(`Собраны данные по ${Object.keys(data.statuses).length} активам.
 			Отправлено ${data.notifications.length} уведомлений`);
-		})
+		});
+
+		bot.command('status', async ctx => {
+			await this.notificationService.sendAssetStatusStateAllPages();
+		});
 	}
 
 }

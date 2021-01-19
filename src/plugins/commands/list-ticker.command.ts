@@ -11,7 +11,7 @@ export class ListTickerCommand implements BotPlugin {
 		bot.command('list', async ctx => {
 			const tickers = ctx.session.subscriptionTickers ?? [];
 
-			await ctx.reply(ctx.i18n.t('commands.list-ticker.success', { tickers: tickers.join(', ') }));
+			await ctx.reply(ctx.i18n.t('commands.list-ticker.success', { tickers: tickers.slice(0, 100).join(', ') }));
 		})
 	}
 

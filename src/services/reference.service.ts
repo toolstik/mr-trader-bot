@@ -1,5 +1,4 @@
-import { classToPlain, plainToClass } from 'class-transformer';
-import { ClassType } from 'class-transformer/ClassTransformer';
+import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { database } from 'firebase-admin';
 import { RefEntity, RefEntityObject } from '../types/commons';
 import { FirebaseService } from './firebase.service';
@@ -21,7 +20,7 @@ export abstract class ReferenceService<T> {
 
 	protected abstract getRefName(): string;
 
-	protected abstract getEntityType(): ClassType<T>;
+	protected abstract getEntityType(): ClassConstructor<T>;
 
 	async getAll() {
 		const snapshot = await this.ref.once('value');

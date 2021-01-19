@@ -9,10 +9,11 @@
 	"license": "MIT",
 	"scripts": {
 		"preinstall": "node use-yarn.js",
-		"build": "tsc",
+		"build": "gulp build",
+		"build:prod": "gulp build -p=production",
 		"serve": "gulp serve",
 		"deploy": "gulp deploy",
-		"deploy-prod": "gulp deploy -p=production"
+		"deploy:prod": "gulp deploy -p=production"
 	},
 	"dependencies": {
 		"@edjopato/telegraf-i18n": "^0.1.0",
@@ -20,9 +21,10 @@
 		"@nestjs/core": "^7.5.5",
 		"@supercharge/promise-pool": "^1.6.0",
 		"@xstate/fsm": "^1.5.2",
+		"axios": "^0.21.0",
 		"class-transformer": "^0.3.1",
 		"firebase-admin": "^9.2.0",
-		"firebase-functions": "^3.11.0",
+		"firebase-functions": "^3.13.0",
 		"handlebars": "^4.7.6",
 		"lodash": "^4.17.20",
 		"moment": "^2.29.1",
@@ -38,6 +40,8 @@
 		"telegraf-session-firebase": "^0.1.0",
 		"telegraf-session-local": "^2.0.0",
 		"telegraf-stateless-question": "^1.0.0",
+		"telegram-keyboard": "^2.1.7",
+		"ts-finviz": "^0.1.1",
 		"yahoo-finance": "^0.3.6"
 	},
 	"devDependencies": {
@@ -60,36 +64,12 @@
 		"minimist": "^1.2.5",
 		"nyc": "^15.0.0",
 		"ts-node": "^9.0.0",
+		"typegram": "^3.1.1",
 		"typescript": "^3.8.0",
 		"xo": "^0.35.0"
 	},
-	"files": [
-		"dist/source",
-		"!*.test.*"
-	],
 	"main": "dist/functions/src/index.js",
-	"types": "dist/src",
-	"nyc": {
-		"all": true,
-		"extension": [
-			".ts"
-		],
-		"include": [
-			"dist/src",
-			"src"
-		],
-		"exclude": [
-			"**/*.d.ts",
-			"**/*.test.ts"
-		],
-		"reporter": [
-			"lcov",
-			"text"
-		]
-	},
-	"xo": {
-		"rules": {
-			"ava/no-ignored-test-files": "off"
-		}
-	}
+	"files": [
+		"dist"
+	]
 }

@@ -31,4 +31,8 @@ export type FundamentalData = {
 
 }
 
-export type ListKey = 'nasdaq' | 'snp500';
+type ArrayItem<T> = T extends (infer R)[] ? R :
+	T extends readonly (infer R)[] ? R :
+	never;
+export const KnownListKeys = ['nasdaq', 'snp500'] as const;
+export type ListKey = ArrayItem<typeof KnownListKeys>;

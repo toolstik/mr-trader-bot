@@ -79,8 +79,6 @@ export class AssetService extends ReferenceService<AssetEntity> {
 			this.finviz.fetchData(symbol),
 		]);
 
-		console.log(fv);
-
 		return {
 			ticker: symbol,
 			trailingPE: yh.trailingPE,
@@ -91,7 +89,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 			dividentAnnualPercent: yh.trailingAnnualDividendYield * 100,
 			sma50: yh.fiftyDayAverage,
 			sma200: yh.twoHundredDayAverage,
-			rsi14: fv.rsi14,
+			rsi14: fv?.rsi14,
 		} as FundamentalData;
 	}
 

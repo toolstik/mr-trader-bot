@@ -37,11 +37,9 @@ function eq(a, b, opts: handlebars.HelperOptions) {
 @Injectable()
 export class TemplateService {
 
-	private logger: Logger;
 	private templatesMap: TranslateMap;
 
-	constructor(logger: Logger) {
-		this.logger = logger;
+	constructor(private logger: Logger) {
 		this.helpers();
 		this.load();
 	}

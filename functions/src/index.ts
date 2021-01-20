@@ -33,8 +33,13 @@ if (FUNCTIONS_EMULATOR === 'true') {
 
 exports.bot = functions.https.onRequest(async (req, res) => {
 	const values = await exportPromise;
-	await values.bot.handleUpdate(req.body, res);
-	res.send();
+	try {
+		await values.bot.handleUpdate(req.body, res);
+		res.send();
+	}
+	catch (e) {
+		res.status(500).send(e);
+	}
 });
 
 exports.updateHistoryScheduler = functions.pubsub.schedule('0 */4 * * *')

@@ -11,6 +11,11 @@ export type FinvizData = {
 export class FinvizService {
 
 	async fetchData(ticker: string) {
+
+		if(!ticker || ticker.toUpperCase().endsWith('.ME')){
+			return null;
+		}
+
 		try {
 			// console.time(ticker);
 			const result = await Finviz.getStockData(ticker);

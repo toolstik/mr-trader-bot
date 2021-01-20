@@ -1,5 +1,5 @@
 import { DatahubService } from './datahub.service';
-import { ListKey } from '../types/commons';
+import { ListKey, KnownListKeys } from '../types/commons';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -11,7 +11,16 @@ export class AssetListService {
 
 	}
 
+	isKnownList(key: string): key is ListKey {
+		return KnownListKeys.includes(key?.toLowerCase() as ListKey);
+	}
+
 	async getListTickers(key: ListKey) {
+
+		if(!this.isKnownList(key)){
+			return [];
+		}
+
 		switch (key) {
 			case 'nasdaq':
 				return await this.datahubService.getNasdaqList().then(t => t.map(i => i.Symbol));

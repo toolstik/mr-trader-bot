@@ -26,11 +26,19 @@ export class AddTickerListCommand extends BotCommand {
 	protected async process(ctx: MyContext): Promise<void> {
 		const args = ctx.state.command.splitArgs;
 
-		const listKey = (args.filter(t => !!t)[0] || '').toLowerCase() as ListKey;
+		const listKey = (args.filter(t => !!t)[0] || '').toLowerCase();
 
 		if (!listKey) {
 			await ctx.reply(
 				ctx.i18n.t('commands.add-ticker-list.no-list-specified'),
+				{ parse_mode: 'Markdown' },
+			);
+			return;
+		}
+
+		if (!this.assetListService.isKnownList(listKey)) {
+			await ctx.reply(
+				ctx.i18n.t('commands.add-ticker-list.unknown-list'),
 				{ parse_mode: 'Markdown' },
 			);
 			return;

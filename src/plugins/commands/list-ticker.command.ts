@@ -3,6 +3,7 @@ import Telegraf from 'telegraf';
 import { BotPlugin } from "../../types/bot-plugin";
 import { MyContext } from "../../types/my-context";
 import * as _ from 'lodash';
+import { paginate } from "../../types/commons";
 
 @Injectable()
 export class ListTickerCommand implements BotPlugin {
@@ -11,7 +12,13 @@ export class ListTickerCommand implements BotPlugin {
 		bot.command('list', async ctx => {
 			const tickers = ctx.session.subscriptionTickers ?? [];
 
-			await ctx.reply(ctx.i18n.t('commands.list-ticker.success', { tickers: tickers.slice(0, 100).join(', ') }));
+			const pages = paginate(tickers, 300);
+
+			await ctx.reply(ctx.i18n.t('commands.list-ticker.success'));
+
+			for (const p of pages) {
+				await ctx.reply(p.items.join(', '));
+			}
 		})
 	}
 

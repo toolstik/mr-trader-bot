@@ -17,7 +17,10 @@ commands:
     success: >
       Вы успешно подписались на обновления по активам: ${ticker}
   add-ticker-list:
-    no-list-specified: Не задано имя списка (*nasdaq* или *snp500*)
+    no-list-specified: >
+      Не задано имя списка (допустимы: *nasdaq* или *snp500*)
+    unknown-list: >
+      Неизвестное имя списка (допустимы: *nasdaq* или *snp500*)
     please-wait: Будет добавлена подписка на ${count} активов. Это может занять несколько минут. Пожалуйста, подождите
     success: >
       Вы успешно подписались на обновления по активам из списка _${key}_
@@ -28,14 +31,15 @@ commands:
     success: >
       Вы успешно отписались от обновлений по активам: ${ticker}
   remove-ticker-list:
-    no-list-specified: Не задано имя списка (*nasdaq* или *snp500*)
+    no-list-specified: >
+      Не задано имя списка (допустимы: *nasdaq* или *snp500*)
+    unknown-list: >
+      Неизвестное имя списка (допустимы: *nasdaq* или *snp500*)
     success: >
       Вы успешно отписались от обновлений по активам из списка _${key}_
   list-ticker:
     success: >
       Вы подписаны на следующие активы:
-
-      ${tickers}
   test-ticker:
     no-ticker-specified: Не задан тикер
     ticker-not-found: Тикер ${ticker} не найден

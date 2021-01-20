@@ -1,3 +1,4 @@
+import { DatahubService } from './services/datahub.service';
 import { YahooService } from './services/yahoo.service';
 import { TemplateService } from './services/template.service';
 import { BotService } from './services/bot.service';
@@ -93,9 +94,17 @@ async function test4() {
 	console.log(x);
 }
 
+async function test5() {
+	const yahoo = new YahooService();
+	const datahub = new DatahubService();
+	const list = await datahub.getSnP500List().then(t => t.map(i => i.Symbol));
+	const x = await yahoo.getHistory(list);
+	console.log(Object.keys(x).length);
+}
+
 async function test() {
 
-	await test3();
+	await test5();
 	// console.log(normalizeKey('GAZP.ME'));
 	// console.log(splitLimit('level1/level2/level3', '/'));
 	// console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));

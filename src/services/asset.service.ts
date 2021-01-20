@@ -45,8 +45,9 @@ export class AssetService extends ReferenceService<AssetEntity> {
 
 	async updateHistory(symbols?: string[]) {
 		const symbs = symbols ?? await this.sessionService.getAllSessionTickers();
+		console.log('STEP BEFORE GETHISTORY');
 		const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
-
+		console.log('STEP AFTER GETHISTORY');
 		const value = (await this.getAll()) ?? {};
 
 		const newValue = Object.entries(histories)

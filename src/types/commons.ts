@@ -7,6 +7,9 @@ export type AssetStatus = {
 	status: AssetStateKey;
 	changed: boolean;
 	marketData: MarketData;
+};
+
+export type AssetStatusWithFundamentals = AssetStatus & {
 	fundamentals: FundamentalData,
 };
 

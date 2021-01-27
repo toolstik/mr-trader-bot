@@ -143,7 +143,8 @@ export class YahooService {
 
 		const opts = {
 			symbols: symbols,
-			maxConcurrentSymbols: 20,
+			// maxConcurrentSymbols: 20,
+			error: true,
 			from: fromDate.format("YYYY-MM-DD"),
 			to: toDate.format("YYYY-MM-DD"),
 			period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)

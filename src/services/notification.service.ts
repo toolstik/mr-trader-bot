@@ -1,3 +1,4 @@
+import { AssetStatusWithFundamentals } from './../types/commons';
 import { Injectable } from "@nestjs/common";
 import { AssetStatus, FundamentalData, paginate } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
@@ -35,7 +36,7 @@ export class NotificationService {
 		const tickers = await this.sessionService.getAllSessionTickers();
 
 		const dict = await PromisePool
-			.withConcurrency(10)
+			.withConcurrency(5)
 			.for(tickers)
 			.process(async ticker => {
 				const collected = await collect(ticker);
@@ -80,7 +81,7 @@ export class NotificationService {
 
 	private async prepareNotifications() {
 
-		const notifications: AssetNotification<AssetStatus>[] = [];
+		const notifications: AssetNotification<AssetStatusWithFundamentals>[] = [];
 
 		const statuses = await this.collectAndPlay(
 			async t => await this.analysisService.getAssetStatus(t),
@@ -89,9 +90,14 @@ export class NotificationService {
 					return;
 				}
 
+				const fundamentals = await this.assetService.getFundamentals(t);
+
 				notifications.push({
 					session: s,
-					data: d,
+					data: {
+						...d,
+						fundamentals,
+					},
 				});
 			}
 		);

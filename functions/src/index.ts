@@ -6,6 +6,11 @@ import { start } from '../../src';
 
 // type StartResult = ReturnType<typeof start> extends Promise<infer R> ? R : never;
 
+const DEFAULT_OPTIONS: functions.RuntimeOptions = {
+	memory: '1GB',
+	timeoutSeconds: 180,
+}
+
 async function main() {
 	const result = await start();
 	// await result.bot.launch();
@@ -31,24 +36,39 @@ if (FUNCTIONS_EMULATOR === 'true') {
 // 	})();
 // }
 
-exports.bot = functions.https.onRequest(async (req, res) => {
-	const values = await exportPromise;
-	try {
-		await values.bot.handleUpdate(req.body, res);
-		res.send();
-	}
-	catch (e) {
-		res.status(500).send(e);
-	}
-});
+exports.bot = functions
+	.runWith({
+		...DEFAULT_OPTIONS,
+	})
+	.https
+	.onRequest(async (req, res) => {
+		const values = await exportPromise;
+		try {
+			await values.bot.handleUpdate(req.body, res);
+			res.send();
+		}
+		catch (e) {
+			res.status(500).send(e);
+		}
+	});
 
-exports.updateHistoryScheduler = functions.pubsub.schedule('0 */4 * * *')
+exports.updateHistoryScheduler = functions
+	.runWith({
+		...DEFAULT_OPTIONS,
+	})
+	.pubsub
+	.schedule('0 */4 * * *')
 	.onRun(async () => {
 		const values = await exportPromise;
 		await values.updateHistory();
 	});
 
-exports.notificationScheduler = functions.pubsub.schedule('*/5 * * * *')
+exports.notificationScheduler = functions
+	.runWith({
+		...DEFAULT_OPTIONS,
+	})
+	.pubsub
+	.schedule('*/5 * * * *')
 	.onRun(async () => {
 		const values = await exportPromise;
 		await values.notify();
@@ -61,7 +81,12 @@ exports.notificationScheduler = functions.pubsub.schedule('*/5 * * * *')
 // 		await values.fundamentals();
 // 	});
 
-exports.statusScheduler = functions.pubsub.schedule('5 11 * * *')
+exports.statusScheduler = functions
+	.runWith({
+		...DEFAULT_OPTIONS,
+	})
+	.pubsub
+	.schedule('5 11 * * *')
 	.timeZone('Europe/Moscow')
 	.onRun(async () => {
 		const values = await exportPromise;

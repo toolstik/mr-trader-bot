@@ -1,24 +1,9 @@
-import { Transform, TransformationType } from "class-transformer";
+import { Transform } from "class-transformer";
+import { dateTo } from "./commons";
 
 export class MarketHistory {
 
-	@Transform(({value, obj, type}) => {
-		if (type === TransformationType.PLAIN_TO_CLASS) {
-			if (typeof value !== 'object') {
-				return new Date(value);
-			}
-			return value;
-		}
-
-		if (type === TransformationType.CLASS_TO_PLAIN) {
-			if (value instanceof Date) {
-				return value.getTime();
-			}
-			return value;
-		}
-
-		return value;
-	})
+	@Transform(dateTo('number'))
 	date: Date;
 	open: number;
 	high: number;

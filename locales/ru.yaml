@@ -16,6 +16,9 @@ commands:
     duplicate: Вы уже подписаны на обновления по этим активам
     success: >
       Вы успешно подписались на обновления по активам: ${ticker}
+    errors: >
+      Следующие тикеры не были найдены на Yahoo Finance и не будут добавлены:
+      ${tickers}
   add-ticker-list:
     no-list-specified: >
       Не задано имя списка (допустимы: *nasdaq* или *snp500*)

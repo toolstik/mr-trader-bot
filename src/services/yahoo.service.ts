@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import * as moment from 'moment-timezone';
+import { retry } from 'ts-retry-promise';
 import * as yahoo from 'yahoo-finance';
 import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
+import _ = require('lodash');
 
 export type SummaryModuleKey = 'price' | 'summaryDetail' | 'defaultKeyStatistics' | 'financialData';
 
 export type PriceModule = {
+	postMarketSource: string, //"DELAYED",
 	regularMarketPrice: number,
 	exchange: string, // "NMS",
 	exchangeName: string, //"NasdaqGS",
@@ -137,13 +140,33 @@ function normalizeHistory(hist: MarketHistory) {
 export class YahooService {
 
 	async getHistory(symbols: string[], daysBack: number = 20) {
+
+		const maxSymbols = 5;
+
+		if (!symbols?.length) {
+			return {};
+		}
+
+		if (symbols.length > maxSymbols) {
+			const chunks = _(symbols).chunk(maxSymbols).value();
+
+			const result = {} as MultipleHistory;
+
+			for (const chunk of chunks) {
+				const chunkResult = await retry(() => this.getHistory(chunk, daysBack), { retries: 5 });
+				Object.assign(result, chunkResult);
+			}
+
+			return result;
+		}
+
 		const today = moment().startOf('day');
 		const toDate = today.clone();
-		const fromDate = toDate.clone().add({ days: -(daysBack + 10) });
+		const fromDate = toDate.clone().add({ days: -(daysBack + 20) });
 
 		const opts = {
 			symbols: symbols,
-			// maxConcurrentSymbols: 20,
+			maxConcurrentSymbols: 20,
 			error: true,
 			from: fromDate.format("YYYY-MM-DD"),
 			to: toDate.format("YYYY-MM-DD"),
@@ -163,9 +186,10 @@ export class YahooService {
 				},
 			],
 		}) as MultipleHistory;
+
 		for (const [key, val] of Object.entries(x)) {
 			val.forEach(normalizeHistory);
-			x[key] = val.slice(0, daysBack);
+			x[key] = _(val).take(daysBack).value();
 		}
 
 		return x;

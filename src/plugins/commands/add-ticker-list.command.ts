@@ -52,7 +52,26 @@ export class AddTickerListCommand implements BotPlugin {
 
 			const addTickers = await this.assetListService.getListTickers(listKey);
 			const tickers = ctx.session.subscriptionTickers ?? [];
-			const tickersToAdd = _.without(addTickers, ...tickers);
+			const absentTickers = _.without(addTickers, ...tickers);
+
+			// const checkResult = await this.assetService.symbolsCheck(absentTickers);
+
+			// if (checkResult.error?.length) {
+			// 	await ctx.reply(
+			// 		ctx.i18n.t(
+			// 			'commands.add-ticker-list.errors',
+			// 			{
+			// 				tickers: checkResult.error.join(' '),
+			// 			}
+			// 		),
+			// 		{
+			// 			parse_mode: 'Markdown',
+			// 		}
+			// 	);
+			// }
+
+			// const tickersToAdd = checkResult.success;
+			const tickersToAdd = absentTickers;
 
 			await ctx.reply(
 				ctx.i18n.t(

@@ -1,4 +1,4 @@
-import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
+import { ClassConstructor, classToPlain, plainToClass, Type } from 'class-transformer';
 import { database } from 'firebase-admin';
 import { RefEntity, RefEntityObject } from '../types/commons';
 import { FirebaseService } from './firebase.service';
@@ -54,11 +54,10 @@ export abstract class ReferenceService<T> {
 
 		const goodValue = Object.entries(value)
 			.reduce((prev, [key, val]) => {
-				return {
-					...prev,
+				return Object.assign(prev, {
 					[normalizeKey(key)]: val,
-				}
-			}, {});
+				});
+			}, new RefEntityObject());
 
 		const plain = classToPlain(goodValue, {
 			targetMaps: [
@@ -72,7 +71,8 @@ export abstract class ReferenceService<T> {
 					}, {}),
 				},
 			],
-		})
+		});
+
 		await this.ref.set(plain);
 	}
 

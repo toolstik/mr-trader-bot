@@ -62,7 +62,7 @@ async function test1() {
 // 	// console.log(x);
 // }
 
-async function alphavantage(symbol:string) {
+async function alphavantage(symbol: string) {
 	console.time(symbol);
 	const x = await Axios.get(`https://www.alphavantage.co/query?function=${symbol}&symbol=LSI&interval=daily&time_period=14&series_type=close&apikey=DNY0RDWTLM8204BC`);
 	console.timeEnd(symbol);
@@ -97,14 +97,20 @@ async function test4() {
 async function test5() {
 	const yahoo = new YahooService();
 	const datahub = new DatahubService();
-	const list = await datahub.getSnP500List().then(t => t.map(i => i.Symbol));
-	const x = await yahoo.getHistory(list);
-	console.log(Object.keys(x).length);
+	const list = await datahub.getNasdaqList();
+	// const x = await yahoo.getHistory(list);
+	console.dir(list, { 'maxArrayLength': null });
+}
+
+async function test6() {
+	const yahoo = new YahooService();
+	const data = await yahoo.getPrices('AAVL');
+	console.dir(data, { 'maxArrayLength': null });
 }
 
 async function test() {
 
-	await test5();
+	await test6();
 	// console.log(normalizeKey('GAZP.ME'));
 	// console.log(splitLimit('level1/level2/level3', '/'));
 	// console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));

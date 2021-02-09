@@ -27,7 +27,7 @@ export class AssetListService {
 			case 'snp500':
 				return await this.datahubService.getSnP500List()
 					.then(result => {
-						const map = {
+						const map: Record<string, string> = {
 							'ETFC': 'ETFCX',
 						};
 

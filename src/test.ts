@@ -97,9 +97,11 @@ async function test4() {
 async function test5() {
 	const yahoo = new YahooService();
 	const datahub = new DatahubService();
-	const list = await datahub.getNasdaqList();
-	// const x = await yahoo.getHistory(list);
-	console.dir(list, { 'maxArrayLength': null });
+	const list = await datahub.getSnP500List();
+	const x = await yahoo.getHistory(list);
+	console.time('test5');
+	console.dir(x.errors, { 'maxArrayLength': null });
+	console.timeEnd('test5');
 }
 
 async function test6() {
@@ -110,7 +112,7 @@ async function test6() {
 
 async function test() {
 
-	await test6();
+	await test5();
 	// console.log(normalizeKey('GAZP.ME'));
 	// console.log(splitLimit('level1/level2/level3', '/'));
 	// console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));

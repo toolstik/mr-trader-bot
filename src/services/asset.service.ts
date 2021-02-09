@@ -53,7 +53,7 @@ export class AssetService extends ReferenceService<AssetEntity> {
 		const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
 		const value = (await this.getAll()) ?? {};
 
-		const newValue = Object.entries(histories)
+		const newValue = Object.entries(histories.result)
 			.reduce((prev, [key, val]) => {
 				const normKey = normalizeKey(key);
 				prev[normKey] = {
@@ -75,7 +75,10 @@ export class AssetService extends ReferenceService<AssetEntity> {
 		else {
 			await this.setAll(newValue);
 		}
-		return newValue;
+		return {
+			newValue,
+			errors: histories.errors,
+		};
 	}
 
 	async symbolsCheck(symbols: string[]) {

@@ -54,23 +54,6 @@ export class AddTickerListCommand implements BotPlugin {
 			const tickers = ctx.session.subscriptionTickers ?? [];
 			const absentTickers = _.without(addTickers, ...tickers);
 
-			// const checkResult = await this.assetService.symbolsCheck(absentTickers);
-
-			// if (checkResult.error?.length) {
-			// 	await ctx.reply(
-			// 		ctx.i18n.t(
-			// 			'commands.add-ticker-list.errors',
-			// 			{
-			// 				tickers: checkResult.error.join(' '),
-			// 			}
-			// 		),
-			// 		{
-			// 			parse_mode: 'Markdown',
-			// 		}
-			// 	);
-			// }
-
-			// const tickersToAdd = checkResult.success;
 			const tickersToAdd = absentTickers;
 
 			await ctx.reply(
@@ -85,21 +68,21 @@ export class AddTickerListCommand implements BotPlugin {
 				}
 			);
 
-			this.log.debug('STEP BEFORE UPDATE');
 
 			if (tickersToAdd.length) {
 				const newTickers = _.uniq([...tickers, ...tickersToAdd]).sort();
 				ctx.session.subscriptionTickers = newTickers;
 
-				this.log.debug('STEP BEFORE UPDATE2');
-				await this.assetService.updateHistory(tickersToAdd);
-				// await this.assetService.updateHistory(['AAPL']);
+				const updateResult = await this.assetService.updateHistory(tickersToAdd);
 
 				await ctx.reply(
 					ctx.i18n.t(
 						'commands.add-ticker-list.success',
 						{
 							key: listKey,
+							errors: updateResult.errors?.length
+								? updateResult.errors.map(e => e.item).join(', ')
+								: 'no errors',
 						}
 					),
 					{

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import * as moment from 'moment-timezone';
-import { retry } from 'ts-retry-promise';
 import * as yahoo from 'yahoo-finance';
+import { catchDivide, CatchDivideResult } from '../utils/catch-divide';
 import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
 import _ = require('lodash');
 
@@ -136,63 +136,60 @@ function normalizeHistory(hist: MarketHistory) {
 	return hist;
 }
 
+
+
 @Injectable()
 export class YahooService {
 
 	async getHistory(symbols: string[], daysBack: number = 20) {
 
-		const maxSymbols = 5;
-
 		if (!symbols?.length) {
-			return {};
-		}
-
-		if (symbols.length > maxSymbols) {
-			const chunks = _(symbols).chunk(maxSymbols).value();
-
-			const result = {} as MultipleHistory;
-
-			for (const chunk of chunks) {
-				const chunkResult = await retry(() => this.getHistory(chunk, daysBack), { retries: 5 });
-				Object.assign(result, chunkResult);
-			}
-
-			return result;
+			return {
+				result: {},
+				errors: [],
+			} as CatchDivideResult<string, MultipleHistory>;
 		}
 
 		const today = moment().startOf('day');
 		const toDate = today.clone();
 		const fromDate = toDate.clone().add({ days: -(daysBack + 20) });
 
-		const opts = {
-			symbols: symbols,
-			maxConcurrentSymbols: 20,
-			error: true,
-			from: fromDate.format("YYYY-MM-DD"),
-			to: toDate.format("YYYY-MM-DD"),
-			period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
+		const action = async (collection: string[]) => {
+
+			const opts = {
+				symbols: collection,
+				// maxConcurrentSymbols: 20,
+				error: true,
+				from: fromDate.format("YYYY-MM-DD"),
+				to: toDate.format("YYYY-MM-DD"),
+				period: 'd',  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
+			};
+
+			const hist = await yahoo.historical(opts);
+
+			const x = plainToClass(MultipleHistoryClass, hist, {
+				targetMaps: [
+					{
+						target: MultipleHistoryClass,
+						properties: Object.keys(hist).reduce((prev, cur) => {
+							return {
+								...prev,
+								[cur]: MarketHistory,
+							};
+						}, {}),
+					},
+				],
+			}) as MultipleHistory;
+
+			for (const [key, val] of Object.entries(x)) {
+				val.forEach(normalizeHistory);
+				x[key] = _(val).take(daysBack).value();
+			}
+
+			return x;
 		};
-		const hist = await yahoo.historical(opts);
-		const x = plainToClass(MultipleHistoryClass, hist, {
-			targetMaps: [
-				{
-					target: MultipleHistoryClass,
-					properties: Object.keys(hist).reduce((prev, cur) => {
-						return {
-							...prev,
-							[cur]: MarketHistory,
-						};
-					}, {}),
-				},
-			],
-		}) as MultipleHistory;
 
-		for (const [key, val] of Object.entries(x)) {
-			val.forEach(normalizeHistory);
-			x[key] = _(val).take(daysBack).value();
-		}
-
-		return x;
+		return await catchDivide(symbols, action);
 	}
 
 	async getPrices(symbol: string) {

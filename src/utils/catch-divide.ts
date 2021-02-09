@@ -26,7 +26,7 @@ export async function catchDivide<T, R>(
 		};
 	}
 
-	console.debug(`Catch divide with ${collection.length} items`);
+	// console.debug(`Catch divide with ${collection.length} items`);
 
 	try {
 		const result = await action(collection);
@@ -41,7 +41,7 @@ export async function catchDivide<T, R>(
 		}
 
 		if (collection.length === 1) {
-			console.debug(`Error on single item: ${collection[0]}`);
+			// console.debug(`Error on single item: ${collection[0]}`);
 
 			return {
 				result: null,
@@ -54,12 +54,10 @@ export async function catchDivide<T, R>(
 			} as CatchDivideResult<T, R>;
 		}
 
-		console.debug(`Error on ${collection.length} items`);
+		// console.debug(`Error on ${collection.length} items`);
 
 		const chunkSize = Math.max(1, Math.ceil(collection.length / 2));
 		const chunks = _(collection).chunk(chunkSize).value();
-
-
 
 		return await PromisePool
 			.for(chunks)

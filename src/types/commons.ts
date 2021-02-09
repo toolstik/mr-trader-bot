@@ -1,4 +1,5 @@
 import { MarketData } from "./market-data";
+import { TransformationType, TransformFnParams, Transform } from "class-transformer";
 
 export type AssetStateKey = 'NONE' | 'APPROACH_TOP' | 'APPROACH_BOTTOM' | 'REACH_TOP' | 'REACH_BOTTOM';
 
@@ -7,6 +8,9 @@ export type AssetStatus = {
 	status: AssetStateKey;
 	changed: boolean;
 	marketData: MarketData;
+};
+
+export type AssetStatusWithFundamentals = AssetStatus & {
 	fundamentals: FundamentalData,
 };
 
@@ -62,3 +66,25 @@ type ArrayItem<T> = T extends (infer R)[] ? R :
 	never;
 export const KnownListKeys = ['nasdaq', 'snp500'] as const;
 export type ListKey = ArrayItem<typeof KnownListKeys>;
+
+export function dateTo(targetType: 'string' | 'number'): Parameters<typeof Transform>[0] {
+	return ({ value, type }) => {
+		if (type === TransformationType.PLAIN_TO_CLASS) {
+			if (typeof value !== 'object') {
+				return new Date(value);
+			}
+			return value;
+		}
+
+		if (type === TransformationType.CLASS_TO_PLAIN) {
+			if (value instanceof Date) {
+				const result = targetType === 'number' ? value.getTime() : value.toISOString();
+				// console.log('%%%%%', { targetType, value, result });
+				return result;
+			}
+			return value;
+		}
+
+		return value;
+	}
+}

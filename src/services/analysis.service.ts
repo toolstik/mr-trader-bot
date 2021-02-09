@@ -18,10 +18,10 @@ export class AnalysisService {
 
 	async getAssetStatus(symbol: string) {
 
-		const [asset, marketData, fundamentals] = await Promise.all([
+		const [asset, marketData] = await Promise.all([
 			this.assetService.getOne(symbol),
 			this.getMarketData(symbol),
-			this.assetService.getFundamentals(symbol),
+			// this.assetService.getFundamentals(symbol),
 		]);
 
 		if (asset == null || marketData === null) {
@@ -35,7 +35,6 @@ export class AnalysisService {
 			status: status.value,
 			changed: status.changed,
 			marketData,
-			fundamentals,
 		} as AssetStatus
 	}
 

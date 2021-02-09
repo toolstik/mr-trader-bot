@@ -1,3 +1,4 @@
+import { DatahubService } from './services/datahub.service';
 import { YahooService } from './services/yahoo.service';
 import { TemplateService } from './services/template.service';
 import { BotService } from './services/bot.service';
@@ -61,7 +62,7 @@ async function test1() {
 // 	// console.log(x);
 // }
 
-async function alphavantage(symbol:string) {
+async function alphavantage(symbol: string) {
 	console.time(symbol);
 	const x = await Axios.get(`https://www.alphavantage.co/query?function=${symbol}&symbol=LSI&interval=daily&time_period=14&series_type=close&apikey=DNY0RDWTLM8204BC`);
 	console.timeEnd(symbol);
@@ -93,9 +94,25 @@ async function test4() {
 	console.log(x);
 }
 
+async function test5() {
+	const yahoo = new YahooService();
+	const datahub = new DatahubService();
+	const list = await datahub.getSnP500List();
+	const x = await yahoo.getHistory(list);
+	console.time('test5');
+	console.dir(x.errors, { 'maxArrayLength': null });
+	console.timeEnd('test5');
+}
+
+async function test6() {
+	const yahoo = new YahooService();
+	const data = await yahoo.getPrices('AAVL');
+	console.dir(data, { 'maxArrayLength': null });
+}
+
 async function test() {
 
-	await test3();
+	await test5();
 	// console.log(normalizeKey('GAZP.ME'));
 	// console.log(splitLimit('level1/level2/level3', '/'));
 	// console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));

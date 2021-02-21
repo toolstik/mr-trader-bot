@@ -1,6 +1,6 @@
 import { I18nContext } from '@edjopato/telegraf-i18n';
 import { Context as TelegrafContext, Scenes } from 'telegraf';
-import { CommandParts } from '../plugins/command-args.plugin';
+import { CommandParts } from '../middlewares/command-args.middleware';
 
 export interface TgSession extends Scenes.SceneSession {
 	username: string;

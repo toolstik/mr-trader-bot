@@ -26,7 +26,7 @@ if (FUNCTIONS_EMULATOR === 'true') {
 	void (async () => {
 		const values = await exportPromise;
 		console.log('Start long-pooling...');
-		// await values.bot.launch();
+		await values.bot.launch();
 	})();
 }
 

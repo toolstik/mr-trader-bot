@@ -1,7 +1,11 @@
 {
 	"functions": {
 		"source": ".",
-		"runtime": "nodejs14"
+		"runtime": "nodejs14",
+		"ignore": [
+			"src",
+			"node_modules"
+		]
 	},
 	"database": {
 		"rules": "database.rules.json"

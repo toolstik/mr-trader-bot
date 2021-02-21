@@ -24,19 +24,12 @@ const commandParts = () => Composer.on('text', (ctx, next) => {
 	const command = parse(ctx.message.text);
 
 	if (!command) {
-		next();
-		return;
+		return next();
 	}
 
 	ctx.state.command = command;
-	next();
+	// console.log(ctx.state);
+	return next();
 });
 
-@Injectable()
-export class CommandArgsPlugin implements BotPlugin {
-
-	register(bot: Telegraf<MyContext>) {
-		bot.use(commandParts());
-	}
-
-}
+export const commandPartsMiddleWare = commandParts();

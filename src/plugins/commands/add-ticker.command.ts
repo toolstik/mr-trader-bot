@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import * as _ from 'lodash';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { BotPlugin } from "../../types/bot-plugin";
 import { MyContext } from "../../types/my-context";
 import { AssetService } from './../../services/asset.service';
@@ -40,7 +40,7 @@ export class AddTickerCommand implements BotPlugin {
 				.process(async t => {
 					const asset = await this.assetService.getOne(t);
 					const price = await this.yahooService.getPrices(t);
-					
+
 					if (!asset) {
 						if (!price) {
 							await ctx.reply(ctx.i18n.t('commands.add-ticker.not-found', { ticker: t }));

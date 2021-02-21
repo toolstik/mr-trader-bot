@@ -1,4 +1,4 @@
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { MenuMiddleware, MenuTemplate } from 'telegraf-inline-menu';
 import { MyContext } from '../../types/my-context';
 import { menu as settingsMenu } from './settings';

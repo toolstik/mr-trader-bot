@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase';
-import { MyContext } from '../types/my-context';
 import { FirebaseService } from "../services/firebase.service";
 import { BotPlugin } from '../types/bot-plugin';
+import { MyContext } from '../types/my-context';
 
 @Injectable()
 export class SessionPlugin implements BotPlugin {
@@ -20,7 +20,7 @@ export class SessionPlugin implements BotPlugin {
 		bot.on('text', (ctx, next) => {
 			ctx.session = {
 				...ctx.session,
-				username: ctx.chat.username ?? '',
+				username: ctx.message.from.username ?? '',
 				chatId: ctx.chat.id,
 				enabled: ctx.session?.enabled ?? true,
 				subscriptionTickers: ctx.session?.subscriptionTickers ?? [],

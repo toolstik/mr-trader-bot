@@ -6,7 +6,7 @@ import { BotCommand } from "../../types/bot-command";
 import { MyContext } from "../../types/my-context";
 import { AssetListService } from './../../services/asset-list.service';
 import { ListKey } from './../../types/commons';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 
 @Injectable()
 export class AddTickerListCommand implements BotPlugin {

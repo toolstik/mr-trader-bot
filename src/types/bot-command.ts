@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { BotPlugin } from "./bot-plugin";
 import { MyContext } from "./my-context";
 import _ = require("lodash");
@@ -30,6 +30,6 @@ export abstract class BotCommand implements BotPlugin {
 		}
 	}
 
-	protected abstract async process(ctx: MyContext): Promise<void>;
+	protected abstract process(ctx: MyContext): Promise<void>;
 
 }

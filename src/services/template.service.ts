@@ -45,9 +45,9 @@ export class TemplateService {
 	}
 
 	public apply(key: string, data: any, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): string {
-		this.logger.debug(
-			`apply template: ${key}`,
-		);
+		// this.logger.debug(
+		// 	`apply template: ${key}`,
+		// );
 
 		let template = this.getTemplate(key, lang);
 

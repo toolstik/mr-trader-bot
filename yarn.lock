@@ -6790,7 +6790,7 @@ node-emoji@^1.4.1:
   dependencies:
     lodash.toarray "^4.4.0"
 
-node-fetch@^2.2.0, node-fetch@^2.3.0, node-fetch@^2.6.1:
+node-fetch@^2.3.0, node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
   integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
@@ -8478,7 +8478,7 @@ safe-regex@^2.1.1:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sandwich-stream@^2.0.1, sandwich-stream@^2.0.2:
+sandwich-stream@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/sandwich-stream/-/sandwich-stream-2.0.2.tgz#6d1feb6cf7e9fe9fadb41513459a72c2e84000fa"
   integrity sha512-jLYV0DORrzY3xaz/S9ydJL6Iz7essZeAfnAavsJ+zsJGZ1MOnsS52yRjU3uF3pJa/lla7+wisp//fxOwOH8SKQ==
@@ -9208,13 +9208,6 @@ teeny-request@^7.0.0:
     stream-events "^1.0.5"
     uuid "^8.0.0"
 
-telegraf-command-parts@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/telegraf-command-parts/-/telegraf-command-parts-1.0.3.tgz#d0e078d10ce3f68469b529e5ea3a76e42d5788b3"
-  integrity sha1-0OB40Qzj9oRptSnl6jp25C1XiLM=
-  dependencies:
-    telegraf "^3.1.0"
-
 telegraf-inline-menu@^6.1.0:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/telegraf-inline-menu/-/telegraf-inline-menu-6.1.0.tgz#713cd467dc9a30b372f98f81441a48bcb805d23b"
@@ -9242,18 +9235,6 @@ telegraf-stateless-question@^2.0.0:
   dependencies:
     telegram-format "^2.0.0"
 
-telegraf@^3.1.0:
-  version "3.38.0"
-  resolved "https://registry.yarnpkg.com/telegraf/-/telegraf-3.38.0.tgz#745b447547a8e6cdb626055e4d616058aaae0759"
-  integrity sha512-va4VlrKWp64JrowFoZX/NPzzA6q38kvaIukVXOWFO1V+jR1G8+hCfgJy4TX8Z3rwLJzwaBEet1QhikHDRZWl3A==
-  dependencies:
-    debug "^4.0.1"
-    minimist "^1.2.0"
-    module-alias "^2.2.2"
-    node-fetch "^2.2.0"
-    sandwich-stream "^2.0.1"
-    telegram-typings "^3.6.0"
-
 telegraf@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/telegraf/-/telegraf-4.1.0.tgz#b20d4aa6acdf6aab3fc054805e87633573f95928"
@@ -9277,11 +9258,6 @@ telegram-keyboard@^2.2.6:
   version "2.2.6"
   resolved "https://registry.yarnpkg.com/telegram-keyboard/-/telegram-keyboard-2.2.6.tgz#56e3c5d137938e3fd673843475280ecc70ea4d40"
   integrity sha512-rfJn55Nwt5w2aWagtxCUnN4AM/6tK+SRO89NolfRuJD8XiPB4IDRxP7nqekodSEkvvUpSmmQxrRG8ZheHdUYqQ==
-
-telegram-typings@^3.6.0:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/telegram-typings/-/telegram-typings-3.6.1.tgz#1288d547f8694b61f1c01c2993e295f3114d9e25"
-  integrity sha512-njVv1EAhIZnmQVLocZEADYUyqA1WIXuVcDYlsp+mXua/XB0pxx+PKtMSPeZ/EE4wPWTw9h/hA9ASTT6yQelkiw==
 
 temp-dir@^2.0.0:
   version "2.0.0"

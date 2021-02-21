@@ -1,11 +1,10 @@
 import { MenuMiddleware } from 'telegraf-inline-menu';
 import { Injectable } from "@nestjs/common";
-import { Telegraf } from 'telegraf';
+import { Telegraf, Scenes } from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';
 import { MyContext } from '../types/my-context';
 import { Keyboard, Key } from 'telegram-keyboard';
 import { menu } from "../bot/menu";
-import { BaseScene, Stage } from 'telegraf/typings/scenes';
 
 // main
 // 	add Ticker
@@ -31,7 +30,7 @@ const mainMenuKeyboard = Keyboard.make([
 	[button('Button T 1', 'button1'), button('Button T 2', 'button2')],
 ]);
 
-const mainMenuScene = new BaseScene<MyContext>('main-menu');
+const mainMenuScene = new Scenes.BaseScene<MyContext>('main-menu');
 mainMenuScene.enter(async ctx => {
 	await ctx.reply('Welcome to main menu');
 });
@@ -39,7 +38,7 @@ mainMenuScene.enter(async ctx => {
 // 	await ctx.answerCbQuery(`${ctx.callbackQuery.data} pressed`);
 // });
 
-const x = new Stage<MyContext>([]);
+const x = new Scenes.Stage<MyContext>([]);
 
 @Injectable()
 export class MenuPlugin implements BotPlugin {

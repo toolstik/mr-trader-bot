@@ -1,4 +1,7 @@
 import { Logger, Module } from "@nestjs/common";
+import { TelegrafModule } from "nestjs-telegraf";
+import { BotModule } from "./modules/bot.module";
+import { GlobalModule } from "./modules/global/global.module";
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
 import { AddTickerCommand } from './plugins/commands/add-ticker.command';
@@ -27,9 +30,22 @@ import { YahooService } from './services/yahoo.service';
 
 
 @Module({
+	imports: [
+		GlobalModule,
+		BotModule,
+		TelegrafModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => {
+				return {
+					token: configService.getEnv().bot_token,
+					middlewares: [],
+					include: [BotModule],
+				  };
+			},
+		}),
+	],
 	providers: [
 		FirebaseService,
-		ConfigService,
 		AssetService,
 		SessionService,
 		YahooService,

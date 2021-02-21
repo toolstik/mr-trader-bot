@@ -1,5 +1,6 @@
 import { I18nContext } from '@edjopato/telegraf-i18n';
 import { Context as TelegrafContext, Scenes } from 'telegraf';
+import { CommandParts } from '../plugins/command-args.plugin';
 
 export interface TgSession extends Scenes.SceneSession {
 	username: string;
@@ -13,12 +14,6 @@ export interface MyContext extends TelegrafContext, Scenes.SceneContext {
 	session: TgSession;
 	scene: Scenes.SceneContextScene<MyContext, Scenes.SceneSessionData>
 	state: {
-		command: {
-			text: string;
-			command: string;
-			bot: string;
-			args: string;
-			splitArgs: readonly string[];
-		}
+		command: CommandParts,
 	}
 }

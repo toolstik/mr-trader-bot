@@ -1,4 +1,6 @@
 import { NestFactory } from '@nestjs/core';
+import { getBotToken } from 'nestjs-telegraf';
+import { Telegraf } from 'telegraf';
 import { AppModule } from './app.module';
 import { CommandArgsPlugin } from './plugins/command-args.plugin';
 import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
@@ -18,49 +20,52 @@ import { BotService } from './services/bot.service';
 import { ConfigService } from './services/config.service';
 import { NotificationService } from './services/notification.service';
 import { BotPlugin } from './types/bot-plugin';
+import { MyContext } from './types/my-context';
 
 export async function start() {
 	const app = await NestFactory.createApplicationContext(AppModule);
 	const module = app.select(AppModule);
 
-	const pluginTypes = [
-		SessionPlugin,
-		I18nPlugin,
-		CommandArgsPlugin,
+	// const pluginTypes = [
+	// 	SessionPlugin,
+	// 	I18nPlugin,
+	// 	CommandArgsPlugin,
 
-		MenuPlugin,
+	// 	MenuPlugin,
 
-		AddTickerCommand,
-		RemoveTickerCommand,
-		ListTickerCommand,
-		TestTickerCommand,
-		UpdateHistoryCommand,
-		NotifyCommand,
-		FundamentalsCommand,
-		AddTickerListCommand,
-		RemoveTickerListCommand,
-	];
-	const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
+	// 	AddTickerCommand,
+	// 	RemoveTickerCommand,
+	// 	ListTickerCommand,
+	// 	TestTickerCommand,
+	// 	UpdateHistoryCommand,
+	// 	NotifyCommand,
+	// 	FundamentalsCommand,
+	// 	AddTickerListCommand,
+	// 	RemoveTickerListCommand,
+	// ];
+	// const plugins: BotPlugin[] = pluginTypes.map(t => module.get(t));
 
-	const botService = module.get(BotService);
-	const notificationService = module.get(NotificationService);
-	const assetService = module.get(AssetService);
+	// const botService = module.get(BotService);
+	// const notificationService = module.get(NotificationService);
+	// const assetService = module.get(AssetService);
 	const configService = module.get(ConfigService);
+
+	const bot: Telegraf<MyContext> = app.get(getBotToken()) //botService.createBot(plugins);
 
 	return {
 		env: configService.getEnv(),
-		bot: botService.createBot(plugins),
-		updateHistory: async () => {
-			await assetService.updateHistory();
-		},
-		notify: async () => {
-			await notificationService.sendAssetStatusChangesAll();
-		},
-		status: async () => {
-			await notificationService.sendAssetStatusStateAllPages();
-		},
-		fundamentals: async () => {
-			await notificationService.sendAssetFundamendalsAll();
-		},
+		bot: bot,
+		// updateHistory: async () => {
+		// 	await assetService.updateHistory();
+		// },
+		// notify: async () => {
+		// 	await notificationService.sendAssetStatusChangesAll();
+		// },
+		// status: async () => {
+		// 	await notificationService.sendAssetStatusStateAllPages();
+		// },
+		// fundamentals: async () => {
+		// 	await notificationService.sendAssetFundamendalsAll();
+		// },
 	};
 }

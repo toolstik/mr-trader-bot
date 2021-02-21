@@ -32,6 +32,7 @@
 		"lodash": "^4.17.21",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.33",
+		"nestjs-telegraf": "^2.0.0",
 		"path": "^0.12.7",
 		"read-dir-deep": "^7.0.1",
 		"reflect-metadata": "^0.1.13",

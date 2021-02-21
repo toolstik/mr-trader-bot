@@ -26,7 +26,7 @@ if (FUNCTIONS_EMULATOR === 'true') {
 	void (async () => {
 		const values = await exportPromise;
 		console.log('Start long-pooling...');
-		await values.bot.launch();
+		// await values.bot.launch();
 	})();
 }
 
@@ -52,27 +52,27 @@ exports.bot = functions
 		}
 	});
 
-exports.updateHistoryScheduler = functions
-	.runWith({
-		...DEFAULT_OPTIONS,
-	})
-	.pubsub
-	.schedule('0 */4 * * *')
-	.onRun(async () => {
-		const values = await exportPromise;
-		await values.updateHistory();
-	});
+// exports.updateHistoryScheduler = functions
+// 	.runWith({
+// 		...DEFAULT_OPTIONS,
+// 	})
+// 	.pubsub
+// 	.schedule('0 */4 * * *')
+// 	.onRun(async () => {
+// 		const values = await exportPromise;
+// 		await values.updateHistory();
+// 	});
 
-exports.notificationScheduler = functions
-	.runWith({
-		...DEFAULT_OPTIONS,
-	})
-	.pubsub
-	.schedule('*/5 * * * *')
-	.onRun(async () => {
-		const values = await exportPromise;
-		await values.notify();
-	});
+// exports.notificationScheduler = functions
+// 	.runWith({
+// 		...DEFAULT_OPTIONS,
+// 	})
+// 	.pubsub
+// 	.schedule('*/5 * * * *')
+// 	.onRun(async () => {
+// 		const values = await exportPromise;
+// 		await values.notify();
+// 	});
 
 // exports.fundamentalsScheduler = functions.pubsub.schedule('5 11 * * *')
 // 	.timeZone('Europe/Moscow')
@@ -81,15 +81,15 @@ exports.notificationScheduler = functions
 // 		await values.fundamentals();
 // 	});
 
-exports.statusScheduler = functions
-	.runWith({
-		...DEFAULT_OPTIONS,
-	})
-	.pubsub
-	.schedule('5 11 * * *')
-	.timeZone('Europe/Moscow')
-	.onRun(async () => {
-		const values = await exportPromise;
-		await values.status();
-	});
+// exports.statusScheduler = functions
+// 	.runWith({
+// 		...DEFAULT_OPTIONS,
+// 	})
+// 	.pubsub
+// 	.schedule('5 11 * * *')
+// 	.timeZone('Europe/Moscow')
+// 	.onRun(async () => {
+// 		const values = await exportPromise;
+// 		await values.status();
+// 	});
 

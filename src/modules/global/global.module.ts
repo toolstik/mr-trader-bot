@@ -1,10 +1,12 @@
 import { Global, Logger, Module } from "@nestjs/common";
+import { ResponseTimeMiddleware } from "../../middlewares/request-time.middleware";
 import { ConfigService } from "./config.service";
 
 @Global()
 @Module({
 	providers: [
 		ConfigService,
+		ResponseTimeMiddleware,
 		{
 			provide: Logger,
 			useClass: Logger,
@@ -12,6 +14,7 @@ import { ConfigService } from "./config.service";
 	],
 	exports: [
 		ConfigService,
+		ResponseTimeMiddleware,
 		Logger,
 	],
 })

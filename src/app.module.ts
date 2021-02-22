@@ -28,6 +28,7 @@ import { NotificationService } from './services/notification.service';
 import { SessionService } from './modules/session/session.service';
 import { TemplateService } from './services/template.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
+import { ResponseTimeMiddleware } from "./middlewares/request-time.middleware";
 
 
 @Module({
@@ -35,9 +36,17 @@ import { YahooService } from './modules/yahoo/yahoo.service';
 		GlobalModule,
 		BotModule,
 		TelegrafModule.forRootAsync({
-			inject: [ConfigService, SessionMiddleware],
+			inject: [
+				ConfigService,
+				SessionMiddleware,
+				ResponseTimeMiddleware,
+			],
 			imports: [BotModule],
-			useFactory: (configService: ConfigService, sessionMiddleWare: SessionMiddleware) => {
+			useFactory: (
+				configService: ConfigService,
+				sessionMiddleWare: SessionMiddleware,
+				responceTimeMiddleware: ResponseTimeMiddleware,
+			) => {
 				return {
 					token: configService.getEnv().bot_token,
 					launchOptions: false,
@@ -46,6 +55,7 @@ import { YahooService } from './modules/yahoo/yahoo.service';
 						commandPartsMiddleWare,
 						i18nMiddleware,
 						sessionMiddleWare,
+						responceTimeMiddleware,
 					],
 					include: [BotModule],
 				};

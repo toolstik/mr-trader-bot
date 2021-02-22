@@ -11,7 +11,7 @@ export class ConfigService {
 	private readonly env: Environment;
 
 	constructor() {
-		this.env = require('../../env.json');
+		this.env = require('../../../env.json');
 	}
 
 	getEnv(){

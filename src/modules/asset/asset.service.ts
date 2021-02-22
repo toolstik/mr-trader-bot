@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { Transform, Type } from 'class-transformer';
-import { AssetStateKey, dateTo, FundamentalData, RefEntity } from "../types/commons";
-import { MarketHistory, SymbolHistory } from "../types/history";
-import { FinvizService } from './finviz.service';
-import { FirebaseService } from "./firebase.service";
-import { normalizeKey, ReferenceService } from "./reference.service";
-import { SessionService } from './session.service';
-import { YahooService } from "./yahoo.service";
+import { AssetStateKey, dateTo, FundamentalData, RefEntity } from "../../types/commons";
+import { MarketHistory, SymbolHistory } from "../../types/history";
+import { FinvizService } from '../finviz/finviz.service';
+import { FirebaseService } from "../firebase/firebase.service";
+import { normalizeKey, ReferenceService } from "../../services/reference.service";
+import { SessionService } from '../session/session.service';
+import { YahooService } from "../yahoo/yahoo.service";
 import _ = require("lodash");
 import PromisePool = require("@supercharge/promise-pool/dist");
 

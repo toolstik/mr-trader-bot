@@ -3,8 +3,8 @@ import * as _ from 'lodash';
 import { Telegraf } from 'telegraf';
 import { BotPlugin } from "../../types/bot-plugin";
 import { MyContext } from "../../types/my-context";
-import { AssetService } from './../../services/asset.service';
-import { YahooService } from './../../services/yahoo.service';
+import { AssetService } from '../../modules/asset/asset.service';
+import { YahooService } from '../../modules/yahoo/yahoo.service';
 import PromisePool = require('@supercharge/promise-pool');
 
 @Injectable()

@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { Composer, Context } from 'telegraf';
+import { Composer } from 'telegraf';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase';
-import { MiddlewareFn, MiddlewareObj } from "telegraf/typings/middleware";
-import { FirebaseService } from "../services/firebase.service";
+import { MiddlewareObj } from "telegraf/typings/middleware";
+import { FirebaseService } from "../modules/firebase/firebase.service";
 import { MyContext } from '../types/my-context';
 
 @Injectable()

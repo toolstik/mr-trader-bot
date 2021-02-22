@@ -11,11 +11,10 @@ import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.c
 import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
-import { I18nPlugin } from './plugins/i18n.plugin';
 import { MenuPlugin } from './plugins/menu.plugin';
-import { AssetService } from './services/asset.service';
+import { AssetService } from './modules/asset/asset.service';
 import { BotService } from './services/bot.service';
-import { ConfigService } from './services/config.service';
+import { ConfigService } from './modules/global/config.service';
 import { NotificationService } from './services/notification.service';
 import { BotPlugin } from './types/bot-plugin';
 import { MyContext } from './types/my-context';

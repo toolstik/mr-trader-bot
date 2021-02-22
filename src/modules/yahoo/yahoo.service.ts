@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import * as yahoo from 'yahoo-finance';
-import { catchDivide, CatchDivideResult } from '../utils/catch-divide';
-import { MarketHistory, MultipleHistory, MultipleHistoryClass } from './../types/history';
+import { catchDivide, CatchDivideResult } from '../../utils/catch-divide';
+import { MarketHistory, MultipleHistory, MultipleHistoryClass } from '../../types/history';
 import _ = require('lodash');
 
 export type SummaryModuleKey = 'price' | 'summaryDetail' | 'defaultKeyStatistics' | 'financialData';

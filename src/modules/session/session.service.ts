@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { TgSession } from "../types/my-context";
-import { FirebaseService } from "./firebase.service";
-import { ReferenceService } from "./reference.service";
+import { TgSession } from "../../types/my-context";
+import { FirebaseService } from "../firebase/firebase.service";
+import { ReferenceService } from "../../services/reference.service";
 import _ = require('lodash');
 
 export class SessionEntity {

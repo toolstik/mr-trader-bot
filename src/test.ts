@@ -1,5 +1,5 @@
 import { DatahubService } from './services/datahub.service';
-import { YahooService } from './services/yahoo.service';
+import { YahooService } from './modules/yahoo/yahoo.service';
 import { TemplateService } from './services/template.service';
 import { BotService } from './services/bot.service';
 import { AnalysisService } from './services/analysis.service';

@@ -3,9 +3,9 @@ import { Injectable } from "@nestjs/common";
 import { AssetStatus, FundamentalData, paginate } from "../types/commons";
 import { MyContext, TgSession } from '../types/my-context';
 import { AnalysisService } from './analysis.service';
-import { AssetService } from './asset.service';
+import { AssetService } from '../modules/asset/asset.service';
 import { BotService } from './bot.service';
-import { SessionService } from './session.service';
+import { SessionService } from '../modules/session/session.service';
 import { TemplateService } from './template.service';
 import PromisePool = require('@supercharge/promise-pool')
 import _ = require("lodash");

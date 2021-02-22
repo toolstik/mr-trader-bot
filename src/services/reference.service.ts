@@ -1,7 +1,7 @@
 import { ClassConstructor, classToPlain, plainToClass, Type } from 'class-transformer';
 import { database } from 'firebase-admin';
 import { RefEntity, RefEntityObject } from '../types/commons';
-import { FirebaseService } from './firebase.service';
+import { FirebaseService } from '../modules/firebase/firebase.service';
 
 
 // ".", "#", "$", "/", "[", or "]"

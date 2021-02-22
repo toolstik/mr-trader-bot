@@ -1,7 +1,7 @@
 import { BotPlugin } from './../../types/bot-plugin';
 import { Injectable, Logger } from "@nestjs/common";
 import * as _ from 'lodash';
-import { AssetService } from '../../services/asset.service';
+import { AssetService } from '../../modules/asset/asset.service';
 import { BotCommand } from "../../types/bot-command";
 import { MyContext } from "../../types/my-context";
 import { AssetListService } from './../../services/asset-list.service';

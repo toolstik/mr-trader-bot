@@ -1,4 +1,4 @@
-import { AssetService } from './../../services/asset.service';
+import { AssetService } from '../../modules/asset/asset.service';
 import { AnalysisService } from '../../services/analysis.service';
 import { Injectable } from "@nestjs/common";
 import { Telegraf } from 'telegraf';

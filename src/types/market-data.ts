@@ -1,4 +1,4 @@
-import { PriceModule } from './../services/yahoo.service';
+import { PriceModule } from '../modules/yahoo/yahoo.service';
 
 export type Donchian = {
 	minDays: number;

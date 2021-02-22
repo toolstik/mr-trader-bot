@@ -1,6 +1,6 @@
 import { NotificationService } from './../../services/notification.service';
 import { BotService } from './../../services/bot.service';
-import { AssetService } from '../../services/asset.service';
+import { AssetService } from '../../modules/asset/asset.service';
 import { AnalysisService } from '../../services/analysis.service';
 import { Injectable } from "@nestjs/common";
 import { Telegraf } from 'telegraf';

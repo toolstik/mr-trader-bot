@@ -1,4 +1,4 @@
-import { ConfigService } from './config.service';
+import { ConfigService } from '../modules/global/config.service';
 import { Injectable } from "@nestjs/common";
 import { Telegraf } from 'telegraf';
 import { BotPlugin } from '../types/bot-plugin';

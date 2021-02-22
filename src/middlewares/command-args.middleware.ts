@@ -1,7 +1,4 @@
-import { Injectable } from "@nestjs/common";
-import { Composer, Telegraf } from 'telegraf';
-import { BotPlugin } from '../types/bot-plugin';
-import { MyContext } from '../types/my-context';
+import { Composer } from 'telegraf';
 
 const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i;
 
@@ -28,7 +25,6 @@ const commandParts = () => Composer.on('text', (ctx, next) => {
 	}
 
 	ctx.state.command = command;
-	// console.log(ctx.state);
 	return next();
 });
 

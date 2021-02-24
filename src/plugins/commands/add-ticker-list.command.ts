@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { Telegraf } from 'telegraf';
 import { AssetService } from '../../modules/asset/asset.service';
 import { MyContext } from "../../types/my-context";
-import { AssetListService } from './../../services/asset-list.service';
+import { AssetListService } from '../../modules/asset-list/asset-list.service';
 import { BotPlugin } from './../../types/bot-plugin';
 
 @Injectable()

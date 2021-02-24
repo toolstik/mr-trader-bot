@@ -1,5 +1,5 @@
 import { Command, Update } from "nestjs-telegraf";
-import { currentContext } from "../../utils/current-context";
+import { currentContext } from "../../../utils/current-context";
 import { AddTickerScene } from "./add-ticker.scene";
 
 @Update()

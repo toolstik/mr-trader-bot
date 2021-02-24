@@ -1,4 +1,4 @@
-import { DatahubService } from './services/datahub.service';
+import { DatahubService } from './modules/datahub/datahub.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
 import { TemplateService } from './services/template.service';
 import { BotService } from './services/bot.service';

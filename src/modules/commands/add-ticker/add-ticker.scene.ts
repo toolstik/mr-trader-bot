@@ -1,9 +1,9 @@
 import PromisePool = require("@supercharge/promise-pool/dist");
 import _ = require("lodash");
 import { Scene, SceneEnter } from "nestjs-telegraf";
-import { AssetService } from "../asset/asset.service";
-import { YahooService } from "../yahoo/yahoo.service";
-import { currentContext } from "../../utils/current-context";
+import { AssetService } from "../../asset/asset.service";
+import { YahooService } from "../../yahoo/yahoo.service";
+import { currentContext } from "../../../utils/current-context";
 
 @Scene(AddTickerScene.sceneName)
 export class AddTickerScene {

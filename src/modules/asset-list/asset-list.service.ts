@@ -1,5 +1,5 @@
-import { DatahubService } from './datahub.service';
-import { ListKey, KnownListKeys } from '../types/commons';
+import { DatahubService } from '../datahub/datahub.service';
+import { ListKey, KnownListKeys } from '../../types/commons';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

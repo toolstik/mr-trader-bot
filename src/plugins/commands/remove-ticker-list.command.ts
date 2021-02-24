@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import * as _ from 'lodash';
 import { Telegraf } from 'telegraf';
-import { AssetListService } from '../../services/asset-list.service';
+import { AssetListService } from '../../modules/asset-list/asset-list.service';
 import { BotPlugin } from "../../types/bot-plugin";
 import { ListKey } from '../../types/commons';
 import { MyContext } from "../../types/my-context";

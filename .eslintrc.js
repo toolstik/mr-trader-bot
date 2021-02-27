@@ -27,8 +27,10 @@ module.exports = {
   ],
   rules: {
     "@typescript-eslint/adjacent-overload-signatures": "error",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "error",
-    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-namespace": "error",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",

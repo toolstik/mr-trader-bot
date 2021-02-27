@@ -5,9 +5,11 @@ module.exports = {
     node: true,
   },
   extends: [
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
+		'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -16,6 +18,11 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
+		'unused-imports',
+    '@typescript-eslint',
+    '@typescript-eslint/tslint',
+    'prettier',
+    'simple-import-sort',
     "import",
   ],
   rules: {

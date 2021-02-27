@@ -1,10 +1,9 @@
-import { Module } from "@nestjs/common";
-import { FinvizService } from "./finviz.service";
+import { Module } from '@nestjs/common';
+
+import { FinvizService } from './finviz.service';
 
 @Module({
-	providers: [FinvizService],
-	exports: [FinvizService],
+  providers: [FinvizService],
+  exports: [FinvizService],
 })
-export class FinvizModule {
-
-}
+export class FinvizModule {}

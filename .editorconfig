@@ -9,7 +9,9 @@ trim_trailing_whitespace = true
 
 [*.yml]
 indent_size = 2
+insert_final_newline = false
 
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
+insert_final_newline = false

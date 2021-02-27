@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+
 import { start } from '../../src';
 
 // Start writing Firebase Functions
@@ -7,14 +8,14 @@ import { start } from '../../src';
 // type StartResult = ReturnType<typeof start> extends Promise<infer R> ? R : never;
 
 const DEFAULT_OPTIONS: functions.RuntimeOptions = {
-	memory: '1GB',
-	timeoutSeconds: 180,
-}
+  memory: '1GB',
+  timeoutSeconds: 180,
+};
 
 async function main() {
-	const result = await start();
-	// await result.bot.launch();
-	return result;
+  const result = await start();
+  // await result.bot.launch();
+  return result;
 }
 
 const exportPromise = main();
@@ -23,11 +24,11 @@ const { FUNCTION_TARGET, FUNCTIONS_EMULATOR } = process.env;
 
 // start long-pooling if in emulator mode
 if (FUNCTIONS_EMULATOR === 'true') {
-	void (async () => {
-		const values = await exportPromise;
-		console.log('Start long-pooling...');
-		await values.bot.launch();
-	})();
+  void (async () => {
+    const values = await exportPromise;
+    console.log('Start long-pooling...');
+    await values.bot.launch();
+  })();
 }
 
 // if(FUNCTION_TARGET === 'bot'){
@@ -37,20 +38,18 @@ if (FUNCTIONS_EMULATOR === 'true') {
 // }
 
 exports.bot = functions
-	.runWith({
-		...DEFAULT_OPTIONS,
-	})
-	.https
-	.onRequest(async (req, res) => {
-		const values = await exportPromise;
-		try {
-			await values.bot.handleUpdate(req.body, res);
-			res.send();
-		}
-		catch (e) {
-			res.status(500).send(e);
-		}
-	});
+  .runWith({
+    ...DEFAULT_OPTIONS,
+  })
+  .https.onRequest(async (req, res) => {
+    const values = await exportPromise;
+    try {
+      await values.bot.handleUpdate(req.body, res);
+      res.send();
+    } catch (e) {
+      res.status(500).send(e);
+    }
+  });
 
 // exports.updateHistoryScheduler = functions
 // 	.runWith({
@@ -92,4 +91,3 @@ exports.bot = functions
 // 		const values = await exportPromise;
 // 		await values.status();
 // 	});
-

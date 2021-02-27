@@ -1,93 +1,90 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment-timezone';
+
+import { AssetService } from '../modules/asset/asset.service';
+import { YahooService } from '../modules/yahoo/yahoo.service';
 import { AssetStatus } from '../types/commons';
 import { Donchian, MarketData } from './../types/market-data';
-import { AssetService } from '../modules/asset/asset.service';
 import { deepTransition } from './fsm';
-import { YahooService } from '../modules/yahoo/yahoo.service';
 
 @Injectable()
 export class AnalysisService {
+  constructor(private assetService: AssetService, private yahooService: YahooService) {}
 
-	constructor(
-		private assetService: AssetService,
-		private yahooService: YahooService,
-	) {
-	}
+  async getAssetStatus(symbol: string) {
+    const [asset, marketData] = await Promise.all([
+      this.assetService.getOne(symbol),
+      this.getMarketData(symbol),
+      // this.assetService.getFundamentals(symbol),
+    ]);
 
-	async getAssetStatus(symbol: string) {
+    if (asset == null || marketData === null) {
+      return null;
+    }
 
-		const [asset, marketData] = await Promise.all([
-			this.assetService.getOne(symbol),
-			this.getMarketData(symbol),
-			// this.assetService.getFundamentals(symbol),
-		]);
+    const status = deepTransition(asset.state ?? 'NONE', { asset }, marketData);
 
-		if (asset == null || marketData === null) {
-			return null;
-		}
+    return {
+      ticker: asset.symbol,
+      status: status.value,
+      changed: status.changed,
+      marketData,
+    } as AssetStatus;
+  }
 
-		const status = deepTransition(asset.state ?? 'NONE', { asset }, marketData);
+  private async getMarketData(symbol: string) {
+    const price = await this.yahooService.getPrices(symbol);
+    // console.log(symbol, price);
+    if (!price?.regularMarketPrice) {
+      return null;
+    }
 
-		return {
-			ticker: asset.symbol,
-			status: status.value,
-			changed: status.changed,
-			marketData,
-		} as AssetStatus
-	}
+    const donchian20 = await this.getDonchian(symbol, 20);
+    const donchian5 = await this.getDonchian(symbol, 5);
 
-	private async getMarketData(symbol: string) {
-		const price = await this.yahooService.getPrices(symbol);
-		// console.log(symbol, price);
-		if (!price?.regularMarketPrice) {
-			return null;
-		}
+    if (!donchian20 || !donchian5) {
+      return null;
+    }
 
-		const donchian20 = await this.getDonchian(symbol, 20);
-		const donchian5 = await this.getDonchian(symbol, 5);
+    return {
+      price: price.regularMarketPrice,
+      asset: _.omit(price, 'regularMarketPrice'),
+      donchian: donchian20,
+      stopLoss: donchian5.minValue,
+      takeProfit: donchian5.maxValue,
+    } as MarketData;
+  }
 
-		if (!donchian20 || !donchian5) {
-			return null;
-		}
+  private async getDonchian(symbol: string, daysBack: number) {
+    const asset = await this.assetService.getOne(symbol);
 
-		return {
-			price: price.regularMarketPrice,
-			asset: _.omit(price, 'regularMarketPrice'),
-			donchian: donchian20,
-			stopLoss: donchian5.minValue,
-			takeProfit: donchian5.maxValue,
-		} as MarketData;
-	}
+    if (!asset?.history) {
+      return null;
+    }
 
-	private async getDonchian(symbol: string, daysBack: number) {
-		const asset = await this.assetService.getOne(symbol);
+    const today = moment().startOf('day').toDate().getTime();
 
-		if (!asset?.history) {
-			return null;
-		}
+    const donchian = asset.history
+      .filter(a => a.date.getDate() < today) //before today only
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, daysBack)
+      .reduce(
+        (prev, cur) => {
+          return {
+            ...prev,
+            minValue: Math.min(prev.minValue, cur.low),
+            maxValue: Math.max(prev.maxValue, cur.high),
+          };
+        },
+        {
+          minDays: daysBack,
+          minValue: Number.MAX_VALUE,
+          maxDays: daysBack,
+          maxValue: Number.MIN_VALUE,
+        } as Donchian,
+      );
 
-		const today = moment().startOf('day').toDate().getTime();
-
-		const donchian = asset.history
-			.filter(a => a.date.getDate() < today) //before today only
-			.sort((a, b) => b.date.getTime() - a.date.getTime())
-			.slice(0, daysBack)
-			.reduce((prev, cur) => {
-				return {
-					...prev,
-					minValue: Math.min(prev.minValue, cur.low),
-					maxValue: Math.max(prev.maxValue, cur.high),
-				};
-			}, {
-				minDays: daysBack,
-				minValue: Number.MAX_VALUE,
-				maxDays: daysBack,
-				maxValue: Number.MIN_VALUE,
-			} as Donchian);
-
-		return donchian;
-	}
-
+    return donchian;
+  }
 }

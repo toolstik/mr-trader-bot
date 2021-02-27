@@ -65,6 +65,9 @@ module.exports = {
     "no-unused-labels": "error",
     "no-var": "warn",
     "prefer-const": "warn",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "off",
+    'unused-imports/no-unused-imports': 'error',
   },
   settings: {
     jsdoc: {

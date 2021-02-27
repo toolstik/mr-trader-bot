@@ -1,7 +1,6 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { MiddlewareFn, MiddlewareObj } from 'telegraf/typings/middleware';
-import { MyContext } from '../../types/my-context';
+import { MiddlewareFn } from 'telegraf/typings/middleware';
 
+import { MyContext } from '../../types/my-context';
 import { RequestContext } from './request-context.model';
 
 /**
@@ -11,9 +10,11 @@ import { RequestContext } from './request-context.model';
  *
  * This solution is taken from https://github.com/nestjs/nest/issues/699#issuecomment-405868782.
  */
-export const requestContextMiddleware: MiddlewareFn<MyContext> =
-	(ctx: MyContext, next: () => void) => {
-		const requestContext = new RequestContext(ctx);
-		RequestContext.CLS.setContext(requestContext);
-		next();
-	}
+export const requestContextMiddleware: MiddlewareFn<MyContext> = (
+  ctx: MyContext,
+  next: () => void,
+) => {
+  const requestContext = new RequestContext(ctx);
+  RequestContext.CLS.setContext(requestContext);
+  next();
+};

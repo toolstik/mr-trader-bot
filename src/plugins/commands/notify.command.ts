@@ -1,30 +1,23 @@
-import { NotificationService } from './../../services/notification.service';
-import { BotService } from './../../services/bot.service';
-import { AssetService } from '../../modules/asset/asset.service';
-import { AnalysisService } from '../../services/analysis.service';
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
-import { BotPlugin } from "../../types/bot-plugin";
-import { MyContext } from "../../types/my-context";
-import * as _ from 'lodash';
+
+import { BotPlugin } from '../../types/bot-plugin';
+import { MyContext } from '../../types/my-context';
+import { NotificationService } from './../../services/notification.service';
 
 @Injectable()
 export class NotifyCommand implements BotPlugin {
+  constructor(private notificationService: NotificationService) {}
 
-	constructor(
-		private notificationService: NotificationService,
-	) { }
-
-	register(bot: Telegraf<MyContext>) {
-		bot.command('notify', async ctx => {
-			const data = await this.notificationService.sendAssetStatusChangesAll();
-			await ctx.reply(`Собраны данные по ${Object.keys(data.statuses).length} активам.
+  register(bot: Telegraf<MyContext>) {
+    bot.command('notify', async ctx => {
+      const data = await this.notificationService.sendAssetStatusChangesAll();
+      await ctx.reply(`Собраны данные по ${Object.keys(data.statuses).length} активам.
 			Отправлено ${data.notifications.length} уведомлений`);
-		});
+    });
 
-		bot.command('status', async ctx => {
-			await this.notificationService.sendAssetStatusStateAllPages();
-		});
-	}
-
+    bot.command('status', async ctx => {
+      await this.notificationService.sendAssetStatusStateAllPages();
+    });
+  }
 }

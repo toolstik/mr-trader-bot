@@ -1,21 +1,19 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 type Environment = {
-	name: string,
-	bot_token: string;
-}
+  name: string;
+  bot_token: string;
+};
 
 @Injectable()
 export class ConfigService {
+  private readonly env: Environment;
 
-	private readonly env: Environment;
+  constructor() {
+    this.env = require('../../../env.json');
+  }
 
-	constructor() {
-		this.env = require('../../../env.json');
-	}
-
-	getEnv(){
-		return this.env;
-	}
-
+  getEnv() {
+    return this.env;
+  }
 }

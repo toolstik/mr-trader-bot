@@ -13,7 +13,7 @@
     "build:prod": "gulp build -p=production",
     "lint:fix": "eslint --fix --quiet .",
     "serve": "gulp serve",
-    "deploy": "gulp deploy",
+    "deploy:stage": "gulp deploy",
     "deploy:prod": "gulp deploy -p=production"
   },
   "engines": {
@@ -34,7 +34,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
-    "nestjs-telegraf": "file:../nestjs-telegraf/dist",
+    "nestjs-telegraf": "toolstik/nestjs-telegraf#feature\/modules-deep-scan",
     "path": "^0.12.7",
     "read-dir-deep": "^7.0.1",
     "reflect-metadata": "^0.1.13",

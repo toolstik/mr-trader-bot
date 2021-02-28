@@ -6888,8 +6888,9 @@ neo-async@^2.6.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-"nestjs-telegraf@file:../nestjs-telegraf/dist":
-  version "0.0.0"
+nestjs-telegraf@toolstik/nestjs-telegraf#feature/modules-deep-scan:
+  version "2.0.0"
+  resolved "https://codeload.github.com/toolstik/nestjs-telegraf/tar.gz/2718e899e93b9b179a591badbcdb1b456e6514c5"
 
 netmask@^1.0.6:
   version "1.0.6"

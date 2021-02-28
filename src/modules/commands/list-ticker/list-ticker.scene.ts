@@ -1,4 +1,3 @@
-import _ = require('lodash');
 import { Scene, SceneEnter } from 'nestjs-telegraf';
 
 import { paginate } from '../../../types/commons';

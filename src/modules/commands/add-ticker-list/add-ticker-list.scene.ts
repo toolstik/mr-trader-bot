@@ -1,4 +1,3 @@
-import PromisePool = require('@supercharge/promise-pool/dist');
 import _ = require('lodash');
 import { Scene, SceneEnter } from 'nestjs-telegraf';
 

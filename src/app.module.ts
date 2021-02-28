@@ -16,12 +16,9 @@ import { ConfigService } from './modules/global/config.service';
 import { GlobalModule } from './modules/global/global.module';
 import { SessionService } from './modules/session/session.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
-import { AddTickerCommand } from './plugins/commands/add-ticker.command';
-import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
 import { FundamentalsCommand } from './plugins/commands/fundamentals.command';
 import { ListTickerCommand } from './plugins/commands/list-ticker.command';
 import { NotifyCommand } from './plugins/commands/notify.command';
-import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
 import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.command';
 import { TestTickerCommand } from './plugins/commands/test-ticker.command';
 import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
@@ -75,14 +72,11 @@ import { TemplateService } from './services/template.service';
     SessionMiddleware,
     MenuPlugin,
 
-    AddTickerCommand,
-    RemoveTickerCommand,
     ListTickerCommand,
     TestTickerCommand,
     UpdateHistoryCommand,
     NotifyCommand,
     FundamentalsCommand,
-    AddTickerListCommand,
     RemoveTickerListCommand,
   ],
 })

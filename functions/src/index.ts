@@ -14,6 +14,7 @@ const DEFAULT_OPTIONS: functions.RuntimeOptions = {
 
 async function main() {
   const result = await start();
+  console.info('-------------Initialization complete--------------');
   // await result.bot.launch();
   return result;
 }
@@ -31,11 +32,19 @@ if (FUNCTIONS_EMULATOR === 'true') {
   })();
 }
 
-// if(FUNCTION_TARGET === 'bot'){
-// 	void (async function(){
-// 		const values = await exportPromise;
-// 	})();
+// if (FUNCTION_TARGET === 'bot') {
+//   void (async function () {
+//     const values = await exportPromise;
+//   })();
 // }
+
+exports.test = functions
+  .runWith({
+    ...DEFAULT_OPTIONS,
+  })
+  .https.onRequest(async (req, res) => {
+    res.send(`Current time is: ${new Date()}`);
+  });
 
 exports.bot = functions
   .runWith({
@@ -44,9 +53,11 @@ exports.bot = functions
   .https.onRequest(async (req, res) => {
     const values = await exportPromise;
     try {
+      console.debug('--------Request received-------');
       await values.bot.handleUpdate(req.body, res);
       res.send();
     } catch (e) {
+      console.error(e);
       res.status(500).send(e);
     }
   });

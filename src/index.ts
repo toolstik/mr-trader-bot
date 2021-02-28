@@ -34,7 +34,7 @@ export async function start() {
   // const assetService = module.get(AssetService);
   const configService = module.get(ConfigService);
 
-  const bot: Telegraf<MyContext> = app.get(getBotToken()); //botService.createBot(plugins);
+  const bot: Telegraf<MyContext> = module.get(getBotToken()); //botService.createBot(plugins);
 
   return {
     env: configService.getEnv(),

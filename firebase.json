@@ -1,18 +1,21 @@
 {
-	"functions": {
-		"source": ".",
-		"runtime": "nodejs14",
-		"ignore": [
-			"src",
-			"node_modules"
-		]
-	},
-	"database": {
-		"rules": "database.rules.json"
-	},
-	"emulators": {
-		"database": {
-			"port": "9001"
-		}
-	}
+  "functions": {
+    "source": ".",
+    "runtime": "nodejs14",
+    "ignore": [
+      "./src/**",
+      "**/node_modules/**",
+      ".git",
+      "*.log",
+      "./.*"
+    ]
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "emulators": {
+    "database": {
+      "port": "9001"
+    }
+  }
 }

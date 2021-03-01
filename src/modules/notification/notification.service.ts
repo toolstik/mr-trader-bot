@@ -197,14 +197,14 @@ export class NotificationService {
     });
   }
 
-  async sendAssetFundamendals(ctx: MyContext, data: FundamentalData) {
+  async sendAssetFundamentals(ctx: MyContext, data: FundamentalData) {
     const message = this.templateService.apply('fundamentals', data);
     return await ctx.replyWithMarkdown(message, {
       disable_web_page_preview: true,
     });
   }
 
-  async sendAssetFundamendalsAll() {
+  async sendAssetFundamentalsAll() {
     await this.collectAndPlay(
       async t => {
         const asset = await this.assetService.getOne(t);

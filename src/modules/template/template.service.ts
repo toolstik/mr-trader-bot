@@ -42,7 +42,7 @@ export class TemplateService {
     this.load();
   }
 
-  public apply(key: string, data: any, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): string {
+  public apply(key: string, data: Object, lang: SUPPORTED_LANGUAGES = DEFAULT_LANG): string {
     // this.logger.debug(
     // 	`apply template: ${key}`,
     // );

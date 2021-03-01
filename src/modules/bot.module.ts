@@ -4,22 +4,33 @@ import { FirebaseSessionMiddleware } from '../middlewares/firebase-session.middl
 import { BotUpdate } from './bot.update';
 import { AddTickerModule } from './commands/add-ticker/add-ticker.module';
 import { AddTickerListModule } from './commands/add-ticker-list/add-ticker-list.module';
+import { FundamentalsModule } from './commands/fundamentals/fundamentals.module';
 import { ListTickerModule } from './commands/list-ticker/list-ticker.module';
+import { NotifyModule } from './commands/notify/notify.module';
 import { RemoveTickerModule } from './commands/remove-ticker/remove-ticker.module';
+import { RemoveTickerListModule } from './commands/remove-ticker-list/remove-ticker-list.module';
+import { StatusModule } from './commands/status/status.module';
 import { TestTickerModule } from './commands/test-ticker/test-ticker.module';
+import { UpdateHistoryModule } from './commands/update-history/update-history.module';
 import { FirebaseModule } from './firebase/firebase.module';
-import { FirebaseService } from './firebase/firebase.service';
 
 @Module({
   imports: [
+    //commands
     AddTickerModule,
     AddTickerListModule,
-    FirebaseModule,
+    FundamentalsModule,
     ListTickerModule,
+    NotifyModule,
     RemoveTickerModule,
+    RemoveTickerListModule,
+    StatusModule,
     TestTickerModule,
+    UpdateHistoryModule,
+
+    FirebaseModule,
   ],
-  providers: [BotUpdate, FirebaseService, FirebaseSessionMiddleware],
+  providers: [BotUpdate, FirebaseSessionMiddleware],
   exports: [FirebaseSessionMiddleware],
 })
 export class BotModule {}

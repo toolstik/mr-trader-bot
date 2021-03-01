@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import * as _ from 'lodash';
 import * as moment from 'moment-timezone';
 
-import { AssetService } from '../modules/asset/asset.service';
-import { YahooService } from '../modules/yahoo/yahoo.service';
-import { AssetStatus } from '../types/commons';
-import { Donchian, MarketData } from './../types/market-data';
-import { deepTransition } from './fsm';
+import { deepTransition } from '../../services/fsm';
+import { AssetStatus } from '../../types/commons';
+import { Donchian, MarketData } from '../../types/market-data';
+import { AssetService } from '../asset/asset.service';
+import { YahooService } from '../yahoo/yahoo.service';
 
 @Injectable()
 export class AnalysisService {

@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 
 import { AssetService } from '../../modules/asset/asset.service';
-import { NotificationService } from '../../services/notification.service';
 import { BotPlugin } from '../../types/bot-plugin';
 import { MyContext } from '../../types/my-context';
 import PromisePool = require('@supercharge/promise-pool');
+import { NotificationService } from '../../modules/notification/notification.service';
 import { FundamentalData } from '../../types/commons';
 
 @Injectable()

@@ -4,7 +4,7 @@ import Axios from 'axios';
 import { AppModule } from './app.module';
 import { DatahubService } from './modules/datahub/datahub.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
-import { TemplateService } from './services/template.service';
+import { TemplateService } from './modules/template/template.service';
 import { FundamentalData } from './types/commons';
 
 // async function fetchAllFinvizData(ticker: string): Promise<FinVizObject> {

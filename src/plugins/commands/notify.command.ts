@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Telegraf } from 'telegraf';
 
+import { NotificationService } from '../../modules/notification/notification.service';
 import { BotPlugin } from '../../types/bot-plugin';
 import { MyContext } from '../../types/my-context';
-import { NotificationService } from './../../services/notification.service';
 
 @Injectable()
 export class NotifyCommand implements BotPlugin {

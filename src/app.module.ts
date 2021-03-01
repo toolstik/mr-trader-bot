@@ -2,42 +2,25 @@ import { Module } from '@nestjs/common';
 import { TelegrafModule } from 'nestjs-telegraf';
 
 import { commandPartsMiddleWare } from './middlewares/command-args.middleware';
+import { FirebaseSessionMiddleware } from './middlewares/firebase-session.middleware';
 import { i18nMiddleware } from './middlewares/i18n.middleware';
 import { requestContextMiddleware } from './middlewares/request-context/request-context.middleware';
 import { ResponseTimeMiddleware } from './middlewares/request-time.middleware';
-import { SessionMiddleware } from './middlewares/session.middleware';
-import { AssetService } from './modules/asset/asset.service';
-import { AssetListService } from './modules/asset-list/asset-list.service';
 import { BotModule } from './modules/bot.module';
-import { DatahubService } from './modules/datahub/datahub.service';
-import { FinvizService } from './modules/finviz/finviz.service';
-import { FirebaseService } from './modules/firebase/firebase.service';
 import { ConfigService } from './modules/global/config.service';
 import { GlobalModule } from './modules/global/global.module';
-import { SessionService } from './modules/session/session.service';
-import { YahooService } from './modules/yahoo/yahoo.service';
-import { FundamentalsCommand } from './plugins/commands/fundamentals.command';
-import { ListTickerCommand } from './plugins/commands/list-ticker.command';
-import { NotifyCommand } from './plugins/commands/notify.command';
-import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.command';
-import { TestTickerCommand } from './plugins/commands/test-ticker.command';
-import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
 import { MenuPlugin } from './plugins/menu.plugin';
-import { AnalysisService } from './services/analysis.service';
-import { BotService } from './services/bot.service';
-import { NotificationService } from './services/notification.service';
-import { TemplateService } from './services/template.service';
 
 @Module({
   imports: [
     GlobalModule,
     BotModule,
     TelegrafModule.forRootAsync({
-      inject: [ConfigService, SessionMiddleware, ResponseTimeMiddleware],
+      inject: [ConfigService, FirebaseSessionMiddleware, ResponseTimeMiddleware],
       imports: [BotModule],
       useFactory: (
         configService: ConfigService,
-        sessionMiddleWare: SessionMiddleware,
+        sessionMiddleWare: FirebaseSessionMiddleware,
         responceTimeMiddleware: ResponseTimeMiddleware,
       ) => {
         return {
@@ -55,29 +38,6 @@ import { TemplateService } from './services/template.service';
       },
     }),
   ],
-  providers: [
-    FirebaseService,
-    AssetService,
-    SessionService,
-    YahooService,
-    FinvizService,
-    AssetService,
-    BotService,
-    AnalysisService,
-    TemplateService,
-    NotificationService,
-    DatahubService,
-    AssetListService,
-
-    SessionMiddleware,
-    MenuPlugin,
-
-    ListTickerCommand,
-    TestTickerCommand,
-    UpdateHistoryCommand,
-    NotifyCommand,
-    FundamentalsCommand,
-    RemoveTickerListCommand,
-  ],
+  providers: [MenuPlugin],
 })
 export class AppModule {}

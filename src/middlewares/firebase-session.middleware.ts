@@ -7,7 +7,7 @@ import { FirebaseService } from '../modules/firebase/firebase.service';
 import { MyContext } from '../types/my-context';
 
 @Injectable()
-export class SessionMiddleware implements MiddlewareObj<MyContext> {
+export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
   constructor(private firebase: FirebaseService) {}
 
   middleware() {

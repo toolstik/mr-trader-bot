@@ -1,68 +1,46 @@
-import { Logger, Module } from "@nestjs/common";
-import { CommandArgsPlugin } from './plugins/command-args.plugin';
-import { AddTickerListCommand } from './plugins/commands/add-ticker-list.command';
-import { AddTickerCommand } from './plugins/commands/add-ticker.command';
-import { FundamentalsCommand } from "./plugins/commands/fundamentals.command";
-import { ListTickerCommand } from './plugins/commands/list-ticker.command';
-import { NotifyCommand } from './plugins/commands/notify.command';
-import { RemoveTickerListCommand } from './plugins/commands/remove-ticker-list.command';
-import { RemoveTickerCommand } from './plugins/commands/remove-ticker.command';
-import { TestTickerCommand } from './plugins/commands/test-ticker.command';
-import { UpdateHistoryCommand } from './plugins/commands/update-history.command';
-import { I18nPlugin } from './plugins/i18n.plugin';
-import { MenuPlugin } from './plugins/menu.plugin';
-import { SessionPlugin } from './plugins/session.plugin';
-import { AnalysisService } from './services/analysis.service';
-import { AssetListService } from './services/asset-list.service';
-import { AssetService } from './services/asset.service';
-import { BotService } from "./services/bot.service";
-import { ConfigService } from './services/config.service';
-import { DatahubService } from './services/datahub.service';
-import { FinvizService } from './services/finviz.service';
-import { FirebaseService } from './services/firebase.service';
-import { NotificationService } from './services/notification.service';
-import { SessionService } from './services/session.service';
-import { TemplateService } from './services/template.service';
-import { YahooService } from './services/yahoo.service';
+import { Module } from '@nestjs/common';
+import { TelegrafModule } from 'nestjs-telegraf';
 
+import { commandPartsMiddleWare } from './middlewares/command-args.middleware';
+import { FirebaseSessionMiddleware } from './middlewares/firebase-session.middleware';
+import { i18nMiddleware } from './middlewares/i18n.middleware';
+import { requestContextMiddleware } from './middlewares/request-context/request-context.middleware';
+import { ResponseTimeMiddleware } from './middlewares/request-time.middleware';
+import { BotModule } from './modules/bot.module';
+import { ConfigService } from './modules/global/config.service';
+import { GlobalModule } from './modules/global/global.module';
+import { MenuPlugin } from './plugins/menu.plugin';
 
 @Module({
-	providers: [
-		FirebaseService,
-		ConfigService,
-		AssetService,
-		SessionService,
-		YahooService,
-		FinvizService,
-		AssetService,
-		BotService,
-		AnalysisService,
-		TemplateService,
-		NotificationService,
-		DatahubService,
-		AssetListService,
-
-		SessionPlugin,
-		I18nPlugin,
-		CommandArgsPlugin,
-		MenuPlugin,
-
-		AddTickerCommand,
-		RemoveTickerCommand,
-		ListTickerCommand,
-		TestTickerCommand,
-		UpdateHistoryCommand,
-		NotifyCommand,
-		FundamentalsCommand,
-		AddTickerListCommand,
-		RemoveTickerListCommand,
-
-		{
-			provide: Logger,
-			useClass: Logger,
-		},
-	],
+  imports: [
+    GlobalModule,
+    BotModule,
+    TelegrafModule.forRootAsync({
+      inject: [ConfigService, FirebaseSessionMiddleware, ResponseTimeMiddleware],
+      imports: [BotModule],
+      useFactory: (
+        configService: ConfigService,
+        sessionMiddleWare: FirebaseSessionMiddleware,
+        responceTimeMiddleware: ResponseTimeMiddleware,
+      ) => {
+        return {
+          token: configService.getEnv().bot_token,
+          launchOptions: false,
+          options: {
+            handlerTimeout: 10 * 60 * 1000, // 10 min
+          },
+          middlewares: [
+            requestContextMiddleware,
+            commandPartsMiddleWare,
+            i18nMiddleware,
+            sessionMiddleWare,
+            responceTimeMiddleware,
+          ],
+          include: [BotModule],
+        };
+      },
+    }),
+  ],
+  providers: [MenuPlugin],
 })
-export class AppModule {
-
-}
+export class AppModule {}

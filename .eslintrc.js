@@ -5,9 +5,11 @@ module.exports = {
     node: true,
   },
   extends: [
-    "plugin:import/errors",
-    "plugin:import/warnings",
-    "plugin:import/typescript",
+		'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -16,12 +18,19 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
+		'unused-imports',
+    '@typescript-eslint',
+    '@typescript-eslint/tslint',
+    'prettier',
+    'simple-import-sort',
     "import",
   ],
   rules: {
     "@typescript-eslint/adjacent-overload-signatures": "error",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "error",
-    "@typescript-eslint/no-empty-interface": "warn",
+    "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-namespace": "error",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -34,6 +43,7 @@ module.exports = {
     "import/no-deprecated": "warn",
     "import/no-extraneous-dependencies": "error",
     "import/no-unassigned-import": "warn",
+    "import/no-unresolved": "off",
     "no-cond-assign": "error",
     "no-duplicate-case": "error",
     "no-duplicate-imports": "error",
@@ -58,6 +68,9 @@ module.exports = {
     "no-unused-labels": "error",
     "no-var": "warn",
     "prefer-const": "warn",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "off",
+    'unused-imports/no-unused-imports': 'error',
   },
   settings: {
     jsdoc: {

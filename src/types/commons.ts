@@ -1,90 +1,94 @@
-import { MarketData } from "./market-data";
-import { TransformationType, TransformFnParams, Transform } from "class-transformer";
+import { Transform, TransformationType } from 'class-transformer';
 
-export type AssetStateKey = 'NONE' | 'APPROACH_TOP' | 'APPROACH_BOTTOM' | 'REACH_TOP' | 'REACH_BOTTOM';
+import { MarketData } from './market-data';
+
+export type AssetStateKey =
+  | 'NONE'
+  | 'APPROACH_TOP'
+  | 'APPROACH_BOTTOM'
+  | 'REACH_TOP'
+  | 'REACH_BOTTOM';
 
 export type AssetStatus = {
-	ticker: string;
-	status: AssetStateKey;
-	changed: boolean;
-	marketData: MarketData;
+  ticker: string;
+  status: AssetStateKey;
+  changed: boolean;
+  marketData: MarketData;
 };
 
 export type AssetStatusWithFundamentals = AssetStatus & {
-	fundamentals: FundamentalData,
+  fundamentals: FundamentalData;
 };
 
 export type RefEntity<T> = Record<string, T>;
 
 export class RefEntityObject {
-	[key: string]: Object;
+  [key: string]: Object;
 }
 
 export type FundamentalData = {
-	ticker: string;
-	trailingPE: number;
-	priceToBook: number;
-	priceToSales: number;
-	trailingEps: number;
-	currentRatio: number;
-	dividentAnnualPercent: number;
-	sma50: number;
-	sma200: number;
-	rsi13: number;
-	rsi14: number;
-
-}
+  ticker: string;
+  trailingPE: number;
+  priceToBook: number;
+  priceToSales: number;
+  trailingEps: number;
+  currentRatio: number;
+  dividentAnnualPercent: number;
+  sma50: number;
+  sma200: number;
+  rsi13: number;
+  rsi14: number;
+};
 
 export type Page<T> = {
-	pageNum: number;
-	pageSize: number;
-	totalPages: number;
-	totalItems: number;
-	items: T[];
+  pageNum: number;
+  pageSize: number;
+  totalPages: number;
+  totalItems: number;
+  items: T[];
 };
 
 export function paginate<T>(array: T[], size = 15): Page<T>[] {
-	return array?.reduce((acc, val, i) => {
-		const idx = Math.floor(i / size);
-		const page = acc[idx] || (acc[idx] = []);
-		page.push(val);
-		return acc;
-	}, [] as T[][])
-		.map((p, i, a) => {
-			return {
-				pageNum: i + 1,
-				pageSize: p.length,
-				totalPages: a.length,
-				totalItems: array.length,
-				items: p,
-			} as Page<T>;
-		});
+  return array
+    ?.reduce((acc, val, i) => {
+      const idx = Math.floor(i / size);
+      const page = acc[idx] || (acc[idx] = []);
+      page.push(val);
+      return acc;
+    }, [] as T[][])
+    .map((p, i, a) => {
+      return {
+        pageNum: i + 1,
+        pageSize: p.length,
+        totalPages: a.length,
+        totalItems: array.length,
+        items: p,
+      } as Page<T>;
+    });
 }
 
-type ArrayItem<T> = T extends (infer R)[] ? R :
-	T extends readonly (infer R)[] ? R :
-	never;
+type ArrayItem<T> = T extends (infer R)[] ? R : T extends readonly (infer R)[] ? R : never;
 export const KnownListKeys = ['nasdaq', 'snp500'] as const;
 export type ListKey = ArrayItem<typeof KnownListKeys>;
 
 export function dateTo(targetType: 'string' | 'number'): Parameters<typeof Transform>[0] {
-	return ({ value, type }) => {
-		if (type === TransformationType.PLAIN_TO_CLASS) {
-			if (typeof value !== 'object') {
-				return new Date(value);
-			}
-			return value;
-		}
+  return ({ value, type }) => {
+    if (type === TransformationType.PLAIN_TO_CLASS) {
+      if (typeof value !== 'object') {
+        return new Date(value);
+      }
+      return value;
+    }
 
-		if (type === TransformationType.CLASS_TO_PLAIN) {
-			if (value instanceof Date) {
-				const result = targetType === 'number' ? value.getTime() : value.toISOString();
-				// console.log('%%%%%', { targetType, value, result });
-				return result;
-			}
-			return value;
-		}
+    if (type === TransformationType.CLASS_TO_PLAIN) {
+      if (value instanceof Date) {
+        const result = targetType === 'number' ? value.getTime() : value.toISOString();
+        // console.log('%%%%%', { targetType, value, result });
+        return result;
+      }
+      return value;
+    }
 
-		return value;
-	}
+    return value;
+  };
 }

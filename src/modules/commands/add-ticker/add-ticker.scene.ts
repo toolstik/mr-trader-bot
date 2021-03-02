@@ -5,6 +5,7 @@ import { Scene, SceneEnter } from 'nestjs-telegraf';
 import { currentContext } from '../../../utils/current-context';
 import { AssetService } from '../../asset/asset.service';
 import { YahooService } from '../../yahoo/yahoo.service';
+import { parseTickerList } from '../utils';
 
 @Scene(AddTickerScene.sceneName)
 export class AddTickerScene {
@@ -21,9 +22,8 @@ export class AddTickerScene {
 
   private async process() {
     const ctx = currentContext();
-    const args = ctx.state.command.splitArgs;
 
-    const addTickers = args.filter(t => !!t).map(t => t.toUpperCase());
+    const addTickers = parseTickerList(ctx.state.command.args);
 
     if (!addTickers?.length) {
       await ctx.reply(ctx.i18n.t('commands.add-ticker.no-ticker-specified'));

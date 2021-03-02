@@ -3,6 +3,7 @@ import _ = require('lodash');
 import { Scene, SceneEnter } from 'nestjs-telegraf';
 
 import { currentContext } from '../../../utils/current-context';
+import { parseTickerList } from '../utils';
 
 type TickerStatus = 'remove' | 'not_found';
 
@@ -19,9 +20,8 @@ export class RemoveTickerScene {
 
   private async process() {
     const ctx = currentContext();
-    const args = ctx.state.command.splitArgs;
 
-    const removeTickers = _.uniq(args.filter(t => !!t).map(t => t.toUpperCase()));
+    const removeTickers = parseTickerList(ctx.state.command.args);
 
     if (!removeTickers?.length) {
       await ctx.reply(ctx.i18n.t('commands.remove-ticker.no-ticker-specified'));

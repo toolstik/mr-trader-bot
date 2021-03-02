@@ -62,27 +62,25 @@ exports.bot = functions
     }
   });
 
-// exports.updateHistoryScheduler = functions
-// 	.runWith({
-// 		...DEFAULT_OPTIONS,
-// 	})
-// 	.pubsub
-// 	.schedule('0 */4 * * *')
-// 	.onRun(async () => {
-// 		const values = await exportPromise;
-// 		await values.updateHistory();
-// 	});
+exports.updateHistoryScheduler = functions
+  .runWith({
+    ...DEFAULT_OPTIONS,
+  })
+  .pubsub.schedule('2 */4 * * *')
+  .onRun(async () => {
+    const values = await exportPromise;
+    await values.updateHistory();
+  });
 
-// exports.notificationScheduler = functions
-// 	.runWith({
-// 		...DEFAULT_OPTIONS,
-// 	})
-// 	.pubsub
-// 	.schedule('*/5 * * * *')
-// 	.onRun(async () => {
-// 		const values = await exportPromise;
-// 		await values.notify();
-// 	});
+exports.notificationScheduler = functions
+  .runWith({
+    ...DEFAULT_OPTIONS,
+  })
+  .pubsub.schedule('*/5 * * * *')
+  .onRun(async () => {
+    const values = await exportPromise;
+    await values.notify();
+  });
 
 // exports.fundamentalsScheduler = functions.pubsub.schedule('5 11 * * *')
 // 	.timeZone('Europe/Moscow')
@@ -91,14 +89,13 @@ exports.bot = functions
 // 		await values.fundamentals();
 // 	});
 
-// exports.statusScheduler = functions
-// 	.runWith({
-// 		...DEFAULT_OPTIONS,
-// 	})
-// 	.pubsub
-// 	.schedule('5 11 * * *')
-// 	.timeZone('Europe/Moscow')
-// 	.onRun(async () => {
-// 		const values = await exportPromise;
-// 		await values.status();
-// 	});
+exports.statusScheduler = functions
+  .runWith({
+    ...DEFAULT_OPTIONS,
+  })
+  .pubsub.schedule('5 11 * * MON,TUE,WED,THU,FRI')
+  .timeZone('Europe/Moscow')
+  .onRun(async () => {
+    const values = await exportPromise;
+    await values.status();
+  });

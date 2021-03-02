@@ -21,11 +21,10 @@ const commandParts = () =>
   Composer.on('text', (ctx, next) => {
     const command = parse(ctx.message.text);
 
-    if (!command) {
-      return next();
+    if (command) {
+      ctx.state.command = command;
     }
 
-    ctx.state.command = command;
     return next();
   });
 

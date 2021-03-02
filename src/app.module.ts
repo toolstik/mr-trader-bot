@@ -26,6 +26,9 @@ import { MenuPlugin } from './plugins/menu.plugin';
         return {
           token: configService.getEnv().bot_token,
           launchOptions: false,
+          options: {
+            handlerTimeout: 10 * 60 * 1000, // 10 min
+          },
           middlewares: [
             requestContextMiddleware,
             commandPartsMiddleWare,

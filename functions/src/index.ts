@@ -1,7 +1,9 @@
+import d from 'debug';
 import * as functions from 'firebase-functions';
 
 import { start } from '../../src';
 
+const debug = d('trader_bot:main');
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
@@ -27,7 +29,7 @@ const { FUNCTION_TARGET, FUNCTIONS_EMULATOR } = process.env;
 if (FUNCTIONS_EMULATOR === 'true') {
   void (async () => {
     const values = await exportPromise;
-    console.log('Start long-pooling...');
+    debug('Start long-pooling...');
     await values.bot.launch();
   })();
 }
@@ -38,13 +40,13 @@ if (FUNCTIONS_EMULATOR === 'true') {
 //   })();
 // }
 
-exports.test = functions
-  .runWith({
-    ...DEFAULT_OPTIONS,
-  })
-  .https.onRequest(async (req, res) => {
-    res.send(`Current time is: ${new Date()}`);
-  });
+// exports.test = functions
+//   .runWith({
+//     ...DEFAULT_OPTIONS,
+//   })
+//   .https.onRequest(async (req, res) => {
+//     res.send(`Current time is: ${new Date()}`);
+//   });
 
 exports.bot = functions
   .runWith({
@@ -53,8 +55,9 @@ exports.bot = functions
   .https.onRequest(async (req, res) => {
     const values = await exportPromise;
     try {
-      console.debug('--------Request received-------');
+      debug('--------Request received-------');
       await values.bot.handleUpdate(req.body, res);
+      debug('--------Update handled-------');
       res.send();
     } catch (e) {
       console.error(e);

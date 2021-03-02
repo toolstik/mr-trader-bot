@@ -10,11 +10,11 @@ import { RequestContext } from './request-context.model';
  *
  * This solution is taken from https://github.com/nestjs/nest/issues/699#issuecomment-405868782.
  */
-export const requestContextMiddleware: MiddlewareFn<MyContext> = (
+export const requestContextMiddleware: MiddlewareFn<MyContext> = async (
   ctx: MyContext,
-  next: () => void,
+  next: () => Promise<void>,
 ) => {
   const requestContext = new RequestContext(ctx);
   RequestContext.CLS.setContext(requestContext);
-  next();
+  await next();
 };

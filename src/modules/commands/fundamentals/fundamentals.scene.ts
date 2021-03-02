@@ -5,6 +5,7 @@ import { FundamentalData } from '../../../types/commons';
 import { currentContext } from '../../../utils/current-context';
 import { AssetService } from '../../asset/asset.service';
 import { NotificationService } from '../../notification/notification.service';
+import { parseTickerList } from '../utils';
 
 @Scene(FundamentalsScene.sceneName)
 export class FundamentalsScene {
@@ -25,9 +26,7 @@ export class FundamentalsScene {
   private async process() {
     const ctx = currentContext();
 
-    const args = ctx.state.command.splitArgs;
-
-    const inputTickers = args.filter(t => !!t?.trim()).map(t => t.toUpperCase());
+    const inputTickers = parseTickerList(ctx.state.command.args);
 
     if (inputTickers.length === 1 && inputTickers[0] === 'ALL') {
       await this.notificationService.sendAssetFundamentalsAll();

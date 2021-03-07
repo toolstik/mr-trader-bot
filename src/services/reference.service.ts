@@ -1,5 +1,7 @@
 import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { database } from 'firebase-admin';
+import { Observable } from 'rxjs';
+import { shareReplay, take } from 'rxjs/operators';
 
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { RefEntity, RefEntityObject } from '../types/commons';
@@ -12,19 +14,42 @@ export function normalizeKey(key: string) {
 export abstract class ReferenceService<T> {
   protected readonly db: database.Database;
   protected readonly ref: database.Reference;
+  private state$: Observable<RefEntityObject>;
 
   constructor(firebase: FirebaseService) {
     this.db = firebase.getDatabase();
     this.ref = this.db.ref(this.getRefName());
+
+    this.state$ = this.getStateObservable();
   }
 
   protected abstract getRefName(): string;
 
   protected abstract getEntityType(): ClassConstructor<T>;
 
+  private getStateObservable() {
+    return new Observable<RefEntityObject>(subj => {
+      this.ref.on(
+        'value',
+        snapshot => {
+          subj.next(snapshot.val());
+        },
+        error => {
+          subj.error(error);
+        },
+      );
+    }).pipe(shareReplay(1));
+  }
+
+  private getSnapshotValue() {
+    return this.state$
+      .pipe(take(1))
+      .toPromise()
+      .then(i => i ?? {});
+  }
+
   async getAll() {
-    const snapshot = await this.ref.once('value');
-    const value = (snapshot.val() ?? {}) as Object;
+    const value = await this.getSnapshotValue();
     const entityType = this.getEntityType();
     return plainToClass(RefEntityObject, value, {
       targetMaps: [
@@ -43,8 +68,7 @@ export abstract class ReferenceService<T> {
 
   async getOne(key: string) {
     const goodKey = normalizeKey(key);
-    const snapshot = await this.ref.child(goodKey).once('value');
-    const value = snapshot.val() as Object;
+    const value = await this.getSnapshotValue().then(i => i[goodKey]);
     const entityType = this.getEntityType();
     return plainToClass(entityType, value);
   }

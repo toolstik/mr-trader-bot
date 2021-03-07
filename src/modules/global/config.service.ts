@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 type Environment = {
   name: string;
   bot_token: string;
+  webhook_url: string;
 };
 
 @Injectable()

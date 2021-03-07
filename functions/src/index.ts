@@ -32,6 +32,12 @@ if (FUNCTIONS_EMULATOR === 'true') {
     debug('Start long-pooling...');
     await values.bot.launch();
   })();
+} else {
+  void (async () => {
+    const values = await exportPromise;
+    debug(`Set webhook to '${values.env.webhook_url}'...`);
+    await values.bot.telegram.setWebhook(values.env.webhook_url);
+  })();
 }
 
 // if (FUNCTION_TARGET === 'bot') {

@@ -11,7 +11,7 @@ export function normalizeKey(key: string) {
   return key ? key.replace(/[.#$/\[\]]/, '_') : key;
 }
 
-export abstract class ReferenceService<T> {
+export abstract class FirebaseRealtimeRepository<T> {
   protected readonly db: database.Database;
   protected readonly ref: database.Reference;
   private state$: Observable<RefEntityObject>;

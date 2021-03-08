@@ -1,30 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
-import { ReferenceService } from '../../services/reference.service';
 import { TgSession } from '../../types/my-context';
-import { FirebaseService } from '../firebase/firebase.service';
 import _ = require('lodash');
-
-export class SessionEntity {
-  [key: string]: TgSession;
-}
+import { SessionRepository } from './session.repository';
 
 @Injectable()
-export class SessionService extends ReferenceService<SessionEntity> {
-  protected getEntityType() {
-    return SessionEntity;
-  }
-
-  constructor(firebase: FirebaseService) {
-    super(firebase);
-  }
-
-  protected getRefName(): string {
-    return 'sessions';
-  }
+export class SessionService {
+  constructor(private repository: SessionRepository) {}
 
   async getSessions() {
-    const sessionRefValue = await this.getAll();
+    const sessionRefValue = await this.repository.getAll();
     return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
   }
 

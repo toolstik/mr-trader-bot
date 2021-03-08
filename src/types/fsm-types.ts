@@ -1,4 +1,4 @@
-import { AssetEntity } from '../modules/asset/asset.service';
+import { AssetEntity } from '../modules/asset/asset.repository';
 import { AssetStateKey } from './commons';
 import { MarketData } from './market-data';
 

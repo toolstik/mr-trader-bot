@@ -1,57 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { Transform, Type } from 'class-transformer';
 
-import { normalizeKey, ReferenceService } from '../../services/reference.service';
-import { AssetStateKey, dateTo, FundamentalData, RefEntity } from '../../types/commons';
-import { MarketHistory, SymbolHistory } from '../../types/history';
+import { normalizeKey } from '../../services/firebase-realtime.repository';
+import { FundamentalData, RefEntity } from '../../types/commons';
 import { FinvizService } from '../finviz/finviz.service';
-import { FirebaseService } from '../firebase/firebase.service';
 import { SessionService } from '../session/session.service';
 import { YahooService } from '../yahoo/yahoo.service';
-import _ = require('lodash');
+import { AssetEntity, AssetRepository } from './asset.repository';
+
 import PromisePool = require('@supercharge/promise-pool/dist');
-
-type AssetHistoryEntity = SymbolHistory;
-
-export class AssetEntity {
-  symbol: string;
-
-  @Type(() => String)
-  state: AssetStateKey;
-
-  @Transform(dateTo('string'))
-  historyUpdateAt: Date;
-
-  @Type(() => MarketHistory)
-  history: AssetHistoryEntity;
-}
-
+import { BaseEntityService } from '../../services/base-entity.service';
 @Injectable()
-export class AssetService extends ReferenceService<AssetEntity> {
+export class AssetService extends BaseEntityService<AssetEntity> {
   private readonly HISTORY_DAYS_BACK = 20;
 
   constructor(
-    firebase: FirebaseService,
+    private repository: AssetRepository,
     private yahoo: YahooService,
     private finviz: FinvizService,
     private sessionService: SessionService,
   ) {
-    super(firebase);
-  }
-
-  protected getEntityType() {
-    return AssetEntity;
-  }
-
-  protected getRefName(): string {
-    return 'tickers';
+    super(repository);
   }
 
   async updateHistory(symbols?: string[]) {
     const symbs = symbols ?? (await this.sessionService.getSessionTickers());
 
     const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
-    const value = (await this.getAll()) ?? {};
+    const value = (await this.repository.getAll()) ?? {};
 
     const newValue = Object.entries(histories.result || {}).reduce((prev, [key, val]) => {
       const normKey = normalizeKey(key);
@@ -66,12 +41,12 @@ export class AssetService extends ReferenceService<AssetEntity> {
     }, {} as RefEntity<AssetEntity>);
 
     if (symbols) {
-      await this.setAll({
+      await this.repository.setAll({
         ...value,
         ...newValue,
       });
     } else {
-      await this.setAll(newValue);
+      await this.repository.setAll(newValue);
     }
     return {
       newValue,

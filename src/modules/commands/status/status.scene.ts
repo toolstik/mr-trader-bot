@@ -17,6 +17,8 @@ export class StatusScene {
   }
 
   private async process() {
-    await this.notificationService.sendAssetStatusStateAllPages();
+    const ctx = currentContext();
+    const session = ctx.session;
+    await this.notificationService.sendAssetStatusStatePages([session]);
   }
 }

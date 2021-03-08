@@ -28,7 +28,7 @@ export async function start() {
       await notificationService.sendAssetStatusChangesAll();
     },
     status: async () => {
-      await notificationService.sendAssetStatusStateAllPages();
+      await notificationService.sendAssetStatusStatePages();
     },
     fundamentals: async () => {
       await notificationService.sendAssetFundamentalsAll();

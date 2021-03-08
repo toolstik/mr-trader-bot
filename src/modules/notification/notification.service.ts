@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import PromisePool = require('@supercharge/promise-pool');
+import _ = require('lodash');
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
@@ -34,9 +35,12 @@ export class NotificationService {
   private async collectAndPlay<T>(
     collect: (ticket: string) => Promise<T | false>,
     play: (session: TgSession, ticker: string, data: T) => Promise<void>,
+    sessions?: TgSession[],
+    tickers?: string[],
   ) {
-    const sessions = await this.sessionService.getSessions();
-    const tickers = await this.sessionService.getAllSessionTickers();
+    sessions = sessions ?? (await this.sessionService.getSessions());
+    const sessionsTickers = await this.sessionService.getSessionTickers(sessions);
+    tickers = tickers ? _.intersection(tickers, sessionsTickers) : sessionsTickers;
 
     const dict = await PromisePool.withConcurrency(5)
       .for(tickers)
@@ -153,8 +157,8 @@ export class NotificationService {
     );
   }
 
-  async sendAssetStatusStateAllPages() {
-    const sessions: Record<string, AssetStatus[]> = {};
+  async sendAssetStatusStatePages(sessions?: TgSession[]) {
+    const chats: Record<string, AssetStatus[]> = {};
 
     await this.collectAndPlay(
       async t => await this.analysisService.getAssetStatus(t),
@@ -163,12 +167,13 @@ export class NotificationService {
           return;
         }
 
-        sessions[s.chatId] = sessions[s.chatId] || [];
-        sessions[s.chatId].push(d);
+        chats[s.chatId] = chats[s.chatId] || [];
+        chats[s.chatId].push(d);
       },
+      sessions,
     );
 
-    const blocks = Object.entries(sessions).map(([k, v]) => {
+    const blocks = Object.entries(chats).map(([k, v]) => {
       return paginate(v, 15).map(p => {
         return {
           chatId: k,

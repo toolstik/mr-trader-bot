@@ -73,7 +73,7 @@ export abstract class ReferenceService<T> {
     return plainToClass(entityType, value);
   }
 
-  async setAll(value: RefEntity<T>) {
+  private manyToPlain(value: RefEntity<T>) {
     const entityType = this.getEntityType();
 
     const goodValue = Object.entries(value).reduce((prev, [key, val]) => {
@@ -82,7 +82,7 @@ export abstract class ReferenceService<T> {
       });
     }, new RefEntityObject());
 
-    const plain = classToPlain(goodValue, {
+    return classToPlain(goodValue, {
       targetMaps: [
         {
           target: RefEntityObject,
@@ -95,7 +95,10 @@ export abstract class ReferenceService<T> {
         },
       ],
     });
+  }
 
+  async setAll(value: RefEntity<T>) {
+    const plain = this.manyToPlain(value);
     await this.ref.set(plain);
   }
 
@@ -110,5 +113,26 @@ export abstract class ReferenceService<T> {
     const newValue = updateFn(current);
     await this.setOne(key, newValue);
     return newValue;
+  }
+
+  async setMany(update: RefEntity<T>) {
+    const plain = this.manyToPlain(update ?? {});
+    await this.ref.update(plain);
+  }
+
+  async updateMany(keys: string[], updateFn: (currentValue: T, key: string) => T) {
+    const snapshot = await this.getAll();
+
+    if (!keys?.length) {
+      return;
+    }
+
+    for (const key of keys) {
+      const currentValue = snapshot[key];
+      const newValue = updateFn(currentValue, key);
+      snapshot[key] = newValue;
+    }
+
+    return await this.setAll(snapshot);
   }
 }

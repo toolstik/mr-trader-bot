@@ -3,11 +3,11 @@ import { FirebaseRealtimeRepository } from './firebase-realtime.repository';
 export abstract class BaseEntityService<T> {
   constructor(private __repository: FirebaseRealtimeRepository<T>) {}
 
-  get getOne() {
-    return this.__repository.getOne;
+  getOne(key: string) {
+    return this.__repository.getOne(key);
   }
 
-  get updateOne() {
-    return this.__repository.updateOne;
+  updateOne(key: string, updateFn: (currentValue: T) => T) {
+    return this.__repository.updateOne(key, updateFn);
   }
 }

@@ -5,13 +5,14 @@ import { shareReplay, take } from 'rxjs/operators';
 
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { RefEntity, RefEntityObject } from '../types/commons';
+import { IRepository } from './i-repository.interface';
 
 // ".", "#", "$", "/", "[", or "]"
 export function normalizeKey(key: string) {
   return key ? key.replace(/[.#$/\[\]]/, '_') : key;
 }
 
-export abstract class FirebaseRealtimeRepository<T> {
+export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   protected readonly db: database.Database;
   protected readonly ref: database.Reference;
   private state$: Observable<RefEntityObject>;

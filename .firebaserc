@@ -1,6 +1,7 @@
 {
   "projects": {
     "production": "fir-1-b18cd",
-    "staging": "mr-trading-tg-bot-test"
+    "staging": "mr-trading-tg-bot-test",
+    "default": "mr-trading-tg-bot-test"
   }
 }

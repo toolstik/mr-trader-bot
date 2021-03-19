@@ -1,7 +1,7 @@
-import { FirebaseRealtimeRepository } from './firebase-realtime.repository';
+import { IRepository } from './i-repository.interface';
 
 export abstract class BaseEntityService<T> {
-  constructor(private __repository: FirebaseRealtimeRepository<T>) {}
+  constructor(private __repository: IRepository<T>) {}
 
   getOne(key: string) {
     return this.__repository.getOne(key);

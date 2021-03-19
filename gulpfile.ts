@@ -44,12 +44,14 @@ export class Gulpfile {
 
   @Task()
   fb_deploy() {
-    return shell.task(`firebase -P ${args.profile} deploy --only functions,database`)();
+    return shell.task(`firebase -P ${args.profile} deploy --only functions,firestore,database`)();
   }
 
   @Task()
   fb_serve() {
-    return shell.task(`firebase -P ${args.profile} emulators:start --only functions,database`)();
+    return shell.task(
+      `firebase -P ${args.profile} emulators:start --only functions,firestore,database`,
+    )();
   }
 
   @SequenceTask()

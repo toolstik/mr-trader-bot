@@ -10,4 +10,8 @@ export class FirebaseService {
   getDatabase() {
     return admin.database();
   }
+
+  getFirestore() {
+    return admin.firestore();
+  }
 }

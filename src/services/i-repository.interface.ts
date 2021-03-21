@@ -14,4 +14,6 @@ export interface IRepository<T> {
   updateOne(key: string, updateFn: (currentValue: T) => T): Promise<T>;
 
   updateMany(keys: string[], updateFn: (currentValue: T, key: string) => T): Promise<void>;
+
+  defaultId?(value: T): string;
 }

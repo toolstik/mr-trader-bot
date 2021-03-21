@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
+import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
+import { BaseEntityService } from '../../services/base-entity.service';
 import { normalizeKey } from '../../services/firebase-realtime.repository';
 import { FundamentalData, RefEntity } from '../../types/commons';
 import { FinvizService } from '../finviz/finviz.service';
 import { SessionService } from '../session/session.service';
 import { YahooService } from '../yahoo/yahoo.service';
-import { AssetEntity, AssetRepository } from './asset.repository';
+import { AssetEntity } from './asset.entity';
+import { AssetRepository } from './asset.repository';
 
 import PromisePool = require('@supercharge/promise-pool/dist');
-import { BaseEntityService } from '../../services/base-entity.service';
+import { EventEmitterService } from '../global/event-emitter.service';
+
 @Injectable()
 export class AssetService extends BaseEntityService<AssetEntity> {
   private readonly HISTORY_DAYS_BACK = 20;
@@ -18,6 +23,7 @@ export class AssetService extends BaseEntityService<AssetEntity> {
     private yahoo: YahooService,
     private finviz: FinvizService,
     private sessionService: SessionService,
+    private eventEmitter: EventEmitterService,
   ) {
     super(repository);
   }
@@ -111,5 +117,18 @@ export class AssetService extends BaseEntityService<AssetEntity> {
       sma200: yh.twoHundredDayAverage,
       rsi14: fv?.rsi14,
     } as FundamentalData;
+  }
+
+  @OnEvent(AssetStatusChangedEvent.event)
+  async handleStatusChange(event: AssetStatusChangedEvent) {
+    // console.debug('####handle', event);
+    await this.updateOne(event.symbol, v => ({
+      ...v,
+      state: event.to,
+      stateData: {
+        enterTimestamp: new Date(),
+        enterPrice: event.currentPrice,
+      },
+    }));
   }
 }

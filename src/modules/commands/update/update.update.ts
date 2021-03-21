@@ -1,13 +1,13 @@
 import { Command, Update } from 'nestjs-telegraf';
 
 import { currentContext } from '../../../utils/current-context';
-import { NotifyScene } from './notify.scene';
+import { UpdateScene } from './update.scene';
 
 @Update()
-export class NotifyUpdate {
-  @Command('notify')
+export class UpdateUpdate {
+  @Command('update')
   async command() {
     const ctx = currentContext();
-    await ctx.scene.enter(NotifyScene.sceneName);
+    await ctx.scene.enter(UpdateScene.sceneName);
   }
 }

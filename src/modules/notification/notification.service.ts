@@ -14,6 +14,7 @@ import {
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
+import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
 
@@ -26,6 +27,7 @@ type AssetNotification<T> = {
 export class NotificationService {
   constructor(
     private assetService: AssetService,
+    private eventService: EventService,
     private sessionService: SessionService,
     private analysisService: AnalysisService,
     private templateService: TemplateService,

@@ -3,8 +3,8 @@ import { Scene, SceneEnter } from 'nestjs-telegraf';
 import { currentContext } from '../../../utils/current-context';
 import { NotificationService } from '../../notification/notification.service';
 
-@Scene(TestTickerScene.sceneName)
-export class TestTickerScene {
+@Scene(NotifyScene.sceneName)
+export class NotifyScene {
   static sceneName = 'notify';
 
   constructor(private notificationService: NotificationService) {}

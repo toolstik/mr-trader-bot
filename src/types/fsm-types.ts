@@ -1,9 +1,13 @@
-import { AssetEntity } from '../modules/asset/asset.repository';
+import { StateMachine } from '@xstate/fsm';
+
+import { AssetEntity } from '../modules/asset/asset.entity';
+import { EventEntity } from '../modules/event/event.repository';
 import { AssetStateKey } from './commons';
 import { MarketData } from './market-data';
 
 export type FsmContext = {
   asset: AssetEntity;
+  events?: EventEntity[];
 };
 
 type _FsmEvent<K extends string, T> = {
@@ -25,3 +29,5 @@ type _FsmState<K extends string, T extends FsmContext> = {
 export type FsmState = _FsmState<AssetStateKey, FsmContext>;
 
 export type FsmEvent<K extends FsmEventKey = any> = _FsmEvent<K, FsmEventPayload<K>>;
+
+export type State = StateMachine.State<FsmContext, FsmEvent, FsmState>;

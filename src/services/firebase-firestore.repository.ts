@@ -1,6 +1,5 @@
-import { classToPlain } from 'class-transformer';
-
 import { FirebaseService } from '../modules/firebase/firebase.service';
+import { newFirestoreId } from '../utils/firebase';
 import { IRepository } from './i-repository.interface';
 
 // ".", "#", "$", "/", "[", or "]"
@@ -16,7 +15,11 @@ export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
     this.db = firebaseService.getFirestore();
     this.ref = this.db.collection(this.getRefName());
   }
-  
+
+  defaultId(_value: T) {
+    return newFirestoreId();
+  }
+
   getAll(): Promise<Record<string, T>> {
     throw new Error('Method not implemented.');
   }
@@ -39,13 +42,13 @@ export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
   protected abstract getRefName(): string;
 
   async setOne(key: string, value: T) {
-    const plainValue = classToPlain(value);
+    // const plainValue = classToPlain(value);
 
     if (!key) {
-      await this.ref.add(plainValue);
+      await this.ref.add(value);
     } else {
       const goodKey = normalizeKey(key);
-      await this.ref.doc(goodKey).set(plainValue);
+      await this.ref.doc(goodKey).set(value);
     }
   }
 }

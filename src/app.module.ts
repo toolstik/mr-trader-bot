@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TelegrafModule } from 'nestjs-telegraf';
 
 import { commandPartsMiddleWare } from './middlewares/command-args.middleware';
@@ -14,6 +15,7 @@ import { MenuPlugin } from './plugins/menu.plugin';
 @Module({
   imports: [
     GlobalModule,
+    EventEmitterModule.forRoot(),
     BotModule,
     TelegrafModule.forRootAsync({
       inject: [ConfigService, FirebaseSessionMiddleware, ResponseTimeMiddleware],
@@ -42,5 +44,6 @@ import { MenuPlugin } from './plugins/menu.plugin';
     }),
   ],
   providers: [MenuPlugin],
+  exports: [],
 })
 export class AppModule {}

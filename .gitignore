@@ -10,5 +10,6 @@ persist
 firebase-debug.log
 ui-debug.log
 database-debug.log
+firestore-debug.log
 yarn-error.log
 env.*.json

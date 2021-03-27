@@ -1,6 +1,6 @@
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { newFirestoreId } from '../utils/firebase';
-import { IRepository } from './i-repository.interface';
+import { FindQuery, IRepository } from './i-repository.interface';
 
 // ".", "#", "$", "/", "[", or "]"
 function normalizeKey(key: string) {
@@ -9,27 +9,37 @@ function normalizeKey(key: string) {
 
 export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
   protected readonly db: FirebaseFirestore.Firestore;
-  protected readonly ref: FirebaseFirestore.CollectionReference;
+  protected readonly ref: FirebaseFirestore.CollectionReference<T>;
 
   constructor(firebaseService: FirebaseService) {
     this.db = firebaseService.getFirestore();
-    this.ref = this.db.collection(this.getRefName());
+    this.ref = this.db.collection(this.getRefName()) as FirebaseFirestore.CollectionReference<T>;
+  }
+
+  async find(query: FindQuery<T>): Promise<T[]> {
+    const request = Object.keys(query).reduce((prev, key) => {
+      return prev.where(key, '==', query[key]);
+    }, this.ref as FirebaseFirestore.Query<T>);
+
+    const snapshot = await request.get();
+
+    return snapshot.empty ? [] : snapshot.docs.map(d => d.data());
   }
 
   defaultId(_value: T) {
     return newFirestoreId();
   }
 
-  getAll(): Promise<Record<string, T>> {
+  findAll(): Promise<Record<string, T>> {
     throw new Error('Method not implemented.');
   }
-  getOne(key: string): Promise<T> {
+  findByKey(key: string): Promise<T> {
     throw new Error('Method not implemented.');
   }
-  setAll(value: Record<string, T>): Promise<void> {
+  saveAll(value: Record<string, T>): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  setMany(update: Record<string, T>): Promise<void> {
+  saveMany(update: Record<string, T>): Promise<void> {
     throw new Error('Method not implemented.');
   }
   updateOne(key: string, updateFn: (currentValue: T) => T): Promise<T> {
@@ -41,7 +51,7 @@ export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
 
   protected abstract getRefName(): string;
 
-  async setOne(key: string, value: T) {
+  async saveOne(key: string, value: T) {
     // const plainValue = classToPlain(value);
 
     if (!key) {

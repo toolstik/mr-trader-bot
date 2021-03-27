@@ -1,10 +1,9 @@
-import { NestFactory } from '@nestjs/core';
 import Axios from 'axios';
 
-import { AppModule } from './app.module';
+// import { AppModule } from './app.module';
+import { flatMerge } from './modules/commands/utils';
 import { DatahubService } from './modules/datahub/datahub.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
-import { TemplateService } from './modules/template/template.service';
 import { FundamentalData } from './types/commons';
 
 // async function fetchAllFinvizData(ticker: string): Promise<FinVizObject> {
@@ -37,16 +36,16 @@ function splitLimit(input: string, splitter: string, limit = -1) {
   return [head, ...splitLimit(tail, splitter, limit - 1)];
 }
 
-async function test1() {
-  const app = await NestFactory.createApplicationContext(AppModule);
-  const module = app.select(AppModule);
+// async function test1() {
+//   const app = await NestFactory.createApplicationContext(AppModule);
+//   const module = app.select(AppModule);
 
-  const a = module.get(TemplateService);
-  const x = a.apply('test/template', { data: 'HELLO!' });
-  console.log(x);
-  // const y = await a.prepareNotifications();
-  // console.log(y);
-}
+//   const a = module.get(TemplateService);
+//   const x = a.apply('test/template', { data: 'HELLO!' });
+//   console.log(x);
+//   // const y = await a.prepareNotifications();
+//   // console.log(y);
+// }
 
 // async function test2() {
 // 	await fetchAllFinvizData('AAPL');
@@ -106,8 +105,32 @@ async function test6() {
   console.dir(data, { maxArrayLength: null });
 }
 
+async function test7() {
+  const obj = {
+    a: {
+      b: 5,
+      d: 100,
+    },
+  } as any;
+
+  const src = {
+    a: {
+      b: 6,
+      c: 'hello',
+    },
+  };
+
+  flatMerge(obj, src, (path, left, right) => {
+    if (typeof right === 'number') {
+      return left === undefined ? right : left + right;
+    }
+
+    return right ?? left;
+  });
+}
+
 async function test() {
-  await test5();
+  await test7();
   // console.log(normalizeKey('GAZP.ME'));
   // console.log(splitLimit('level1/level2/level3', '/'));
   // console.log(path.relative('level1', 'level1/level2/level3').replace(/\\/, '/'));

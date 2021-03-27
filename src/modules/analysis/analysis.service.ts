@@ -142,7 +142,7 @@ export class AnalysisService {
   private createFsm(state: AssetStateKey, context: FsmContext) {
     const myAction = (transition: { from: AssetStateKey; to: AssetStateKey }) => {
       return async (ctx: FsmContext, e: FsmEvent) => {
-        console.debug(transition);
+        // console.debug(transition);
         await this.eventEmitter.emitAsync(AssetStatusChangedEvent, {
           symbol: ctx.asset.symbol,
           from: transition.from,
@@ -262,7 +262,7 @@ export class AnalysisService {
   }
 
   private async deepTransition(state: AssetStateKey, context: FsmContext, data: MarketData) {
-    console.time('fsm');
+    // console.time('fsm');
     const fsm = this.createFsm(state, context);
 
     let curState = fsm.initialState;
@@ -273,12 +273,12 @@ export class AnalysisService {
     };
 
     // REMOVE!!!!
-    data.price = data.price * 1.2;
+    data.price = data.price * 0.8;
 
     let i = 0;
     while (i < 5) {
       const newState = fsm.transition(curState, event);
-      console.timeLog('fsm', 'transition', newState.value, newState.changed);
+      // console.timeLog('fsm', 'transition', newState.value, newState.changed);
 
       if (!newState.changed) {
         break;
@@ -292,7 +292,7 @@ export class AnalysisService {
       i++;
     }
 
-    console.timeEnd('fsm');
+    // console.timeEnd('fsm');
     return curState;
   }
 }

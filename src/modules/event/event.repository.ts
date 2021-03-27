@@ -6,27 +6,20 @@ import { FirebaseService } from '../firebase/firebase.service';
 
 export type EventType = 'STATUS_CHANGE';
 
-export type StatusChangeType = Exclude<AssetStateKey, 'NONE'> | 'STOP_TOP' | 'STOP_BOTTOM';
-
-export class StatusChangeData {
-  symbol: string;
-  statusChangeType: StatusChangeType;
-  oldStatus: AssetStateKey;
-  newStatus: AssetStateKey;
-  currentPrice: number;
-  linkedEvent?: EventEntity;
-}
+export type StatusTransitionType = 'ENTER_TOP' | 'EXIT_TOP' | 'ENTER_BOTTOM' | 'EXIT_BOTTOM';
 
 export class EventEntity {
   id: string;
-  timestamp: Date;
+  createdAt: Date;
 
   symbol: string;
 
-  oldStatus: AssetStateKey;
-  newStatus: AssetStateKey;
-  oldPrice: number;
-  newPrice: number;
+  type: Extract<AssetStateKey, 'REACH_TOP' | 'REACH_BOTTOM'>;
+
+  // openTime: Date;
+  // closeTime: Date;
+  openPrice: number;
+  closePrice: number;
 }
 
 @Injectable()

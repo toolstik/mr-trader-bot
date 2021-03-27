@@ -23,6 +23,12 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
 
     this.state$ = this.getStateObservable();
   }
+  find(query: Partial<T>): Promise<T[]> {
+    throw new Error('Method not implemented.');
+  }
+  defaultId?(value: T): string {
+    throw new Error('Method not implemented.');
+  }
 
   protected abstract getRefName(): string;
 
@@ -49,7 +55,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
       .then(i => i ?? {});
   }
 
-  async getAll() {
+  async findAll() {
     const value = await this.getSnapshotValue();
     const entityType = this.getEntityType();
     return plainToClass(RefEntityObject, value, {
@@ -67,7 +73,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
     }) as RefEntity<T>;
   }
 
-  async getOne(key: string) {
+  async findByKey(key: string) {
     const goodKey = normalizeKey(key);
     const value = await this.getSnapshotValue().then(i => i[goodKey]);
     const entityType = this.getEntityType();
@@ -98,31 +104,31 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
     });
   }
 
-  async setAll(value: RefEntity<T>) {
+  async saveAll(value: RefEntity<T>) {
     const plain = this.manyToPlain(value);
     await this.ref.set(plain);
   }
 
-  async setOne(key: string, value: T) {
+  async saveOne(key: string, value: T) {
     const goodKey = normalizeKey(key);
     const plainValue = classToPlain(value);
     await this.ref.child(goodKey).set(plainValue);
   }
 
   async updateOne(key: string, updateFn: (currentValue: T) => T) {
-    const current = await this.getOne(key);
+    const current = await this.findByKey(key);
     const newValue = updateFn(current);
-    await this.setOne(key, newValue);
+    await this.saveOne(key, newValue);
     return newValue;
   }
 
-  async setMany(update: RefEntity<T>) {
+  async saveMany(update: RefEntity<T>) {
     const plain = this.manyToPlain(update ?? {});
     await this.ref.update(plain);
   }
 
   async updateMany(keys: string[], updateFn: (currentValue: T, key: string) => T) {
-    const snapshot = await this.getAll();
+    const snapshot = await this.findAll();
 
     if (!keys?.length) {
       return;
@@ -134,6 +140,6 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
       snapshot[key] = newValue;
     }
 
-    return await this.setAll(snapshot);
+    return await this.saveAll(snapshot);
   }
 }

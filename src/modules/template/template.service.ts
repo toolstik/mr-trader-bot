@@ -16,12 +16,22 @@ function diff(value: number, target: number) {
   return result !== null ? format(result * 100, 2) : '----';
 }
 
+function percent(value: number) {
+  return typeof value === 'number' ? value * 100 : value;
+}
+
 function format(value: number, decimals: number | handlebars.HelperOptions) {
   if (value == null) {
     return 'unknown';
   }
   const maximumFractionDigits = typeof decimals === 'number' ? decimals : 3;
   return new Intl.NumberFormat('ru-RU', { maximumFractionDigits }).format(value);
+}
+
+function formatSign(value: number, decimals: number | handlebars.HelperOptions) {
+  const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+
+  return `${sign}${format(Math.abs(value), decimals)}`;
 }
 
 function eq(a, b, opts: handlebars.HelperOptions) {
@@ -67,7 +77,9 @@ export class TemplateService {
 
   private helpers() {
     handlebars.registerHelper('diff', diff);
+    handlebars.registerHelper('percent', percent);
     handlebars.registerHelper('format', format);
+    handlebars.registerHelper('formatSign', formatSign);
     handlebars.registerHelper('eq', eq);
   }
 

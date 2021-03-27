@@ -13,22 +13,31 @@ export class EventService extends BaseEntityService<EventEntity> {
     super(repository);
   }
 
-  async test() {
-    await this.repository.setOne(null, { timestamp: new Date() } as EventEntity);
+  async findExitEvents(query: Pick<EventEntity, 'symbol'>) {
+    return await this.repository.find(query);
   }
 
   @OnEvent(AssetStatusChangedEvent.event)
   async handleStatusChange(event: AssetStatusChangedEvent) {
+    if (event.to !== 'NONE') {
+      return;
+    }
+
     const entity: EventEntity = {
       id: newFirestoreId(),
-      timestamp: new Date(),
+      type:
+        event.from === 'REACH_TOP'
+          ? 'REACH_TOP'
+          : event.from === 'REACH_BOTTOM'
+          ? 'REACH_BOTTOM'
+          : undefined,
+      createdAt: new Date(),
       symbol: event.symbol,
-      oldStatus: event.from,
-      newStatus: event.to,
-      oldPrice: event.oldPrice,
-      newPrice: event.currentPrice,
+      //  openTime: event.
+      openPrice: event.oldPrice,
+      closePrice: event.currentPrice,
     };
 
-    await this.repository.setOne(entity.id, entity);
+    await this.repository.saveOne(entity.id, entity);
   }
 }

@@ -32,7 +32,7 @@ export class AssetService extends BaseEntityService<AssetEntity> {
     const symbs = symbols ?? (await this.sessionService.getSessionTickers());
 
     const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
-    const value = (await this.repository.getAll()) ?? {};
+    const value = (await this.repository.findAll()) ?? {};
 
     const newValue = Object.entries(histories.result || {}).reduce((prev, [key, val]) => {
       const normKey = normalizeKey(key);
@@ -47,12 +47,12 @@ export class AssetService extends BaseEntityService<AssetEntity> {
     }, {} as RefEntity<AssetEntity>);
 
     if (symbols) {
-      await this.repository.setAll({
+      await this.repository.saveAll({
         ...value,
         ...newValue,
       });
     } else {
-      await this.repository.setAll(newValue);
+      await this.repository.saveAll(newValue);
     }
     return {
       newValue,

@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import PromisePool = require('@supercharge/promise-pool');
 import _ = require('lodash');
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
+import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
 import {
   AssetStatus,
   AssetStatusWithFundamentals,
@@ -231,5 +233,15 @@ export class NotificationService {
         });
       },
     );
+  }
+
+  @OnEvent(MessageStatsCreatedEvent.event)
+  async handleStatsMesage(event: MessageStatsCreatedEvent) {
+    const message = this.templateService.apply('stats', event);
+
+    await this.bot.telegram.sendMessage(event.chatId, message, {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    });
   }
 }

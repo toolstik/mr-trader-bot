@@ -51,7 +51,7 @@ export class AnalysisService {
 
   async updateAssetStatus(symbol: string) {
     const [asset, marketData] = await Promise.all([
-      this.assetService.getOne(symbol),
+      this.assetService.findOne(symbol),
       this.getMarketData(symbol),
       // this.assetService.getFundamentals(symbol),
     ]);
@@ -65,7 +65,7 @@ export class AnalysisService {
 
   async getAssetStatus(symbol: string) {
     const [asset, marketData] = await Promise.all([
-      this.assetService.getOne(symbol),
+      this.assetService.findOne(symbol),
       this.getMarketData(symbol),
       // this.assetService.getFundamentals(symbol),
     ]);
@@ -108,7 +108,7 @@ export class AnalysisService {
   }
 
   private async getDonchian(symbol: string, daysBack: number) {
-    const asset = await this.assetService.getOne(symbol);
+    const asset = await this.assetService.findOne(symbol);
 
     if (!asset?.history) {
       return null;
@@ -273,7 +273,7 @@ export class AnalysisService {
     };
 
     // REMOVE!!!!
-    data.price = data.price * 0.8;
+    // data.price = data.price * 0.8;
 
     let i = 0;
     while (i < 5) {

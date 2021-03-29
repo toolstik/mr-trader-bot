@@ -1,3 +1,4 @@
+import _ = require('lodash');
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { newFirestoreId } from '../utils/firebase';
 import { FindQuery, IRepository } from './i-repository.interface';
@@ -18,6 +19,14 @@ export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
 
   async find(query: FindQuery<T>): Promise<T[]> {
     const request = Object.keys(query).reduce((prev, key) => {
+      const value = query[key];
+
+      if (_.isObject(value)) {
+        if ('$in' in value) {
+          return prev.where(key, 'in', value['$in']);
+        }
+      }
+
       return prev.where(key, '==', query[key]);
     }, this.ref as FirebaseFirestore.Query<T>);
 

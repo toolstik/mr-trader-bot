@@ -216,7 +216,7 @@ export class NotificationService {
   async sendAssetFundamentalsAll() {
     await this.collectAndPlay(
       async t => {
-        const asset = await this.assetService.getOne(t);
+        const asset = await this.assetService.findOne(t);
 
         if (asset.state === 'NONE') {
           return false;

@@ -13,8 +13,12 @@ export class EventService extends BaseEntityService<EventEntity> {
     super(repository);
   }
 
-  async findExitEvents(query: Pick<EventEntity, 'symbol'>) {
-    return await this.repository.find(query);
+  async findExitEvents(symbols: string[]) {
+    return await this.repository.find({
+      symbol: {
+        $in: symbols,
+      },
+    });
   }
 
   @OnEvent(AssetStatusChangedEvent.event)

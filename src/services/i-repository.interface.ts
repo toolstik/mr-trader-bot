@@ -1,6 +1,14 @@
 import { RefEntity } from '../types/commons';
 
-export type FindQuery<T> = Partial<T>;
+type Condition<T> =
+  | T
+  | {
+      $in: T[];
+    };
+
+export type FindQuery<T> = {
+  [K in keyof T]?: Condition<T[K]>;
+};
 
 export interface IRepository<T> {
   findAll(): Promise<RefEntity<T>>;

@@ -13,7 +13,7 @@ import { currentContext } from '../../../utils/current-context';
 import { AssetService } from '../../asset/asset.service';
 import { EventService } from '../../event/event.service';
 import { EventEmitterService } from '../../global/event-emitter.service';
-import { flatMerge } from '../utils';
+import { flatMerge, parseTickerList } from '../utils';
 
 function mergeSum<T>(obj: T, src: T) {
   return flatMerge(obj, src, (path, left, right) => {
@@ -24,6 +24,33 @@ function mergeSum<T>(obj: T, src: T) {
     return right ?? left;
   });
 }
+
+const defaultProgressStat: ProgressStat = {
+  count: 0,
+};
+
+const defaultProgress: Progress = {
+  top: defaultProgressStat,
+  bottom: defaultProgressStat,
+  total: defaultProgressStat,
+};
+
+const defaultSignalStatValue: SignalStatValue = {
+  count: 0,
+  profit: 0,
+};
+
+const defaultSignalStat: SignalStat = {
+  positive: defaultSignalStatValue,
+  negative: defaultSignalStatValue,
+  total: defaultSignalStatValue,
+};
+
+const defaultSignals: Signals = {
+  top: defaultSignalStat,
+  bottom: defaultSignalStat,
+  total: defaultSignalStat,
+};
 
 @Scene(StatisticsScene.sceneName)
 export class StatisticsScene {
@@ -42,108 +69,121 @@ export class StatisticsScene {
     await ctx.scene.leave();
   }
 
-  private async getSignalStats() {
-    const result = await this.eventService.findExitEvents({
-      symbol: 'CAG',
-    });
-
-    console.log(result);
-
-    const defaultStatValue: SignalStatValue = {
-      count: 0,
-      profit: 0,
-    };
-
-    const defaultStat: SignalStat = {
-      positive: defaultStatValue,
-      negative: defaultStatValue,
-      total: defaultStatValue,
-    };
-
-    const defaultSignals: Signals = {
-      top: defaultStat,
-      bottom: defaultStat,
-      total: defaultStat,
-    };
+  private async getSignalStats(symbols: string[]) {
+    const result = await this.eventService.findExitEvents(symbols);
 
     const signals = _(result)
-      .map(e => {
-        const positive =
-          (e.type === 'REACH_TOP' && e.closePrice >= e.openPrice) ||
-          (e.type === 'REACH_BOTTOM' && e.closePrice < e.openPrice);
+      .groupBy(i => i.symbol)
+      .entries()
+      .map(([symbol, events]) => {
+        const symbolSignals = events
+          .map(e => {
+            const positive =
+              (e.type === 'REACH_TOP' && e.closePrice >= e.openPrice) ||
+              (e.type === 'REACH_BOTTOM' && e.closePrice < e.openPrice);
 
-        const stat: SignalStatValue = {
-          count: 1,
-          profit: (positive ? 1 : -1) * Math.abs(e.closePrice / e.openPrice - 1),
-        };
+            const stat: SignalStatValue = {
+              count: 1,
+              profit: (positive ? 1 : -1) * Math.abs(e.closePrice / e.openPrice - 1),
+            };
 
-        const topBottomKey: keyof Signals = e.type === 'REACH_TOP' ? 'top' : 'bottom';
-        const positiveKey: keyof SignalStat = positive ? 'positive' : 'negative';
+            const topBottomKey: keyof Signals = e.type === 'REACH_TOP' ? 'top' : 'bottom';
+            const positiveKey: keyof SignalStat = positive ? 'positive' : 'negative';
+
+            return {
+              ...defaultSignals,
+              [topBottomKey]: {
+                ...defaultSignalStat,
+                [positiveKey]: stat,
+                total: stat,
+              },
+              total: {
+                ...defaultSignalStat,
+                [positiveKey]: stat,
+                total: stat,
+              },
+            } as Signals;
+          })
+          .reduce(mergeSum, {} as Signals);
 
         return {
-          ...defaultSignals,
-          [topBottomKey]: {
-            ...defaultStat,
-            [positiveKey]: stat,
-            total: stat,
-          },
-          total: {
-            ...defaultStat,
-            [positiveKey]: stat,
-            total: stat,
-          },
-        } as Signals;
+          [symbol]: symbolSignals,
+        };
       })
-      .reduce(mergeSum, {} as Signals);
+      .reduce((prev, cur) => Object.assign(prev, cur), {} as Record<string, Signals>);
 
     return signals;
   }
 
-  private async getProgressStats() {
-    const assets = await this.assetService.getAll();
-    const progress = assets
+  private async getProgressStats(symbols: string[]) {
+    const assets = await this.assetService.findByKeys(symbols);
+    const progress = _(assets)
       .filter(a => a.state === 'REACH_TOP' || a.state === 'REACH_BOTTOM')
-      .map(a => {
-        const stat: ProgressStat = {
-          count: 1,
-        };
+      .groupBy(a => a.symbol)
+      .entries()
+      .map(([symbol, events]) => {
+        const x = events
+          .map(a => {
+            const stat: ProgressStat = {
+              count: 1,
+            };
 
-        const defaultProgressValue: ProgressStat = {
-          count: 0,
-        };
+            const topBottomKey: keyof Progress = a.state === 'REACH_TOP' ? 'top' : 'bottom';
 
-        const defaultProgress: Progress = {
-          top: defaultProgressValue,
-          bottom: defaultProgressValue,
-          total: defaultProgressValue,
-        };
-
-        const topBottomKey: keyof Progress = a.state === 'REACH_TOP' ? 'top' : 'bottom';
+            return {
+              ...defaultProgress,
+              [topBottomKey]: stat,
+              total: stat,
+            } as Progress;
+          })
+          .reduce(mergeSum, {} as Progress);
 
         return {
-          ...defaultProgress,
-          [topBottomKey]: stat,
-          total: stat,
-        } as Progress;
+          [symbol]: x,
+        };
       })
-      .reduce(mergeSum, {} as Progress);
+      .reduce((prev, cur) => Object.assign(prev, cur), {} as Record<string, Progress>);
 
     return progress;
   }
 
   private async process() {
     const ctx = currentContext();
-    // const session = ctx.session;
-    const signals = await this.getSignalStats();
-    const progress = await this.getProgressStats();
+    const tickers = parseTickerList(ctx.state.command.args);
 
-    const event: MessageStatsCreatedEvent = {
-      chatId: ctx.message.chat.id,
-      ticker: 'CAG',
-      signals,
-      progress,
-    };
-    console.log('%j', event);
-    await this.eventEmitter.emitAsync(MessageStatsCreatedEvent, event);
+    const signals = await this.getSignalStats(tickers);
+    const progress = await this.getProgressStats(tickers);
+
+    let events: Record<string, MessageStatsCreatedEvent> = {};
+
+    events = Object.entries(signals).reduce((prev, [key, value]) => {
+      return {
+        ...prev,
+        [key]: {
+          chatId: ctx.message.chat.id,
+          ticker: key,
+          progress: defaultProgress,
+          ...prev[key],
+          signals: value,
+        },
+      };
+    }, events);
+
+    events = Object.entries(progress).reduce((prev, [key, value]) => {
+      return {
+        ...prev,
+        [key]: {
+          chatId: ctx.message.chat.id,
+          ticker: key,
+          signals: defaultSignals,
+          ...prev[key],
+          progress: value,
+        },
+      };
+    }, events);
+
+    for (const e of Object.values(events)) {
+      await this.eventEmitter.emitAsync(MessageStatsCreatedEvent, e);
+    }
   }
 }

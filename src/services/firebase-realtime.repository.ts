@@ -1,5 +1,6 @@
 import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { database } from 'firebase-admin';
+import _ = require('lodash');
 import { Observable } from 'rxjs';
 import { shareReplay, take } from 'rxjs/operators';
 
@@ -23,9 +24,40 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
 
     this.state$ = this.getStateObservable();
   }
-  find(query: Partial<T>): Promise<T[]> {
-    throw new Error('Method not implemented.');
+
+  async find(query: Partial<T>): Promise<T[]> {
+    const all = await this.findAll();
+
+    const predicate = Object.keys(query)
+      .map(key => {
+        const value = query[key];
+
+        if (_.isObject(value)) {
+          if ('$in' in value) {
+            const set = new Set(value['$in']);
+
+            return (i: T) => {
+              return set.has(i);
+            };
+          }
+        }
+
+        return (i: T) => {
+          return i === value;
+        };
+      })
+      .reduce(
+        (prev, cur) => {
+          return (i: T) => {
+            return prev(i) && cur(i);
+          };
+        },
+        () => true,
+      );
+
+    return Object.values(all).filter(predicate);
   }
+
   defaultId?(value: T): string {
     throw new Error('Method not implemented.');
   }

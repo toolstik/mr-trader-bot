@@ -41,7 +41,7 @@ export class AddTickerScene {
     const poolResult = await PromisePool.for(reallyNew)
       .withConcurrency(10)
       .process(async t => {
-        const asset = await this.assetService.getOne(t);
+        const asset = await this.assetService.findOne(t);
         const price = await this.yahooService.getPrices(t);
 
         if (!asset) {

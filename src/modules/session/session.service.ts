@@ -9,7 +9,7 @@ export class SessionService {
   constructor(private repository: SessionRepository) {}
 
   async getSessions() {
-    const sessionRefValue = await this.repository.getAll();
+    const sessionRefValue = await this.repository.findAll();
     return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
   }
 

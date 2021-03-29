@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { Type } from 'class-transformer';
 
 import { FirebaseFirestoreRepository } from '../../services/firebase-firestore.repository';
 import { AssetStateKey } from '../../types/commons';
 import { FirebaseService } from '../firebase/firebase.service';
 
-export class EventEntity {
-  timestamp: Date;
+export type EventType = 'STATUS_CHANGE';
 
-  @Type(() => String)
-  state: AssetStateKey;
+export type StatusTransitionType = 'ENTER_TOP' | 'EXIT_TOP' | 'ENTER_BOTTOM' | 'EXIT_BOTTOM';
+
+export class EventEntity {
+  id: string;
+  createdAt: Date;
+
+  symbol: string;
+
+  type: Extract<AssetStateKey, 'REACH_TOP' | 'REACH_BOTTOM'>;
+
+  // openTime: Date;
+  // closeTime: Date;
+  openPrice: number;
+  closePrice: number;
 }
 
 @Injectable()

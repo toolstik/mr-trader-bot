@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import PromisePool = require('@supercharge/promise-pool');
 import _ = require('lodash');
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
+import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
 import {
   AssetStatus,
   AssetStatusWithFundamentals,
@@ -14,6 +16,7 @@ import {
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
+import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
 
@@ -26,6 +29,7 @@ type AssetNotification<T> = {
 export class NotificationService {
   constructor(
     private assetService: AssetService,
+    private eventService: EventService,
     private sessionService: SessionService,
     private analysisService: AnalysisService,
     private templateService: TemplateService,
@@ -212,7 +216,7 @@ export class NotificationService {
   async sendAssetFundamentalsAll() {
     await this.collectAndPlay(
       async t => {
-        const asset = await this.assetService.getOne(t);
+        const asset = await this.assetService.findOne(t);
 
         if (asset.state === 'NONE') {
           return false;
@@ -229,5 +233,15 @@ export class NotificationService {
         });
       },
     );
+  }
+
+  @OnEvent(MessageStatsCreatedEvent.event)
+  async handleStatsMesage(event: MessageStatsCreatedEvent) {
+    const message = this.templateService.apply('stats', event);
+
+    await this.bot.telegram.sendMessage(event.chatId, message, {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    });
   }
 }

@@ -12,6 +12,7 @@ import { RemoveTickerListModule } from './commands/remove-ticker-list/remove-tic
 import { StatisticsModule } from './commands/statistics/statistics.module';
 import { StatusModule } from './commands/status/status.module';
 import { TestTickerModule } from './commands/test-ticker/test-ticker.module';
+import { UpdateModule } from './commands/update/update.module';
 import { UpdateHistoryModule } from './commands/update-history/update-history.module';
 import { FirebaseModule } from './firebase/firebase.module';
 
@@ -25,10 +26,11 @@ import { FirebaseModule } from './firebase/firebase.module';
     NotifyModule,
     RemoveTickerModule,
     RemoveTickerListModule,
+    StatisticsModule,
     StatusModule,
     TestTickerModule,
     UpdateHistoryModule,
-    StatisticsModule,
+    UpdateModule,
 
     FirebaseModule,
   ],

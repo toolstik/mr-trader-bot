@@ -124,8 +124,8 @@ export class AnalysisService {
         (prev, cur) => {
           return {
             ...prev,
-            minValue: Math.min(prev.minValue, cur.low),
-            maxValue: Math.max(prev.maxValue, cur.high),
+            minValue: cur.low ? Math.min(prev.minValue, cur.low) : prev.minValue,
+            maxValue: cur.high ? Math.max(prev.maxValue, cur.high) : prev.maxValue,
           };
         },
         {

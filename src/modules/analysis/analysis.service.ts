@@ -14,19 +14,19 @@ import { YahooService } from '../yahoo/yahoo.service';
 const APPROACH_RATE = 0.005;
 
 function getMarketState(data: MarketData): AssetStateKey {
-  if (data.price >= data.donchian.maxValue) {
+  if (data.price > data.donchian.maxValue) {
     return 'REACH_TOP';
   }
 
-  if (data.price * (1 + APPROACH_RATE) >= data.donchian.maxValue) {
+  if (data.price * (1 + APPROACH_RATE) > data.donchian.maxValue) {
     return 'APPROACH_TOP';
   }
 
-  if (data.price <= data.donchian.minValue) {
+  if (data.price < data.donchian.minValue) {
     return 'REACH_BOTTOM';
   }
 
-  if (data.price * (1 - APPROACH_RATE) <= data.donchian.minValue) {
+  if (data.price * (1 - APPROACH_RATE) < data.donchian.minValue) {
     return 'APPROACH_BOTTOM';
   }
 
@@ -34,11 +34,11 @@ function getMarketState(data: MarketData): AssetStateKey {
 }
 
 function topStop(data: MarketData) {
-  return data.price <= data.stopLoss;
+  return data.price < data.stopLoss;
 }
 
 function bottomStop(data: MarketData) {
-  return data.price >= data.takeProfit;
+  return data.price > data.takeProfit;
 }
 
 @Injectable()

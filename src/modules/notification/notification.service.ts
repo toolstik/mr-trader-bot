@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-
-import PromisePool = require('@supercharge/promise-pool');
-import _ = require('lodash');
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
@@ -19,6 +16,9 @@ import { AssetService } from '../asset/asset.service';
 import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
+
+import PromisePool = require('@supercharge/promise-pool');
+import _ = require('lodash');
 
 type AssetNotification<T> = {
   session: TgSession;

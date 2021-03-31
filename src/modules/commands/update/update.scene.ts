@@ -21,8 +21,8 @@ export class UpdateScene {
   }
 
   private async process() {
-    const ctx = currentContext();
-    await this.analysisService.updateAssetStatus('CAG');
-    await this.eventEmitterService.waitAll();
+    // const ctx = currentContext();
+    // await this.analysisService.updateAssetStatus('CAG');
+    // await this.eventEmitterService.waitAll();
   }
 }

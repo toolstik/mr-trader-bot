@@ -13,6 +13,11 @@ export class SessionService {
     return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
   }
 
+  async getSessionsByTicker(symbol: string) {
+    const sessions = await this.getSessions();
+    return sessions.filter(s => s.subscriptionTickers.includes(symbol));
+  }
+
   async getSessionTickers(sessions?: TgSession[]) {
     sessions = sessions ?? (await this.getSessions());
     return _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));

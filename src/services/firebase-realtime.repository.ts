@@ -16,7 +16,7 @@ export function normalizeKey(key: string) {
 export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   protected readonly db: database.Database;
   protected readonly ref: database.Reference;
-  private state$: Observable<RefEntityObject>;
+  protected readonly state$: Observable<RefEntity<T>>;
 
   constructor(firebase: FirebaseService) {
     this.db = firebase.getDatabase();
@@ -67,7 +67,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   protected abstract getEntityType(): ClassConstructor<T>;
 
   private getStateObservable() {
-    return new Observable<RefEntityObject>(subj => {
+    return new Observable<RefEntity<T>>(subj => {
       this.ref.on(
         'value',
         snapshot => {

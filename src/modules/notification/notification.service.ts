@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-
-import PromisePool = require('@supercharge/promise-pool');
-import _ = require('lodash');
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
+import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
 import {
   AssetStatus,
@@ -19,6 +17,9 @@ import { AssetService } from '../asset/asset.service';
 import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
+
+import PromisePool = require('@supercharge/promise-pool');
+import _ = require('lodash');
 
 type AssetNotification<T> = {
   session: TgSession;
@@ -117,31 +118,17 @@ export class NotificationService {
     };
   }
 
-  async sendAssetStatusChangesAll() {
-    const data = await this.prepareNotifications();
+  async sendAssetStatusChangesAll(sessions?: TgSession[], tickers?: string[]) {
+    sessions = sessions ?? (await this.sessionService.getSessions());
+    const sessionsTickers = await this.sessionService.getSessionTickers(sessions);
+    tickers = tickers ? _.intersection(tickers, sessionsTickers) : sessionsTickers;
 
-    // send notifications
-    for (const n of data.notifications) {
-      const message = this.templateService.apply(`change_status`, n.data);
-      await this.bot.telegram.sendMessage(n.session.chatId, message, {
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true,
-      });
-    }
-
-    // update statuses
-    for (const [key, value] of Object.entries(data.statuses)) {
-      if (!value?.changed) {
-        continue;
-      }
-
-      await this.assetService.updateOne(key, v => ({
-        ...v,
-        state: value.status,
-      }));
-    }
-
-    return data;
+    return await PromisePool.withConcurrency(5)
+      .for(tickers)
+      .process(async ticker => {
+        return await this.analysisService.getAssetStatus(ticker, true);
+      })
+      .then(r => r.results);
   }
 
   async sendAssetStatusStateAll() {
@@ -236,12 +223,38 @@ export class NotificationService {
   }
 
   @OnEvent(MessageStatsCreatedEvent.event)
-  async handleStatsMesage(event: MessageStatsCreatedEvent) {
+  async handleMessageStatsCreatedEvent(event: MessageStatsCreatedEvent) {
     const message = this.templateService.apply('stats', event);
 
     await this.bot.telegram.sendMessage(event.chatId, message, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
     });
+  }
+
+  @OnEvent(AssetStatusChangedEvent.event)
+  async handleAssetStatusChangedEvent(event: AssetStatusChangedEvent) {
+    const recipients = await this.sessionService.getSessionsByTicker(event.symbol);
+
+    if (!recipients?.length) {
+      return;
+    }
+
+    const fundamentals = await this.assetService.getFundamentals(event.symbol);
+
+    const data = {
+      ticker: event.symbol,
+      status: event.to,
+      marketData: event.marketData,
+      fundamentals,
+    } as AssetStatusWithFundamentals;
+
+    for (const n of recipients) {
+      const message = this.templateService.apply(`change_status`, data);
+      await this.bot.telegram.sendMessage(n.chatId, message, {
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      });
+    }
   }
 }

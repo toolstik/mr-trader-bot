@@ -1,5 +1,6 @@
 import { Transform, TransformationType } from 'class-transformer';
 
+import { AssetStatusChangedEvent } from '../events/asset-status-changed.event';
 import { MarketData } from './market-data';
 
 export type AssetStateKey =
@@ -13,6 +14,7 @@ export type AssetStatus = {
   ticker: string;
   status: AssetStateKey;
   changed: boolean;
+  events: AssetStatusChangedEvent[];
   marketData: MarketData;
 };
 

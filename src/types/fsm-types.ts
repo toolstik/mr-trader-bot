@@ -1,13 +1,13 @@
 import { StateMachine } from '@xstate/fsm';
 
+import { AssetStatusChangedEvent } from '../events/asset-status-changed.event';
 import { AssetEntity } from '../modules/asset/asset.entity';
-import { EventEntity } from '../modules/event/event.repository';
 import { AssetStateKey } from './commons';
 import { MarketData } from './market-data';
 
 export type FsmContext = {
   asset: AssetEntity;
-  events?: EventEntity[];
+  events?: AssetStatusChangedEvent[];
 };
 
 type _FsmEvent<K extends string, T> = {

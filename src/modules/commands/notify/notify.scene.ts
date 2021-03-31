@@ -19,7 +19,7 @@ export class NotifyScene {
   private async process() {
     const ctx = currentContext();
     const data = await this.notificationService.sendAssetStatusChangesAll();
-    await ctx.reply(`Собраны данные по ${Object.keys(data.statuses).length} активам.
-			Отправлено ${data.notifications.length} уведомлений`);
+    await ctx.reply(`Собраны данные по ${data.length} активам.
+			${data.filter(s => s.events.length > 0).length} активов изменили свои статусы`);
   }
 }

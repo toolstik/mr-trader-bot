@@ -8,6 +8,7 @@
   ],
   "license": "MIT",
   "scripts": {
+    "tsc:watch": "tsc -w",
     "build": "gulp build",
     "build:prod": "gulp build -p=production",
     "lint:fix": "eslint --fix --quiet .",

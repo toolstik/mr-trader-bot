@@ -10,7 +10,6 @@ export type Donchian = {
 export type MarketData = {
   price: number;
   asset: Omit<PriceModule, 'regularMarketPrice'>;
-  donchian: Donchian;
-  stopLoss: number;
-  takeProfit: number;
+  donchianOuter: Donchian;
+  donchianInner: Donchian;
 };

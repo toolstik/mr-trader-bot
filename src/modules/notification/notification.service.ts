@@ -1,3 +1,6 @@
+import _ = require('lodash');
+import PromisePool = require('@supercharge/promise-pool');
+
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectBot } from 'nestjs-telegraf';
@@ -6,15 +9,12 @@ import { Telegraf } from 'telegraf';
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
 import { AssetStateKey, AssetStatus, FundamentalData, paginate } from '../../types/commons';
+import { MarketData } from '../../types/market-data';
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
-
-import PromisePool = require('@supercharge/promise-pool');
-import _ = require('lodash');
-import { MarketData } from '../../types/market-data';
 
 type StatusChangedKey = AssetStateKey | 'STOP_BOTTOM' | 'STOP_TOP';
 

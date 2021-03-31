@@ -1,5 +1,5 @@
-*STOP {{donchian.minDays}}-дневный MIN*
+*STOP {{donchianOuter.minDays}}-дневный MIN*
 Текущее значение: {{format price}} {{asset.currencySymbol}}
-{{donchian.minDays}}-дневный MIN: {{format donchian.minValue}} {{asset.currencySymbol}}
-Stop-loss: {{format takeProfit}} {{asset.currencySymbol}}
+{{donchianOuter.minDays}}-дневный MIN: {{format donchianOuter.minValue}} {{asset.currencySymbol}}
+Stop-loss: {{format donchianInner.maxValue}} {{asset.currencySymbol}}
 Profit: {{formatSign (percent profit)}}%

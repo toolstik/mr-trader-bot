@@ -1,5 +1,5 @@
-*Пробитие {{donchian.minDays}}-дневный MIN*
+*Пробитие {{donchianOuter.minDays}}-дневный MIN*
 Текущее значение: {{format price}} {{asset.currencySymbol}}
-{{donchian.minDays}}-дневный MIN: {{format donchian.minValue}} {{asset.currencySymbol}}
-Stop-loss: {{format takeProfit}} {{asset.currencySymbol}}
-Разница: {{diff price donchian.minValue}} %
+{{donchianOuter.minDays}}-дневный MIN: {{format donchianOuter.minValue}} {{asset.currencySymbol}}
+Stop-loss: {{format donchianInner.maxValue}} {{asset.currencySymbol}}
+Разница: {{diff price donchianOuter.minValue}} %

@@ -15,19 +15,19 @@ import { YahooService } from '../yahoo/yahoo.service';
 const APPROACH_RATE = 0.005;
 
 function getMarketState(data: MarketData): AssetStateKey {
-  if (data.price >= data.donchian.maxValue) {
+  if (data.price >= data.donchianOuter.maxValue) {
     return 'REACH_TOP';
   }
 
-  if (data.price * (1 + APPROACH_RATE) >= data.donchian.maxValue) {
+  if (data.price * (1 + APPROACH_RATE) >= data.donchianOuter.maxValue) {
     return 'APPROACH_TOP';
   }
 
-  if (data.price <= data.donchian.minValue) {
+  if (data.price <= data.donchianOuter.minValue) {
     return 'REACH_BOTTOM';
   }
 
-  if (data.price * (1 - APPROACH_RATE) <= data.donchian.minValue) {
+  if (data.price * (1 - APPROACH_RATE) <= data.donchianOuter.minValue) {
     return 'APPROACH_BOTTOM';
   }
 
@@ -35,11 +35,11 @@ function getMarketState(data: MarketData): AssetStateKey {
 }
 
 function topStop(data: MarketData) {
-  return data.price <= data.stopLoss;
+  return data.price <= data.donchianInner.minValue;
 }
 
 function bottomStop(data: MarketData) {
-  return data.price >= data.takeProfit;
+  return data.price >= data.donchianInner.maxValue;
 }
 
 @Injectable()
@@ -78,7 +78,7 @@ export class AnalysisService {
     } as AssetStatus;
   }
 
-  private async getMarketData(symbol: string) {
+  private async getMarketData(symbol: string): Promise<MarketData> {
     const price = await this.yahooService.getPrices(symbol);
     // console.log(symbol, price);
     if (!price?.regularMarketPrice) {
@@ -95,10 +95,9 @@ export class AnalysisService {
     return {
       price: price.regularMarketPrice,
       asset: _.omit(price, 'regularMarketPrice'),
-      donchian: donchian20,
-      stopLoss: donchian5.minValue,
-      takeProfit: donchian5.maxValue,
-    } as MarketData;
+      donchianOuter: donchian20,
+      donchianInner: donchian5,
+    };
   }
 
   private async getDonchian(symbol: string, daysBack: number) {

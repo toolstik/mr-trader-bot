@@ -18,10 +18,6 @@ export type AssetStatus = {
   marketData: MarketData;
 };
 
-export type AssetStatusWithFundamentals = AssetStatus & {
-  fundamentals: FundamentalData;
-};
-
 export type RefEntity<T> = Record<string, T>;
 
 export class RefEntityObject {

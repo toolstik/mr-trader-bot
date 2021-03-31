@@ -5,32 +5,30 @@ import { Telegraf } from 'telegraf';
 
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
-import {
-  AssetStatus,
-  AssetStatusWithFundamentals,
-  FundamentalData,
-  paginate,
-} from '../../types/commons';
+import { AssetStateKey, AssetStatus, FundamentalData, paginate } from '../../types/commons';
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
-import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
 
 import PromisePool = require('@supercharge/promise-pool');
 import _ = require('lodash');
+import { MarketData } from '../../types/market-data';
 
-type AssetNotification<T> = {
-  session: TgSession;
-  data: T;
+type StatusChangedKey = AssetStateKey | 'STOP_BOTTOM' | 'STOP_TOP';
+
+type AssetStatusChangedData = {
+  ticker: string;
+  status: StatusChangedKey;
+  marketData: MarketData & { profit: number };
+  fundamentals: FundamentalData;
 };
 
 @Injectable()
 export class NotificationService {
   constructor(
     private assetService: AssetService,
-    private eventService: EventService,
     private sessionService: SessionService,
     private analysisService: AnalysisService,
     private templateService: TemplateService,
@@ -39,7 +37,7 @@ export class NotificationService {
 
   private async collectAndPlay<T>(
     collect: (ticket: string) => Promise<T | false>,
-    play: (session: TgSession, ticker: string, data: T) => Promise<void>,
+    play?: (session: TgSession, ticker: string, data: T) => Promise<void>,
     sessions?: TgSession[],
     tickers?: string[],
   ) {
@@ -74,15 +72,17 @@ export class NotificationService {
           }, {} as Record<string, T>);
       });
 
-    for (const session of sessions) {
-      if (!session?.subscriptionTickers) {
-        continue;
-      }
+    if (play) {
+      for (const session of sessions) {
+        if (!session?.subscriptionTickers) {
+          continue;
+        }
 
-      for (const ticker of session.subscriptionTickers) {
-        const data = dict[ticker];
-        if (data) {
-          await play(session, ticker, data);
+        for (const ticker of session.subscriptionTickers) {
+          const data = dict[ticker];
+          if (data) {
+            await play(session, ticker, data);
+          }
         }
       }
     }
@@ -90,45 +90,11 @@ export class NotificationService {
     return dict;
   }
 
-  private async prepareNotifications() {
-    const notifications: AssetNotification<AssetStatusWithFundamentals>[] = [];
-
-    const statuses = await this.collectAndPlay(
-      async t => await this.analysisService.getAssetStatus(t),
-      async (s, t, d) => {
-        if (!d || !d.changed || d.status === 'NONE') {
-          return;
-        }
-
-        const fundamentals = await this.assetService.getFundamentals(t);
-
-        notifications.push({
-          session: s,
-          data: {
-            ...d,
-            fundamentals,
-          },
-        });
-      },
+  async sendAssetStatusChangesAll() {
+    const dict = await this.collectAndPlay(
+      async t => await this.analysisService.getAssetStatus(t, true),
     );
-
-    return {
-      notifications,
-      statuses,
-    };
-  }
-
-  async sendAssetStatusChangesAll(sessions?: TgSession[], tickers?: string[]) {
-    sessions = sessions ?? (await this.sessionService.getSessions());
-    const sessionsTickers = await this.sessionService.getSessionTickers(sessions);
-    tickers = tickers ? _.intersection(tickers, sessionsTickers) : sessionsTickers;
-
-    return await PromisePool.withConcurrency(5)
-      .for(tickers)
-      .process(async ticker => {
-        return await this.analysisService.getAssetStatus(ticker, true);
-      })
-      .then(r => r.results);
+    return Object.values(dict);
   }
 
   async sendAssetStatusStateAll() {
@@ -242,12 +208,29 @@ export class NotificationService {
 
     const fundamentals = await this.assetService.getFundamentals(event.symbol);
 
-    const data = {
+    const status: StatusChangedKey =
+      event.to !== 'NONE'
+        ? event.to
+        : event.from === 'REACH_TOP'
+        ? 'STOP_TOP'
+        : event.from === 'REACH_BOTTOM'
+        ? 'STOP_BOTTOM'
+        : 'NONE';
+
+    const data: AssetStatusChangedData = {
       ticker: event.symbol,
-      status: event.to,
-      marketData: event.marketData,
+      status: status,
+      marketData: {
+        ...event.marketData,
+        profit:
+          status === 'STOP_TOP'
+            ? 1 - event.oldPrice / event.currentPrice
+            : status === 'STOP_BOTTOM'
+            ? event.oldPrice / event.currentPrice - 1
+            : null,
+      },
       fundamentals,
-    } as AssetStatusWithFundamentals;
+    };
 
     for (const n of recipients) {
       const message = this.templateService.apply(`change_status`, data);

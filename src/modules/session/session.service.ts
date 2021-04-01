@@ -15,7 +15,7 @@ export class SessionService {
 
   async getSessionsByTicker(symbol: string) {
     const sessions = await this.getSessions();
-    return sessions.filter(s => s.subscriptionTickers.includes(symbol));
+    return sessions.filter(s => s.subscriptionTickers?.find(t => t === symbol) !== null);
   }
 
   async getSessionTickers(sessions?: TgSession[]) {

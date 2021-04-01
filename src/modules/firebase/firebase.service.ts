@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
-admin.initializeApp();
-
 @Injectable()
 export class FirebaseService {
-  // constructor() { }
+  constructor() {
+    this.initialize();
+  }
+
+  protected initialize() {
+    admin.initializeApp();
+  }
 
   getDatabase() {
     return admin.database();

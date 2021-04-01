@@ -1,13 +1,16 @@
 import { Scene, SceneEnter } from 'nestjs-telegraf';
 
 import { currentContext } from '../../../utils/current-context';
+import { EventEmitterService } from '../../global/event-emitter.service';
 import { NotificationService } from '../../notification/notification.service';
 
 @Scene(NotifyScene.sceneName)
 export class NotifyScene {
   static sceneName = 'notify';
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+  ) {}
 
   @SceneEnter()
   async enter() {

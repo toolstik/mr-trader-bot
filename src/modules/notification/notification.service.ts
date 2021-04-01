@@ -35,7 +35,7 @@ export class NotificationService {
     @InjectBot() private bot: Telegraf<MyContext>,
   ) {}
 
-  private async collectAndPlay<T>(
+  async collectAndPlay<T>(
     collect: (ticket: string) => Promise<T | false>,
     play?: (session: TgSession, ticker: string, data: T) => Promise<void>,
     sessions?: TgSession[],
@@ -232,8 +232,8 @@ export class NotificationService {
       fundamentals,
     };
 
+    const message = this.templateService.apply(`change_status`, data);
     for (const n of recipients) {
-      const message = this.templateService.apply(`change_status`, data);
       await this.bot.telegram.sendMessage(n.chatId, message, {
         parse_mode: 'Markdown',
         disable_web_page_preview: true,

@@ -13,6 +13,7 @@
     "build:prod": "gulp build -p=production",
     "lint:fix": "eslint --fix --quiet .",
     "serve": "gulp serve",
+    "deploy_bot:stage": "gulp deploy_bot",
     "deploy:stage": "gulp deploy",
     "deploy:prod": "gulp deploy -p=production",
     "preinstall": "node use-yarn.js",
@@ -56,6 +57,7 @@
     "yahoo-finance": "^0.3.7"
   },
   "devDependencies": {
+    "@nestjs/testing": "^7.6.15",
     "@sindresorhus/tsconfig": "^0.8.0",
     "@types/axios": "^0.14.0",
     "@types/debug": "^4.1.5",

@@ -60,12 +60,15 @@ export class AnalysisService {
     if (asset === null || marketData === null) {
       return null;
     }
-
     const result = await this.fsmDeepTransition(asset, marketData);
 
     if (emitEvents) {
       for (const e of result.events) {
-        await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
+        console.log(`getAssetStatus ${symbol} emit event`);
+        await this.eventEmitter
+          .emitAsync(AssetStatusChangedEvent, e)
+          .catch(r => console.error('getAssetStatus emitAsync error', r));
+        console.log(`getAssetStatus ${symbol} emit event end`);
       }
     }
 

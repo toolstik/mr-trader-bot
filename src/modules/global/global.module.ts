@@ -1,9 +1,10 @@
-import { Global, Logger, Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
 import { ResponseTimeMiddleware } from '../../middlewares/request-time.middleware';
 import { Configuration } from './configuration';
 import { EventEmitterService } from './event-emitter.service';
 import { FirebaseLogger } from './firebase-logger';
+import { PlainLogger } from './plain-logger';
 
 @Global()
 @Module({
@@ -13,13 +14,13 @@ import { FirebaseLogger } from './firebase-logger';
     EventEmitterService,
     FirebaseLogger,
     {
-      provide: Logger,
+      provide: PlainLogger,
       inject: [Configuration, FirebaseLogger],
       useFactory: (config: Configuration, fbLogger: FirebaseLogger) => {
-        return config.isEmulator ? new Logger() : fbLogger;
+        return config.isEmulator ? new PlainLogger() : fbLogger;
       },
     },
   ],
-  exports: [Configuration, ResponseTimeMiddleware, Logger, EventEmitterService],
+  exports: [Configuration, ResponseTimeMiddleware, EventEmitterService],
 })
 export class GlobalModule {}

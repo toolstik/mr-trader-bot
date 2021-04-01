@@ -64,11 +64,7 @@ export class AnalysisService {
 
     if (emitEvents) {
       for (const e of result.events) {
-        console.log(`getAssetStatus ${symbol} emit event`);
-        await this.eventEmitter
-          .emitAsync(AssetStatusChangedEvent, e)
-          .catch(r => console.error('getAssetStatus emitAsync error', r));
-        console.log(`getAssetStatus ${symbol} emit event end`);
+        await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
       }
     }
 

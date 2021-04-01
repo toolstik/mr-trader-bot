@@ -1,12 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Composer } from 'telegraf';
 import { MiddlewareObj } from 'telegraf/typings/middleware';
 
+import { PlainLogger } from '../modules/global/plain-logger';
 import { MyContext } from '../types/my-context';
 
 @Injectable()
 export class ResponseTimeMiddleware implements MiddlewareObj<MyContext> {
-  constructor(private log: Logger) {}
+  constructor(private log: PlainLogger) {}
 
   middleware() {
     return Composer.on('text', async (ctx, next) => {

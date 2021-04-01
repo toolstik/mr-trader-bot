@@ -120,8 +120,7 @@ export class AssetService extends BaseEntityService<AssetEntity> {
   }
 
   @OnEvent(AssetStatusChangedEvent.event)
-  async handleStatusChange(event: AssetStatusChangedEvent) {
-    // console.debug('####handle', event);
+  async handleAssetStatusChangedEvent(event: AssetStatusChangedEvent) {
     await this.updateOne(event.symbol, v => ({
       ...v,
       state: event.to,

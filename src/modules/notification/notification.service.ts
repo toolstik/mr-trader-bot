@@ -1,44 +1,43 @@
+import _ = require('lodash');
+import PromisePool = require('@supercharge/promise-pool');
+
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectBot } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 
+import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
-import {
-  AssetStatus,
-  AssetStatusWithFundamentals,
-  FundamentalData,
-  paginate,
-} from '../../types/commons';
+import { AssetStateKey, AssetStatus, FundamentalData, paginate } from '../../types/commons';
+import { MarketData } from '../../types/market-data';
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
-import { EventService } from '../event/event.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
 
-import PromisePool = require('@supercharge/promise-pool');
-import _ = require('lodash');
+type StatusChangedKey = AssetStateKey | 'STOP_BOTTOM' | 'STOP_TOP';
 
-type AssetNotification<T> = {
-  session: TgSession;
-  data: T;
+type AssetStatusChangedData = {
+  ticker: string;
+  status: StatusChangedKey;
+  marketData: MarketData & { profit: number };
+  fundamentals: FundamentalData;
 };
 
 @Injectable()
 export class NotificationService {
   constructor(
     private assetService: AssetService,
-    private eventService: EventService,
     private sessionService: SessionService,
     private analysisService: AnalysisService,
     private templateService: TemplateService,
     @InjectBot() private bot: Telegraf<MyContext>,
   ) {}
 
-  private async collectAndPlay<T>(
+  async collectAndPlay<T>(
     collect: (ticket: string) => Promise<T | false>,
-    play: (session: TgSession, ticker: string, data: T) => Promise<void>,
+    play?: (session: TgSession, ticker: string, data: T) => Promise<void>,
     sessions?: TgSession[],
     tickers?: string[],
   ) {
@@ -73,15 +72,17 @@ export class NotificationService {
           }, {} as Record<string, T>);
       });
 
-    for (const session of sessions) {
-      if (!session?.subscriptionTickers) {
-        continue;
-      }
+    if (play) {
+      for (const session of sessions) {
+        if (!session?.subscriptionTickers) {
+          continue;
+        }
 
-      for (const ticker of session.subscriptionTickers) {
-        const data = dict[ticker];
-        if (data) {
-          await play(session, ticker, data);
+        for (const ticker of session.subscriptionTickers) {
+          const data = dict[ticker];
+          if (data) {
+            await play(session, ticker, data);
+          }
         }
       }
     }
@@ -89,59 +90,11 @@ export class NotificationService {
     return dict;
   }
 
-  private async prepareNotifications() {
-    const notifications: AssetNotification<AssetStatusWithFundamentals>[] = [];
-
-    const statuses = await this.collectAndPlay(
-      async t => await this.analysisService.getAssetStatus(t),
-      async (s, t, d) => {
-        if (!d || !d.changed || d.status === 'NONE') {
-          return;
-        }
-
-        const fundamentals = await this.assetService.getFundamentals(t);
-
-        notifications.push({
-          session: s,
-          data: {
-            ...d,
-            fundamentals,
-          },
-        });
-      },
-    );
-
-    return {
-      notifications,
-      statuses,
-    };
-  }
-
   async sendAssetStatusChangesAll() {
-    const data = await this.prepareNotifications();
-
-    // send notifications
-    for (const n of data.notifications) {
-      const message = this.templateService.apply(`change_status`, n.data);
-      await this.bot.telegram.sendMessage(n.session.chatId, message, {
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true,
-      });
-    }
-
-    // update statuses
-    for (const [key, value] of Object.entries(data.statuses)) {
-      if (!value?.changed) {
-        continue;
-      }
-
-      await this.assetService.updateOne(key, v => ({
-        ...v,
-        state: value.status,
-      }));
-    }
-
-    return data;
+    const dict = await this.collectAndPlay(
+      async t => await this.analysisService.getAssetStatus(t, true),
+    );
+    return Object.values(dict);
   }
 
   async sendAssetStatusStateAll() {
@@ -236,12 +189,55 @@ export class NotificationService {
   }
 
   @OnEvent(MessageStatsCreatedEvent.event)
-  async handleStatsMesage(event: MessageStatsCreatedEvent) {
+  async handleMessageStatsCreatedEvent(event: MessageStatsCreatedEvent) {
     const message = this.templateService.apply('stats', event);
 
     await this.bot.telegram.sendMessage(event.chatId, message, {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
     });
+  }
+
+  @OnEvent(AssetStatusChangedEvent.event)
+  async handleAssetStatusChangedEvent(event: AssetStatusChangedEvent) {
+    const recipients = await this.sessionService.getSessionsByTicker(event.symbol);
+
+    if (!recipients?.length) {
+      return;
+    }
+
+    const fundamentals = await this.assetService.getFundamentals(event.symbol);
+
+    const status: StatusChangedKey =
+      event.to !== 'NONE'
+        ? event.to
+        : event.from === 'REACH_TOP'
+        ? 'STOP_TOP'
+        : event.from === 'REACH_BOTTOM'
+        ? 'STOP_BOTTOM'
+        : 'NONE';
+
+    const data: AssetStatusChangedData = {
+      ticker: event.symbol,
+      status: status,
+      marketData: {
+        ...event.marketData,
+        profit:
+          status === 'STOP_TOP'
+            ? 1 - event.oldPrice / event.currentPrice
+            : status === 'STOP_BOTTOM'
+            ? event.oldPrice / event.currentPrice - 1
+            : null,
+      },
+      fundamentals,
+    };
+
+    const message = this.templateService.apply(`change_status`, data);
+    for (const n of recipients) {
+      await this.bot.telegram.sendMessage(n.chatId, message, {
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      });
+    }
   }
 }

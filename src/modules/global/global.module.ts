@@ -1,20 +1,26 @@
-import { Global, Logger, Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
 import { ResponseTimeMiddleware } from '../../middlewares/request-time.middleware';
-import { ConfigService } from './config.service';
+import { Configuration } from './configuration';
 import { EventEmitterService } from './event-emitter.service';
+import { FirebaseLogger } from './firebase-logger';
+import { PlainLogger } from './plain-logger';
 
 @Global()
 @Module({
   providers: [
-    ConfigService,
+    Configuration,
     ResponseTimeMiddleware,
     EventEmitterService,
+    FirebaseLogger,
     {
-      provide: Logger,
-      useClass: Logger,
+      provide: PlainLogger,
+      inject: [Configuration, FirebaseLogger],
+      useFactory: (config: Configuration, fbLogger: FirebaseLogger) => {
+        return config.isEmulator ? new PlainLogger() : fbLogger;
+      },
     },
   ],
-  exports: [ConfigService, ResponseTimeMiddleware, Logger, EventEmitterService],
+  exports: [Configuration, ResponseTimeMiddleware, EventEmitterService],
 })
 export class GlobalModule {}

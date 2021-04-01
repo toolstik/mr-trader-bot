@@ -8,7 +8,7 @@ import { i18nMiddleware } from './middlewares/i18n.middleware';
 import { requestContextMiddleware } from './middlewares/request-context/request-context.middleware';
 import { ResponseTimeMiddleware } from './middlewares/request-time.middleware';
 import { BotModule } from './modules/bot.module';
-import { ConfigService } from './modules/global/config.service';
+import { Configuration } from './modules/global/configuration';
 import { GlobalModule } from './modules/global/global.module';
 import { MenuPlugin } from './plugins/menu.plugin';
 
@@ -18,15 +18,15 @@ import { MenuPlugin } from './plugins/menu.plugin';
     EventEmitterModule.forRoot(),
     BotModule,
     TelegrafModule.forRootAsync({
-      inject: [ConfigService, FirebaseSessionMiddleware, ResponseTimeMiddleware],
+      inject: [Configuration, FirebaseSessionMiddleware, ResponseTimeMiddleware],
       imports: [BotModule],
       useFactory: (
-        configService: ConfigService,
+        configService: Configuration,
         sessionMiddleWare: FirebaseSessionMiddleware,
         responceTimeMiddleware: ResponseTimeMiddleware,
       ) => {
         return {
-          token: configService.getEnv().bot_token,
+          token: configService.env.bot_token,
           launchOptions: false,
           options: {
             handlerTimeout: 10 * 60 * 1000, // 10 min

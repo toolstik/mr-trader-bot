@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { interval, Observable, of } from 'rxjs';
 import { catchError, filter, map, shareReplay, startWith, take, timeout } from 'rxjs/operators';
+
+import { PlainLogger } from './plain-logger';
 
 export declare type EventType<T> = {
   new (...args: any[]): T;
@@ -14,7 +16,7 @@ export class EventEmitterService {
 
   private size$: Observable<number>;
 
-  constructor(private eventEmitter: EventEmitter2, private log: Logger) {
+  constructor(private eventEmitter: EventEmitter2, private log: PlainLogger) {
     this.size$ = interval(50).pipe(
       startWith(0),
       map(() => this.processing.size),
@@ -24,20 +26,31 @@ export class EventEmitterService {
     this.size$.subscribe();
   }
 
-  emit<T>(type: EventType<T>, body: T) {
+  private emit<T>(type: EventType<T>, body: T) {
     void this.emitAsync(type, body);
   }
 
   async emitAsync<T>(type: EventType<T>, body: T) {
     const id = Math.random();
-    // console.debug('Event emit', type.event, id, body);
+    this.log.debug('Event emitted:', id, { type: type.event, body });
 
     this.processing.add(id);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await this.eventEmitter.emitAsync(type.event, body);
-    this.processing.delete(id);
+    const result = await this.eventEmitter
+      .emitAsync(type.event, body)
+      .then(r => {
+        this.log.debug('Event processed', id, r);
+        return r;
+      })
+      .catch(e => {
+        this.log.error('Event processing error', id, { error: e });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return null as any[];
+      })
+      .finally(() => {
+        this.processing.delete(id);
+      });
 
-    // console.debug('Event processed', type.event, id, result);
+    return result;
   }
 
   waitAll(timeoutMs = 180000): Promise<boolean> {

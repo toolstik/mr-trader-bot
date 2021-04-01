@@ -15,6 +15,7 @@ import { TestTickerModule } from './commands/test-ticker/test-ticker.module';
 import { UpdateModule } from './commands/update/update.module';
 import { UpdateHistoryModule } from './commands/update-history/update-history.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { StatusTransitionModule } from './status-transition/status-transition.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FirebaseModule } from './firebase/firebase.module';
     UpdateModule,
 
     FirebaseModule,
+    StatusTransitionModule,
   ],
   providers: [BotUpdate, FirebaseSessionMiddleware],
   exports: [FirebaseSessionMiddleware],

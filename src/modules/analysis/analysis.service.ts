@@ -7,6 +7,7 @@ import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event
 import { AssetStateKey, AssetStatus } from '../../types/commons';
 import { FsmContext, FsmEvent, FsmState } from '../../types/fsm-types';
 import { Donchian, MarketData } from '../../types/market-data';
+import { AssetEntity } from '../asset/asset.entity';
 import { AssetService } from '../asset/asset.service';
 import { EventEmitterService } from '../global/event-emitter.service';
 import { YahooService } from '../yahoo/yahoo.service';
@@ -14,19 +15,19 @@ import { YahooService } from '../yahoo/yahoo.service';
 const APPROACH_RATE = 0.005;
 
 function getMarketState(data: MarketData): AssetStateKey {
-  if (data.price > data.donchian.maxValue) {
+  if (data.price > data.donchianOuter.maxValue) {
     return 'REACH_TOP';
   }
 
-  if (data.price * (1 + APPROACH_RATE) > data.donchian.maxValue) {
+  if (data.price * (1 + APPROACH_RATE) > data.donchianOuter.maxValue) {
     return 'APPROACH_TOP';
   }
 
-  if (data.price < data.donchian.minValue) {
+  if (data.price < data.donchianOuter.minValue) {
     return 'REACH_BOTTOM';
   }
 
-  if (data.price * (1 - APPROACH_RATE) < data.donchian.minValue) {
+  if (data.price * (1 - APPROACH_RATE) < data.donchianOuter.minValue) {
     return 'APPROACH_BOTTOM';
   }
 
@@ -34,11 +35,11 @@ function getMarketState(data: MarketData): AssetStateKey {
 }
 
 function topStop(data: MarketData) {
-  return data.price < data.stopLoss;
+  return data.price < data.donchianInner.minValue;
 }
 
 function bottomStop(data: MarketData) {
-  return data.price > data.takeProfit;
+  return data.price > data.donchianInner.maxValue;
 }
 
 @Injectable()
@@ -49,42 +50,34 @@ export class AnalysisService {
     private eventEmitter: EventEmitterService,
   ) {}
 
-  async updateAssetStatus(symbol: string) {
+  async getAssetStatus(symbol: string, emitEvents = false) {
     const [asset, marketData] = await Promise.all([
       this.assetService.findOne(symbol),
       this.getMarketData(symbol),
       // this.assetService.getFundamentals(symbol),
     ]);
 
-    if (asset == null || marketData === null) {
-      return;
-    }
-
-    await this.deepTransition(asset.state ?? 'NONE', { asset }, marketData);
-  }
-
-  async getAssetStatus(symbol: string) {
-    const [asset, marketData] = await Promise.all([
-      this.assetService.findOne(symbol),
-      this.getMarketData(symbol),
-      // this.assetService.getFundamentals(symbol),
-    ]);
-
-    if (asset == null || marketData === null) {
+    if (asset === null || marketData === null) {
       return null;
     }
+    const result = await this.fsmDeepTransition(asset, marketData);
 
-    const status = await this.deepTransition(asset.state ?? 'NONE', { asset }, marketData);
+    if (emitEvents) {
+      for (const e of result.events) {
+        await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
+  }
+    }
 
     return {
       ticker: asset.symbol,
-      status: status.value,
-      changed: status.changed,
+      status: result.asset.state,
+      changed: result.events.length > 0,
+      events: result.events,
       marketData,
     } as AssetStatus;
   }
 
-  private async getMarketData(symbol: string) {
+  private async getMarketData(symbol: string): Promise<MarketData> {
     const price = await this.yahooService.getPrices(symbol);
     // console.log(symbol, price);
     if (!price?.regularMarketPrice) {
@@ -101,10 +94,9 @@ export class AnalysisService {
     return {
       price: price.regularMarketPrice,
       asset: _.omit(price, 'regularMarketPrice'),
-      donchian: donchian20,
-      stopLoss: donchian5.minValue,
-      takeProfit: donchian5.maxValue,
-    } as MarketData;
+      donchianOuter: donchian20,
+      donchianInner: donchian5,
+    };
   }
 
   private async getDonchian(symbol: string, daysBack: number) {
@@ -139,22 +131,34 @@ export class AnalysisService {
     return donchian;
   }
 
-  private createFsm(state: AssetStateKey, context: FsmContext) {
+  private async fsmTransition(asset: AssetEntity, marketData: MarketData) {
     const myAction = (transition: { from: AssetStateKey; to: AssetStateKey }) => {
-      return async (ctx: FsmContext, e: FsmEvent) => {
+      return (ctx: FsmContext, e: FsmEvent) => {
         // console.debug(transition);
-        await this.eventEmitter.emitAsync(AssetStatusChangedEvent, {
+        const event: AssetStatusChangedEvent = {
           symbol: ctx.asset.symbol,
           from: transition.from,
           to: transition.to,
           oldPrice: ctx.asset.stateData?.enterPrice,
           currentPrice: e.payload.price,
-        });
+          marketData,
       };
+
+        // return this.eventEmitter.emitAsync(AssetStatusChangedEvent, event);
+        ctx.asset.state = transition.to;
+        ctx.events.push(event);
+
+        // console.log(ctx);
+    };
     };
 
-    return createMachine<FsmContext, FsmEvent, FsmState>({
-      initial: state,
+    const context: FsmContext = {
+      asset,
+      events: [],
+    };
+
+    const fsm = createMachine<FsmContext, FsmEvent, FsmState>({
+      initial: asset.state ?? 'NONE',
       context: context,
       states: {
         REACH_TOP: {
@@ -259,40 +263,46 @@ export class AnalysisService {
         },
       },
     });
-  }
 
-  private async deepTransition(state: AssetStateKey, context: FsmContext, data: MarketData) {
-    // console.time('fsm');
-    const fsm = this.createFsm(state, context);
-
-    let curState = fsm.initialState;
-
-    const event: FsmEvent<'update'> = {
+    const fsmEvent: FsmEvent<'update'> = {
       type: 'update',
-      payload: data,
+      payload: marketData,
     };
 
-    // REMOVE!!!!
-    // data.price = data.price * 0.8;
+    const newState = fsm.transition(fsm.initialState, fsmEvent);
+
+    for (const action of newState.actions || []) {
+      action.exec(context, fsmEvent);
+  }
+
+    return context;
+  }
+
+  private async fsmDeepTransition(asset: AssetEntity, marketData: MarketData) {
+    // console.time('fsm');
+
+    const context: FsmContext = {
+      asset,
+      events: [],
+    };
 
     let i = 0;
     while (i < 5) {
-      const newState = fsm.transition(curState, event);
       // console.timeLog('fsm', 'transition', newState.value, newState.changed);
 
-      if (!newState.changed) {
+      const ctx = await this.fsmTransition(context.asset, marketData);
+
+      if (context && !ctx.events.length) {
         break;
       }
 
-      for (const action of newState.actions || []) {
-        await action.exec(context, event);
-      }
+      context.asset = ctx.asset;
+      context.events.push(...ctx.events);
 
-      curState = newState;
       i++;
     }
 
     // console.timeEnd('fsm');
-    return curState;
+    return context;
   }
 }

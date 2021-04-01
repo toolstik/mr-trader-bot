@@ -4,7 +4,7 @@ import { Telegraf } from 'telegraf';
 
 import { AppModule } from './app.module';
 import { AssetService } from './modules/asset/asset.service';
-import { ConfigService } from './modules/global/config.service';
+import { Configuration } from './modules/global/configuration';
 import { NotificationService } from './modules/notification/notification.service';
 import { MyContext } from './types/my-context';
 
@@ -14,12 +14,12 @@ export async function start() {
 
   const notificationService = module.get(NotificationService);
   const assetService = module.get(AssetService);
-  const configService = module.get(ConfigService);
+  const configService = module.get(Configuration);
 
   const bot: Telegraf<MyContext> = module.get(getBotToken()); //botService.createBot(plugins);
 
   return {
-    env: configService.getEnv(),
+    env: configService.env,
     bot: bot,
     updateHistory: async () => {
       await assetService.updateHistory();

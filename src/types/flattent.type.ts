@@ -1,5 +1,5 @@
-import { UnionToIntersection } from "telegraf/typings/telegram-types";
-import { ConditionalExcept, Get, Primitive } from "type-fest";
+import { UnionToIntersection } from 'telegraf/typings/telegram-types';
+import { ConditionalExcept, Primitive } from 'type-fest';
 
 type Delimiter = '.';
 

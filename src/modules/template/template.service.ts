@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import * as path from 'path';
@@ -47,7 +47,7 @@ function eq(a, b, opts: handlebars.HelperOptions) {
 export class TemplateService {
   private templatesMap: TranslateMap;
 
-  constructor(private logger: Logger) {
+  constructor() {
     this.helpers();
     this.load();
   }

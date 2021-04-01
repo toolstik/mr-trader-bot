@@ -189,9 +189,24 @@ export class YahooService {
     return await catchDivide(symbols, action);
   }
 
-  async getPrices(symbol: string) {
+  async getPrices(symbol: string): Promise<PriceModule> {
     const quote = await this.getQuote(symbol, ['price']);
-    return quote?.price;
+    // remove unnecessary fields
+    const price = _.pick(quote?.price, [
+      'symbol',
+      'postMarketSource',
+      'regularMarketPrice',
+      'exchange',
+      'exchangeName',
+      'quoteType',
+      'shortName',
+      'longName',
+      'currency',
+      'quoteSourceName',
+      'currencySymbol',
+    ]);
+
+    return price;
   }
 
   async getFundamentals(symbol: string) {

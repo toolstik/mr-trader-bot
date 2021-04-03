@@ -15,19 +15,19 @@ import { YahooService } from '../yahoo/yahoo.service';
 const APPROACH_RATE = 0.005;
 
 function getMarketState(data: MarketData): AssetStateKey {
-  if (data.price >= data.donchianOuter.maxValue) {
+  if (data.price > data.donchianOuter.maxValue) {
     return 'REACH_TOP';
   }
 
-  if (data.price * (1 + APPROACH_RATE) >= data.donchianOuter.maxValue) {
+  if (data.price * (1 + APPROACH_RATE) > data.donchianOuter.maxValue) {
     return 'APPROACH_TOP';
   }
 
-  if (data.price <= data.donchianOuter.minValue) {
+  if (data.price < data.donchianOuter.minValue) {
     return 'REACH_BOTTOM';
   }
 
-  if (data.price * (1 - APPROACH_RATE) <= data.donchianOuter.minValue) {
+  if (data.price * (1 - APPROACH_RATE) < data.donchianOuter.minValue) {
     return 'APPROACH_BOTTOM';
   }
 
@@ -35,11 +35,11 @@ function getMarketState(data: MarketData): AssetStateKey {
 }
 
 function topStop(data: MarketData) {
-  return data.price <= data.donchianInner.minValue;
+  return data.price < data.donchianInner.minValue;
 }
 
 function bottomStop(data: MarketData) {
-  return data.price >= data.donchianInner.maxValue;
+  return data.price > data.donchianInner.maxValue;
 }
 
 @Injectable()
@@ -65,7 +65,7 @@ export class AnalysisService {
     if (emitEvents) {
       for (const e of result.events) {
         await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
-      }
+  }
     }
 
     return {
@@ -116,8 +116,8 @@ export class AnalysisService {
         (prev, cur) => {
           return {
             ...prev,
-            minValue: Math.min(prev.minValue, cur.low),
-            maxValue: Math.max(prev.maxValue, cur.high),
+            minValue: cur.low ? Math.min(prev.minValue, cur.low) : prev.minValue,
+            maxValue: cur.high ? Math.max(prev.maxValue, cur.high) : prev.maxValue,
           };
         },
         {
@@ -142,14 +142,14 @@ export class AnalysisService {
           oldPrice: ctx.asset.stateData?.enterPrice,
           currentPrice: e.payload.price,
           marketData,
-        };
+      };
 
         // return this.eventEmitter.emitAsync(AssetStatusChangedEvent, event);
         ctx.asset.state = transition.to;
         ctx.events.push(event);
 
         // console.log(ctx);
-      };
+    };
     };
 
     const context: FsmContext = {
@@ -273,7 +273,7 @@ export class AnalysisService {
 
     for (const action of newState.actions || []) {
       action.exec(context, fsmEvent);
-    }
+  }
 
     return context;
   }

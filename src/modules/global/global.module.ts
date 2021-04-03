@@ -21,6 +21,6 @@ import { PlainLogger } from './plain-logger';
       },
     },
   ],
-  exports: [Configuration, ResponseTimeMiddleware, EventEmitterService],
+  exports: [Configuration, ResponseTimeMiddleware, EventEmitterService, PlainLogger],
 })
 export class GlobalModule {}

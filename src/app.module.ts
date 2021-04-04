@@ -10,6 +10,7 @@ import { i18nMiddleware } from './middlewares/i18n.middleware';
 import { requestContextMiddleware } from './middlewares/request-context/request-context.middleware';
 import { ResponseTimeMiddleware } from './middlewares/request-time.middleware';
 import { BotModule } from './modules/bot.module';
+import { MenuMiddleware } from './modules/commands/menu/menu.middleware';
 import { Configuration } from './modules/global/configuration';
 import { GlobalModule } from './modules/global/global.module';
 import { MenuPlugin } from './plugins/menu.plugin';
@@ -26,6 +27,7 @@ import { MenuPlugin } from './plugins/menu.plugin';
         configService: Configuration,
         sessionMiddleWare: FirebaseSessionMiddleware,
         responceTimeMiddleware: ResponseTimeMiddleware,
+        menuMiddleWare: MenuMiddleware,
       ) => {
         return {
           token: configService.env.bot_token,
@@ -38,6 +40,7 @@ import { MenuPlugin } from './plugins/menu.plugin';
             commandPartsMiddleWare,
             i18nMiddleware,
             sessionMiddleWare,
+            menuMiddleWare,
             responceTimeMiddleware,
           ],
           include: [BotModule],

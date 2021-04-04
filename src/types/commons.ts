@@ -3,12 +3,15 @@ import { Transform, TransformationType } from 'class-transformer';
 import { AssetStatusChangedEvent } from '../events/asset-status-changed.event';
 import { MarketData } from './market-data';
 
-export type AssetStateKey =
-  | 'NONE'
-  | 'APPROACH_TOP'
-  | 'APPROACH_BOTTOM'
-  | 'REACH_TOP'
-  | 'REACH_BOTTOM';
+export const AssetStateArray = [
+  'APPROACH_TOP',
+  'APPROACH_BOTTOM',
+  'REACH_TOP',
+  'REACH_BOTTOM',
+  'NONE',
+] as const;
+
+export type AssetStateKey = ArrayItem<typeof AssetStateArray>;
 
 export type AssetStatus = {
   ticker: string;

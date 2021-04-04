@@ -2,6 +2,7 @@ import { I18nContext } from '@edjopato/telegraf-i18n';
 import { Context as TelegrafContext, Scenes } from 'telegraf';
 
 import { CommandParts } from '../middlewares/command-args.middleware';
+import { AssetStateKey } from './commons';
 
 export interface TgSession extends Scenes.SceneSession {
   username: string;
@@ -12,6 +13,9 @@ export interface TgSession extends Scenes.SceneSession {
   userId: number;
   subscriptionTickers: string[];
   enabled: boolean;
+  settings: {
+    notificationStatuses: AssetStateKey[];
+  };
 }
 
 export interface MyContext extends TelegrafContext, Scenes.SceneContext {

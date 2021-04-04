@@ -64,7 +64,7 @@ export class TemplateService {
     }
 
     if (!template) {
-      throw new Error('template-not-found');
+      throw new Error(`Template '${key}' not found`);
     }
 
     return template(data);

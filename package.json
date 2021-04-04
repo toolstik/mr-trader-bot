@@ -15,8 +15,8 @@
     "serve": "gulp serve",
     "serve:staging": "gulp serve_remote -p=staging",
     "serve:prod": "gulp serve_remote -p=production",
-    "deploy_bot:stage": "gulp deploy_bot",
-    "deploy:stage": "gulp deploy",
+    "deploy_bot:staging": "gulp deploy_bot",
+    "deploy:staging": "gulp deploy",
     "deploy:prod": "gulp deploy -p=production",
     "preinstall": "node use-yarn.js",
     "_postinstall": "cd ./node_modules/nestjs-telegraf && npm install && npm run build"

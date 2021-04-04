@@ -10,7 +10,9 @@ export class SessionService {
 
   async getSessions() {
     const sessionRefValue = await this.repository.findAll();
-    return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv)));
+    return _.flatten(Object.values(sessionRefValue).map(sv => Object.values(sv))).filter(
+      s => s.enabled,
+    );
   }
 
   async getSessionsByTicker(symbol: string) {

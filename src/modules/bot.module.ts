@@ -5,6 +5,7 @@ import { BotUpdate } from './bot.update';
 import { AddTickerModule } from './commands/add-ticker/add-ticker.module';
 import { AddTickerListModule } from './commands/add-ticker-list/add-ticker-list.module';
 import { FundamentalsModule } from './commands/fundamentals/fundamentals.module';
+import { HelpModule } from './commands/help/help.module';
 import { ListTickerModule } from './commands/list-ticker/list-ticker.module';
 import { NotifyModule } from './commands/notify/notify.module';
 import { RemoveTickerModule } from './commands/remove-ticker/remove-ticker.module';
@@ -23,6 +24,7 @@ import { StatusTransitionModule } from './status-transition/status-transition.mo
     AddTickerModule,
     AddTickerListModule,
     FundamentalsModule,
+    HelpModule,
     ListTickerModule,
     NotifyModule,
     RemoveTickerModule,

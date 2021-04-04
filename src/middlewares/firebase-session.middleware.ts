@@ -20,7 +20,11 @@ export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
         ctx.session = {
           ...ctx.session,
           username: ctx.message.from.username ?? '',
+          userFirstName: ctx.message.from.first_name ?? '',
+          userLastName: ctx.message.from.last_name ?? '',
+          groupname: ctx.chat.type === 'group' ? ctx.chat.title : null,
           chatId: ctx.chat.id,
+          userId: ctx.message?.from?.id,
           enabled: ctx.session?.enabled ?? true,
           subscriptionTickers: ctx.session?.subscriptionTickers ?? [],
         };

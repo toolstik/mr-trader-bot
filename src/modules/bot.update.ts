@@ -13,6 +13,7 @@ export class BotUpdate implements OnModuleInit {
     await this.bot.telegram.setMyCommands([
       { command: 'add', description: 'Добавить тикер для отслеживания' },
       { command: 'list', description: 'Показать список тикеров в подписке' },
+      { command: 'stat', description: 'Показать статистику сигналов' },
     ]);
 
     this.bot.catch(async (error: any, ctx: MyContext) => {

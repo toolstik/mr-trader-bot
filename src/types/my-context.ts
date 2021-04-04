@@ -5,7 +5,11 @@ import { CommandParts } from '../middlewares/command-args.middleware';
 
 export interface TgSession extends Scenes.SceneSession {
   username: string;
+  userFirstName: string;
+  userLastName: string;
+  groupname: string;
   chatId: number;
+  userId: number;
   subscriptionTickers: string[];
   enabled: boolean;
 }

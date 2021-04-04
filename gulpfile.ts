@@ -59,6 +59,11 @@ export class Gulpfile {
     )();
   }
 
+  @Task()
+  fb_serve_functions() {
+    return shell.task(`firebase -P ${args.profile} emulators:start --only functions`)();
+  }
+
   @SequenceTask()
   deploy() {
     return ['build', 'fb_deploy'];
@@ -72,5 +77,10 @@ export class Gulpfile {
   @SequenceTask()
   serve() {
     return ['build', 'fb_serve'];
+  }
+
+  @SequenceTask()
+  serve_remote() {
+    return ['build', 'fb_serve_functions'];
   }
 }

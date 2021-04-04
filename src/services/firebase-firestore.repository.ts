@@ -1,7 +1,7 @@
 import _ = require('lodash');
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { newFirestoreId } from '../utils/firebase';
-import { FindQuery, IRepository } from './i-repository.interface';
+import { ConditionKey, IRepository, isCondition, Selector } from './i-repository.interface';
 
 // ".", "#", "$", "/", "[", or "]"
 function normalizeKey(key: string) {
@@ -17,18 +17,47 @@ export abstract class FirebaseFirestoreRepository<T> implements IRepository<T> {
     this.ref = this.db.collection(this.getRefName()) as FirebaseFirestore.CollectionReference<T>;
   }
 
-  async find(query: FindQuery<T>): Promise<T[]> {
-    const request = Object.keys(query).reduce((prev, key) => {
-      const value = query[key];
+  normalizeKey(key: string): string {
+    return key;
+  }
 
-      if (_.isObject(value)) {
-        if ('$in' in value) {
-          return prev.where(key, 'in', value['$in']);
+  private buildQuery<U>(query: FirebaseFirestore.Query<U>, selector: Selector<U>, prefix: string) {
+    if (!_.isObject(selector)) {
+      return query.where(prefix, '==', selector);
+    }
+
+    if (!isCondition(selector)) {
+      query = Object.keys(selector).reduce((prev, key) => {
+        const path = prefix ? `${prefix}.${key}` : key;
+        return this.buildQuery(prev, selector[key], path);
+      }, query);
+    } else {
+      query = Object.keys(selector).reduce((prev, key: ConditionKey) => {
+        if (key === '$in') {
+          prev = prev.where(prefix, 'in', selector[key]);
         }
-      }
+        if (key === '$gt') {
+          prev = prev.where(prefix, '>', selector[key]);
+        }
+        if (key === '$gte') {
+          prev = prev.where(prefix, '>=', selector[key]);
+        }
+        if (key === '$lt') {
+          prev = prev.where(prefix, '<', selector[key]);
+        }
+        if (key === '$lte') {
+          prev = prev.where(prefix, '<=', selector[key]);
+        }
 
-      return prev.where(key, '==', query[key]);
-    }, this.ref as FirebaseFirestore.Query<T>);
+        return prev;
+      }, query);
+    }
+
+    return query;
+  }
+
+  async find(query: Selector<T>): Promise<T[]> {
+    const request = this.buildQuery(this.ref, query, null);
 
     const snapshot = await request.get();
 

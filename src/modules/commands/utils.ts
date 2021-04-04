@@ -12,6 +12,13 @@ export function parseTickerList(args: string) {
   return uniq(values);
 }
 
+export function recordMap<T, U>(record: Record<string, T>, func: (x: T) => U): Record<string, U> {
+  return Object.entries(record).reduce((prev, [key, value]) => {
+    prev[key] = func(value);
+    return prev;
+  }, {} as Record<string, U>);
+}
+
 export function flatMerge<T extends Object>(
   obj: T,
   src: T,

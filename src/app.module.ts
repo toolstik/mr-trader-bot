@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TelegrafModule } from 'nestjs-telegraf';
 
+import { AnyExceptionFilter } from './any-exception.filter';
 import { commandPartsMiddleWare } from './middlewares/command-args.middleware';
 import { FirebaseSessionMiddleware } from './middlewares/firebase-session.middleware';
 import { i18nMiddleware } from './middlewares/i18n.middleware';
@@ -43,7 +45,13 @@ import { MenuPlugin } from './plugins/menu.plugin';
       },
     }),
   ],
-  providers: [MenuPlugin],
+  providers: [
+    MenuPlugin,
+    {
+      provide: APP_FILTER,
+      useClass: AnyExceptionFilter,
+    },
+  ],
   exports: [],
 })
 export class AppModule {}

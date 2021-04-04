@@ -1,3 +1,5 @@
+import { identity } from 'lodash';
+
 import { IRepository } from './i-repository.interface';
 
 export abstract class BaseEntityService<T> {
@@ -10,7 +12,7 @@ export abstract class BaseEntityService<T> {
 
   async findByKeys(symbols: string[]) {
     const all = await this.__repository.findAll();
-    return symbols?.map(i => all[i]);
+    return symbols?.map(i => all[this.__repository.normalizeKey(i)]).filter(identity);
   }
 
   findOne(key: string) {

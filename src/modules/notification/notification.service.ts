@@ -92,33 +92,16 @@ export class NotificationService {
 
   async sendAssetStatusChangesAll() {
     const dict = await this.collectAndPlay(
-      async t => await this.analysisService.getAssetStatus(t, true),
+      async t => await this.analysisService.getAssetStatus(t, { emitEvents: true }),
     );
     return Object.values(dict);
-  }
-
-  async sendAssetStatusStateAll() {
-    await this.collectAndPlay(
-      async t => await this.analysisService.getAssetStatus(t),
-      async (s, t, d) => {
-        if (!d || d.status === 'NONE') {
-          return;
-        }
-
-        const message = this.templateService.apply(`current_status`, d);
-        await this.bot.telegram.sendMessage(s.chatId, message, {
-          parse_mode: 'Markdown',
-          disable_web_page_preview: true,
-        });
-      },
-    );
   }
 
   async sendAssetStatusStatePages(sessions?: TgSession[]) {
     const chats: Record<string, AssetStatus[]> = {};
 
     await this.collectAndPlay(
-      async t => await this.analysisService.getAssetStatus(t),
+      async t => await this.analysisService.getAssetStatus(t, { fundamentals: true }),
       async (s, t, d) => {
         if (!d || d.status === 'NONE') {
           return;
@@ -190,7 +173,10 @@ export class NotificationService {
 
   @OnEvent(MessageStatsCreatedEvent.event)
   async handleMessageStatsCreatedEvent(event: MessageStatsCreatedEvent) {
-    const message = this.templateService.apply('stats', event);
+    const message = this.templateService.apply(
+      event.ticker === '_global' ? 'stats_global' : 'stats',
+      event,
+    );
 
     await this.bot.telegram.sendMessage(event.chatId, message, {
       parse_mode: 'Markdown',

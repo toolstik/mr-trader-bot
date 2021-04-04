@@ -13,6 +13,8 @@
     "build:prod": "gulp build -p=production",
     "lint:fix": "eslint --fix --quiet .",
     "serve": "gulp serve",
+    "serve:staging": "gulp serve_remote -p=staging",
+    "serve:prod": "gulp serve_remote -p=production",
     "deploy_bot:stage": "gulp deploy_bot",
     "deploy:stage": "gulp deploy",
     "deploy:prod": "gulp deploy -p=production",

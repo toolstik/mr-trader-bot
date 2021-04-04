@@ -21,17 +21,7 @@ export class FirebaseService {
   }
 
   protected initialize() {
-    if (this.config.isEmulator && this.config.env.projectId) {
-      const options: admin.AppOptions = {
-        projectId: this.config.env.projectId,
-        credential: admin.credential.cert(this.config.env.credential),
-        databaseURL: this.config.env.databaseUrl,
-      };
-
-      admin.initializeApp(options);
-    } else {
-      admin.initializeApp();
-    }
+    admin.initializeApp();
   }
 
   protected getFirestoreSettings(): FirebaseFirestore.Settings {

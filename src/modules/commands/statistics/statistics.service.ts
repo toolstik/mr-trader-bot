@@ -112,7 +112,7 @@ export class StatisticsService {
           .reduce(mergeSum, {} as Signals);
 
         return {
-          [symbol]: symbolSignals,
+          [symbol]: _(symbolSignals).defaultsDeep(defaultSignals).value(),
         };
       })
       .reduce((prev, cur) => Object.assign(prev, cur), {} as Record<string, Signals>);
@@ -145,7 +145,7 @@ export class StatisticsService {
           .reduce(mergeSum, {} as Progress);
 
         return {
-          [symbol]: x,
+          [symbol]: _(x).defaultsDeep(defaultProgress).value(),
         };
       })
       .reduce((prev, cur) => Object.assign(prev, cur), {} as Record<string, Progress>);
@@ -164,32 +164,30 @@ export class StatisticsService {
     const signals = await this.getSignalStats(tickers, global);
     const progress = await this.getProgressStats(tickers, global);
 
-    let events: Record<string, MessageStatsCreatedEvent> = {};
+    let events = (global ? ['_global'] : tickers).reduce((prev, symbol) => {
+      prev[symbol] = {
+        chatId: ctx.message.chat.id,
+        ticker: symbol,
+        signals: defaultSignals,
+        progress: defaultProgress,
+      };
+      return prev;
+    }, {} as Record<string, MessageStatsCreatedEvent>);
 
     events = Object.entries(signals).reduce((prev, [key, value]) => {
-      return {
-        ...prev,
-        [key]: {
-          chatId: ctx.message.chat.id,
-          ticker: key,
-          progress: defaultProgress,
-          ...prev[key],
-          signals: value,
-        },
+      prev[key] = {
+        ...prev[key],
+        signals: value,
       };
+      return prev;
     }, events);
 
     events = Object.entries(progress).reduce((prev, [key, value]) => {
-      return {
-        ...prev,
-        [key]: {
-          chatId: ctx.message.chat.id,
-          ticker: key,
-          signals: defaultSignals,
-          ...prev[key],
-          progress: value,
-        },
+      prev[key] = {
+        ...prev[key],
+        progress: value,
       };
+      return prev;
     }, events);
 
     for (const e of Object.values(events)) {

@@ -4,9 +4,9 @@ type Environment = {
   name: string;
   bot_token: string;
   webhook_url: string;
-  projectId: string;
-  credential: string;
-  databaseUrl: string;
+  // projectId: string;
+  // credential: string;
+  // databaseUrl: string;
 };
 
 @Injectable()

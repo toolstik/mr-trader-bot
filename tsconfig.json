@@ -1,18 +1,18 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"noImplicitReturns": true,
-		"skipLibCheck": true,
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"outDir": "dist",
-		"sourceMap": true,
-		"target": "es2017"
-	},
-	"compileOnSave": true,
-	"include": [
-		"src",
-		"functions/src",
-		"gulpfile.ts"
-	],
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es2017"
+  },
+  "compileOnSave": true,
+  "include": [
+    "src",
+    "functions/src",
+    "gulpfile.ts"
+  ],
 }

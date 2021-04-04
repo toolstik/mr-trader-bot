@@ -14,6 +14,16 @@ import { YahooService } from '../yahoo/yahoo.service';
 
 const APPROACH_RATE = 0.005;
 
+type GetAssetStatusOptions = {
+  emitEvents: boolean;
+  fundamentals: boolean;
+};
+
+const DEFAULT_GET_ASSET_STATUS_OPTIONS: GetAssetStatusOptions = {
+  emitEvents: false,
+  fundamentals: false,
+};
+
 function getMarketState(data: MarketData): AssetStateKey {
   if (data.price > data.donchianOuter.maxValue) {
     return 'REACH_TOP';
@@ -50,11 +60,16 @@ export class AnalysisService {
     private eventEmitter: EventEmitterService,
   ) {}
 
-  async getAssetStatus(symbol: string, emitEvents = false) {
-    const [asset, marketData] = await Promise.all([
+  async getAssetStatus(symbol: string, options?: Partial<GetAssetStatusOptions>) {
+    options = {
+      ...DEFAULT_GET_ASSET_STATUS_OPTIONS,
+      ...options,
+    };
+
+    const [asset, marketData, fundamentals] = await Promise.all([
       this.assetService.findOne(symbol),
       this.getMarketData(symbol),
-      // this.assetService.getFundamentals(symbol),
+      options.fundamentals ? this.assetService.getFundamentals(symbol) : null,
     ]);
 
     if (asset === null || marketData === null) {
@@ -62,7 +77,7 @@ export class AnalysisService {
     }
     const result = await this.fsmDeepTransition(asset, marketData);
 
-    if (emitEvents) {
+    if (options.emitEvents) {
       for (const e of result.events) {
         await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
       }
@@ -74,6 +89,7 @@ export class AnalysisService {
       changed: result.events.length > 0,
       events: result.events,
       marketData,
+      fundamentals,
     } as AssetStatus;
   }
 

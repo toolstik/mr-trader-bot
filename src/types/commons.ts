@@ -14,8 +14,9 @@ export type AssetStatus = {
   ticker: string;
   status: AssetStateKey;
   changed: boolean;
-  events: AssetStatusChangedEvent[];
+  events?: AssetStatusChangedEvent[];
   marketData: MarketData;
+  fundamentals?: FundamentalData;
 };
 
 export type RefEntity<T> = Record<string, T>;

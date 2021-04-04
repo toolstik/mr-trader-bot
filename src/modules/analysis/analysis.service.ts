@@ -65,7 +65,7 @@ export class AnalysisService {
     if (emitEvents) {
       for (const e of result.events) {
         await this.eventEmitter.emitAsync(AssetStatusChangedEvent, e);
-  }
+      }
     }
 
     return {
@@ -142,14 +142,14 @@ export class AnalysisService {
           oldPrice: ctx.asset.stateData?.enterPrice,
           currentPrice: e.payload.price,
           marketData,
-      };
+        };
 
         // return this.eventEmitter.emitAsync(AssetStatusChangedEvent, event);
         ctx.asset.state = transition.to;
         ctx.events.push(event);
 
         // console.log(ctx);
-    };
+      };
     };
 
     const context: FsmContext = {
@@ -273,7 +273,7 @@ export class AnalysisService {
 
     for (const action of newState.actions || []) {
       action.exec(context, fsmEvent);
-  }
+    }
 
     return context;
   }

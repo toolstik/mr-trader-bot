@@ -1,4 +1,4 @@
-Статистика сигналов по [{{ticker}}](https://finance.yahoo.com/quote/{{ticker}})
+Общая статистика сигналов по подписке
 
 {{#*inline "myPartial"}}
 в плюс - {{positive.count}} ({{formatSign (percent positive.profit)}}%)
@@ -13,3 +13,8 @@
 
 Пробития ВСЕ:
 {{> myPartial signals.total}}
+
+В работе:
+- пробитие MAX: {{progress.top.count}}
+- пробитие MIN: {{progress.bottom.count}}
+- пробитие ВСЕ: {{progress.total.count}}

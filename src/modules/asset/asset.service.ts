@@ -3,7 +3,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { BaseEntityService } from '../../services/base-entity.service';
-import { normalizeKey } from '../../services/firebase-realtime.repository';
 import { FundamentalData, RefEntity } from '../../types/commons';
 import { FinvizService } from '../finviz/finviz.service';
 import { SessionService } from '../session/session.service';
@@ -35,7 +34,7 @@ export class AssetService extends BaseEntityService<AssetEntity> {
     const value = (await this.repository.findAll()) ?? {};
 
     const newValue = Object.entries(histories.result || {}).reduce((prev, [key, val]) => {
-      const normKey = normalizeKey(key);
+      const normKey = this.repository.normalizeKey(key);
       prev[normKey] = {
         state: 'NONE',
         symbol: key,

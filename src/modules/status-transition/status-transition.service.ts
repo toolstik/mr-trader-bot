@@ -12,6 +12,28 @@ export class StatusTransitionService extends BaseEntityService<StatusTransitionE
     super(repository);
   }
 
+  async findByDateAndTickers(filters: { from?: Date; to?: Date; tickers?: string[] }) {
+    return this.repository.find({
+      createdAt: {
+        ...(filters.from
+          ? {
+              $gte: filters.from,
+            }
+          : null),
+        ...(filters.to
+          ? {
+              $lte: filters.to,
+            }
+          : null),
+      },
+      event: {
+        symbol: {
+          $in: filters.tickers,
+        },
+      },
+    });
+  }
+
   @OnEvent(AssetStatusChangedEvent.event)
   async handleStatusChange(event: AssetStatusChangedEvent) {
     const entity: StatusTransitionEntity = {

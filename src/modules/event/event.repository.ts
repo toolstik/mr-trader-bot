@@ -5,9 +5,6 @@ import { AssetStateKey } from '../../types/commons';
 import { FirebaseService } from '../firebase/firebase.service';
 
 export type EventType = 'STATUS_CHANGE';
-
-export type StatusTransitionType = 'ENTER_TOP' | 'EXIT_TOP' | 'ENTER_BOTTOM' | 'EXIT_BOTTOM';
-
 export class EventEntity {
   id: string;
   createdAt: Date;

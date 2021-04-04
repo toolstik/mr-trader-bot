@@ -190,7 +190,10 @@ export class NotificationService {
 
   @OnEvent(MessageStatsCreatedEvent.event)
   async handleMessageStatsCreatedEvent(event: MessageStatsCreatedEvent) {
-    const message = this.templateService.apply('stats', event);
+    const message = this.templateService.apply(
+      event.ticker === '_global' ? 'stats_global' : 'stats',
+      event,
+    );
 
     await this.bot.telegram.sendMessage(event.chatId, message, {
       parse_mode: 'Markdown',

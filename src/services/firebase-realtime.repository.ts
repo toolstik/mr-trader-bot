@@ -8,11 +8,6 @@ import { FirebaseService } from '../modules/firebase/firebase.service';
 import { RefEntity, RefEntityObject } from '../types/commons';
 import { IRepository } from './i-repository.interface';
 
-// ".", "#", "$", "/", "[", or "]"
-export function normalizeKey(key: string) {
-  return key ? key.replace(/[.#$/\[\]]/, '_') : key;
-}
-
 export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   protected readonly db: database.Database;
   protected readonly ref: database.Reference;
@@ -56,6 +51,11 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
       );
 
     return Object.values(all).filter(predicate);
+  }
+
+  // ".", "#", "$", "/", "[", or "]"
+  normalizeKey(key: string) {
+    return key ? key.replace(/[.#$/\[\]]/, '_') : key;
   }
 
   defaultId?(value: T): string {
@@ -106,7 +106,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   }
 
   async findByKey(key: string) {
-    const goodKey = normalizeKey(key);
+    const goodKey = this.normalizeKey(key);
     const value = await this.getSnapshotValue().then(i => i[goodKey]);
     const entityType = this.getEntityType();
     return plainToClass(entityType, value);
@@ -117,7 +117,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
 
     const goodValue = Object.entries(value).reduce((prev, [key, val]) => {
       return Object.assign(prev, {
-        [normalizeKey(key)]: val,
+        [this.normalizeKey(key)]: val,
       });
     }, new RefEntityObject());
 
@@ -142,7 +142,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   }
 
   async saveOne(key: string, value: T) {
-    const goodKey = normalizeKey(key);
+    const goodKey = this.normalizeKey(key);
     const plainValue = classToPlain(value);
     await this.ref.child(goodKey).set(plainValue);
   }

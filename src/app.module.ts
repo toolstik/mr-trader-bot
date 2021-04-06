@@ -11,6 +11,7 @@ import { requestContextMiddleware } from './middlewares/request-context/request-
 import { ResponseTimeMiddleware } from './middlewares/request-time.middleware';
 import { BotModule } from './modules/bot.module';
 import { MenuMiddleware } from './modules/commands/menu/menu.middleware';
+import { MenuModule } from './modules/commands/menu/menu.module';
 import { Configuration } from './modules/global/configuration';
 import { GlobalModule } from './modules/global/global.module';
 import { MenuPlugin } from './plugins/menu.plugin';
@@ -21,8 +22,8 @@ import { MenuPlugin } from './plugins/menu.plugin';
     EventEmitterModule.forRoot(),
     BotModule,
     TelegrafModule.forRootAsync({
-      inject: [Configuration, FirebaseSessionMiddleware, ResponseTimeMiddleware],
-      imports: [BotModule],
+      inject: [Configuration, FirebaseSessionMiddleware, ResponseTimeMiddleware, MenuMiddleware],
+      imports: [BotModule, MenuModule],
       useFactory: (
         configService: Configuration,
         sessionMiddleWare: FirebaseSessionMiddleware,
@@ -36,12 +37,12 @@ import { MenuPlugin } from './plugins/menu.plugin';
             handlerTimeout: 10 * 60 * 1000, // 10 min
           },
           middlewares: [
+            responceTimeMiddleware.middleware(),
             requestContextMiddleware,
             commandPartsMiddleWare,
             i18nMiddleware,
-            sessionMiddleWare,
-            menuMiddleWare,
-            responceTimeMiddleware,
+            sessionMiddleWare.middleware(),
+            menuMiddleWare.middleware(),
           ],
           include: [BotModule],
         };

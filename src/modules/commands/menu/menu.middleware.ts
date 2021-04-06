@@ -7,6 +7,7 @@ import {
 
 import { AssetStateArray, AssetStateKey } from '../../../types/commons';
 import { MyContext } from '../../../types/my-context';
+import _ = require('lodash');
 
 @Injectable()
 export class MenuMiddleware implements MiddlewareObj<MyContext> {
@@ -18,7 +19,6 @@ export class MenuMiddleware implements MiddlewareObj<MyContext> {
   }
 
   middleware() {
-    console.log('#####get middleware');
     return this.wrapper.middleware();
   }
 
@@ -35,16 +35,21 @@ export class MenuMiddleware implements MiddlewareObj<MyContext> {
       // showFalseEmoji: true,
       columns: 1,
       isSet: (c, key: AssetStateKey) => {
-        console.log('isSet', key);
-        return !c.session.settings?.notificationStatuses?.includes(key);
+        // console.log('isSet context.session', c.session);
+        return c.session.settings.notificationStatuses.includes(key);
       },
       set: (c, key: AssetStateKey, newState) => {
-        console.log('set', key, newState);
+        // console.log('set context.session', c.session);
         if (!newState) {
-          return false;
+          c.session.settings.notificationStatuses = _(c.session.settings.notificationStatuses)
+            .filter(s => s !== key)
+            .uniq()
+            .value();
+
+          return true;
         }
         c.session.settings.notificationStatuses.push(key);
-        return false;
+        return true;
       },
     });
 

@@ -6,7 +6,14 @@ help: This is some example help text.
 menu:
   back: Назад…
   main: На главную…
-  settings: Настройки
+  settings:
+    notification:
+      REACH_TOP: 'Пробитие MAX'
+      APPROACH_TOP: 'Приближение MAX'
+      STOP_TOP: 'Стоп MAX'
+      REACH_BOTTOM: 'Пробитие MIN'
+      APPROACH_BOTTOM: 'Приближение MIN'
+      STOP_BOTTOM: 'Стоп MIN'
   language: Язык
 commands:
   add-ticker:
@@ -27,7 +34,7 @@ commands:
     please-wait: Будет добавлена подписка на ${count} активов. Это может занять несколько минут. Пожалуйста, подождите
     success: >
       Вы успешно подписались на обновления по активам из списка _${key}_
-      
+
       Ошибки: ${errors}
   remove-ticker:
     no-ticker-specified: Не задан тикер

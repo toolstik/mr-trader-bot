@@ -2,7 +2,7 @@ import { I18nContext } from '@edjopato/telegraf-i18n';
 import { Context as TelegrafContext, Scenes } from 'telegraf';
 
 import { CommandParts } from '../middlewares/command-args.middleware';
-import { AssetStateKey } from './commons';
+import { StatusChangedKey } from './commons';
 
 export interface TgSession extends Scenes.SceneSession {
   username: string;
@@ -14,7 +14,7 @@ export interface TgSession extends Scenes.SceneSession {
   subscriptionTickers: string[];
   enabled: boolean;
   settings: {
-    notificationStatuses: AssetStateKey[];
+    notificationStatuses: StatusChangedKey[];
   };
 }
 

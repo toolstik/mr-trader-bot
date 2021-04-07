@@ -1,12 +1,13 @@
+import _ = require('lodash');
 import { Injectable } from '@nestjs/common';
 import { Composer } from 'telegraf';
 import { MiddlewareObj } from 'telegraf/typings/middleware';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase';
+import { PartialDeep } from 'type-fest';
 
+import { defaultsDeep } from '../modules/commands/utils';
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { MyContext, TgSession } from '../types/my-context';
-import _ = require('lodash');
-import { PartialDeep } from 'type-fest';
 
 @Injectable()
 export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
@@ -38,9 +39,10 @@ export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
 
         ctx.session = _(ctx.session || {})
           .merge(state)
-          .defaultsDeep(defaults)
-          .value();
+          .mergeWith(defaults, defaultsDeep)
+          .value() as TgSession;
 
+        // console.log(ctx.session);
         // console.log('session-middleware session', ctx.session);
 
         return next();

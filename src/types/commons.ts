@@ -13,6 +13,17 @@ export const AssetStateArray = [
 
 export type AssetStateKey = ArrayItem<typeof AssetStateArray>;
 
+export const StatusChangedArray = [
+  'REACH_TOP',
+  'APPROACH_TOP',
+  'STOP_TOP',
+  'REACH_BOTTOM',
+  'APPROACH_BOTTOM',
+  'STOP_BOTTOM',
+] as const;
+
+export type StatusChangedKey = ArrayItem<typeof StatusChangedArray>;
+
 export type AssetStatus = {
   ticker: string;
   status: AssetStateKey;

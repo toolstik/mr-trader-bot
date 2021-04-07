@@ -38,3 +38,25 @@ export function flatMerge<T extends Object>(
   }
   return obj;
 }
+
+export function clone<T>(x: T) {
+  return JSON.parse(JSON.stringify(x)) as T;
+}
+
+export function defaultsDeep<T>(dest: T, src: T, key?: string): T {
+  // console.log(key, dest, src);
+
+  if (dest === undefined) {
+    return src;
+  }
+
+  if (_.isArray(dest)) {
+    return dest;
+  }
+
+  if (typeof dest === 'object') {
+    return _.mergeWith(dest, src, defaultsDeep);
+  }
+
+  return dest;
+}

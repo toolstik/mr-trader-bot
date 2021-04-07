@@ -17,7 +17,6 @@ menuTemplate.select('notificationSettingsMenu-select-all', ['ALL'], {
   isSet: c => !!c.session.settings?.subscribeAll,
   set: async (c, key, state) => {
     c.session.settings.subscribeAll = state;
-    await c.answerCbQuery(String(state));
     return true;
   },
 });

@@ -36,13 +36,13 @@ export class VersionService implements OnModuleInit {
   }
 
   async upgrade() {
-    await this.updateToVersion(
-      {
-        num: 1,
-        description: 'Menu initialization. Notification settings menu',
-      },
-      () => this.updateTo1(),
-    );
+    // await this.updateToVersion(
+    //   {
+    //     num: 1,
+    //     description: 'Menu initialization. Notification settings menu',
+    //   },
+    //   () => this.updateTo1(),
+    // );
   }
 
   async updateToVersion(verInfo: VersionInfo, updateFunc: () => Promise<void>) {

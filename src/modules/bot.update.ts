@@ -12,6 +12,7 @@ export class BotUpdate implements OnModuleInit {
   async onModuleInit() {
     await this.bot.telegram.setMyCommands([
       { command: 'help', description: 'Описание доступных команд' },
+      { command: 'menu', description: 'Показать меню для настройки бота' },
       { command: 'list', description: 'Показать список тикеров в подписке' },
       { command: 'stat', description: 'Показать статистику сигналов' },
     ]);

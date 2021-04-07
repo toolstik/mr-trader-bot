@@ -3,46 +3,40 @@ import { MenuTemplate } from 'telegraf-inline-menu/dist/source';
 
 import { StatusChangedArray, StatusChangedKey } from '../../../../types/commons';
 import { MyContext } from '../../../../types/my-context';
-import { notificationSettingsAllMenu } from './notification-all.menu';
 
 const menuTemplate = new MenuTemplate<MyContext>(
   c => `Выберите статусы, по которым хотите получать уведомления`,
 );
 
-type ButtonKey = StatusChangedKey | 'ALL';
+menuTemplate.select('notificationSettingsMenu-select-all', ['ALL'], {
+  showFalseEmoji: false,
+  buttonText: (c, key) => {
+    const translateValue = !!c.session.settings?.subscribeAll ? 'YES' : 'NO';
+    return c.i18n.t(`menu.settings.notification.${key}.${translateValue}`);
+  },
+  isSet: c => !!c.session.settings?.subscribeAll,
+  set: async (c, key, state) => {
+    c.session.settings.subscribeAll = state;
+    await c.answerCbQuery(String(state));
+    return true;
+  },
+});
 
 menuTemplate.select(
-  'menu-notification-statuses',
-  c => {
-    if (c.session.settings?.subscribeAll) {
-      return ['ALL'];
-    }
-    return ['ALL', ...StatusChangedArray];
-  },
+  'notificationSettingsMenu-select',
+  c => (!c.session.settings?.subscribeAll ? StatusChangedArray : []),
   {
     // showFalseEmoji: true,
     columns: 1,
     showFalseEmoji: true,
-    buttonText: (c, key: ButtonKey) => {
-      if (key === 'ALL') {
-        const translateValue = !!c.session.settings?.subscribeAll ? 'YES' : 'NO';
-        return c.i18n.t(`menu.settings.notification.${key}.${translateValue}`);
-      }
+    buttonText: (c, key: StatusChangedKey) => {
       return c.i18n.t(`menu.settings.notification.${key}`);
     },
-    isSet: (c, key: ButtonKey) => {
-      if (key === 'ALL') {
-        return !!c.session.settings?.subscribeAll;
-      }
+    isSet: (c, key: StatusChangedKey) => {
       return !!c.session.settings?.subscriptionStatuses?.includes(key);
     },
-    set: (c, key: ButtonKey, newState) => {
-      if (key === 'ALL') {
-        c.session.settings.subscribeAll = newState;
-        return true;
-      }
-
-      if (!newState) {
+    set: (c, key: StatusChangedKey, state) => {
+      if (!state) {
         c.session.settings.subscriptionStatuses = _(c.session.settings.subscriptionStatuses || [])
           .filter(s => s !== key)
           .uniq()
@@ -57,9 +51,5 @@ menuTemplate.select(
     },
   },
 );
-
-menuTemplate.submenu('all', 'menu-notification-statuses-all', notificationSettingsAllMenu, {
-  hide: () => true,
-});
 
 export const notificationSettingsMenu = menuTemplate;

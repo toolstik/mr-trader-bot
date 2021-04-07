@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Type } from '@nestjs/common';
 import flatten = require('flat');
 import { identity, uniq } from 'lodash';
 import _ = require('lodash');
@@ -12,11 +13,22 @@ export function parseTickerList(args: string) {
   return uniq(values);
 }
 
-export function recordMap<T, U>(record: Record<string, T>, func: (x: T) => U): Record<string, U> {
+export function recordMap<
+  InKey extends string | number | symbol,
+  InValue,
+  OutKey extends string | number | symbol,
+  OutValue
+>(
+  record: Record<InKey, InValue>,
+  valueFunc: (x: InValue) => OutValue,
+  keyFunc: (x: InKey) => OutKey = identity,
+): Record<OutKey, OutValue> {
   return Object.entries(record).reduce((prev, [key, value]) => {
-    prev[key] = func(value);
+    const newKey = keyFunc(key as InKey);
+    const newValue = valueFunc(value as InValue);
+    prev[newKey] = newValue;
     return prev;
-  }, {} as Record<string, U>);
+  }, {} as Record<OutKey, OutValue>);
 }
 
 export function flatMerge<T extends Object>(
@@ -37,4 +49,30 @@ export function flatMerge<T extends Object>(
     _.set(obj, key, value);
   }
   return obj;
+}
+
+export function clone<T>(x: T) {
+  return JSON.parse(JSON.stringify(x)) as T;
+}
+
+export function defaultsDeep<T>(dest: T, src: T, key?: string): T {
+  // console.log(key, dest, src);
+
+  if (dest === undefined) {
+    return src;
+  }
+
+  if (_.isArray(dest)) {
+    return dest;
+  }
+
+  if (typeof dest === 'object') {
+    return _.mergeWith(dest, src, defaultsDeep);
+  }
+
+  return dest;
+}
+
+export function createObject<T>(type: Type<T>, value: Partial<T>): T {
+  return Object.assign(new type(), value);
 }

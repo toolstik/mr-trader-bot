@@ -1,10 +1,13 @@
+import _ = require('lodash');
 import { Injectable } from '@nestjs/common';
 import { Composer } from 'telegraf';
 import { MiddlewareObj } from 'telegraf/typings/middleware';
 import * as TelegrafSessionFirebase from 'telegraf-session-firebase';
+import { PartialDeep } from 'type-fest';
 
+import { defaultsDeep } from '../modules/commands/utils';
 import { FirebaseService } from '../modules/firebase/firebase.service';
-import { MyContext } from '../types/my-context';
+import { MyContext, TgSession } from '../types/my-context';
 
 @Injectable()
 export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
@@ -16,21 +19,34 @@ export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
 
     return Composer.compose<MyContext>([
       databaseSession,
-      Composer.on('text', (ctx: MyContext, next) => {
-        ctx.session = {
-          ...ctx.session,
-          username: ctx.message.from.username ?? '',
-          userFirstName: ctx.message.from.first_name ?? '',
-          userLastName: ctx.message.from.last_name ?? '',
-          groupname: ctx.chat.type === 'group' ? ctx.chat.title : null,
-          chatId: ctx.chat.id,
-          userId: ctx.message?.from?.id,
-          enabled: ctx.session?.enabled ?? true,
-          subscriptionTickers: ctx.session?.subscriptionTickers ?? [],
+      (ctx: MyContext, next) => {
+        const defaults: PartialDeep<TgSession> = {
+          enabled: true,
+          subscriptionTickers: [],
+          settings: {
+            subscribeAll: true,
+          },
         };
 
+        const state: PartialDeep<TgSession> = {
+          username: ctx.from?.username ?? '',
+          userFirstName: ctx.from.first_name ?? '',
+          userLastName: ctx.from.last_name ?? '',
+          groupname: ctx.chat.type === 'group' ? ctx.chat.title : null,
+          chatId: ctx.chat.id,
+          userId: ctx.from?.id,
+        };
+
+        ctx.session = _(ctx.session || {})
+          .merge(state)
+          .mergeWith(defaults, defaultsDeep)
+          .value() as TgSession;
+
+        // console.log(ctx.session);
+        // console.log('session-middleware session', ctx.session);
+
         return next();
-      }),
+      },
     ]);
   }
 }

@@ -12,10 +12,15 @@ export class BotUpdate implements OnModuleInit {
   async onModuleInit() {
     await this.bot.telegram.setMyCommands([
       { command: 'help', description: 'Описание доступных команд' },
-      { command: 'add', description: 'Добавить тикер для отслеживания' },
+      { command: 'menu', description: 'Показать меню для настройки бота' },
       { command: 'list', description: 'Показать список тикеров в подписке' },
       { command: 'stat', description: 'Показать статистику сигналов' },
     ]);
+
+    // this.bot.use(async (ctx, next) => {
+    //   console.log('###update', ctx.update);
+    //   await next();
+    // });
 
     this.bot.catch(async (error: any, ctx: MyContext) => {
       this.log.error('telegraf error ocurred', error);

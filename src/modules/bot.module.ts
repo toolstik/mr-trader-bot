@@ -7,6 +7,7 @@ import { AddTickerListModule } from './commands/add-ticker-list/add-ticker-list.
 import { FundamentalsModule } from './commands/fundamentals/fundamentals.module';
 import { HelpModule } from './commands/help/help.module';
 import { ListTickerModule } from './commands/list-ticker/list-ticker.module';
+import { MenuModule } from './commands/menu/menu.module';
 import { NotifyModule } from './commands/notify/notify.module';
 import { RemoveTickerModule } from './commands/remove-ticker/remove-ticker.module';
 import { RemoveTickerListModule } from './commands/remove-ticker-list/remove-ticker-list.module';
@@ -17,6 +18,7 @@ import { UpdateModule } from './commands/update/update.module';
 import { UpdateHistoryModule } from './commands/update-history/update-history.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { StatusTransitionModule } from './status-transition/status-transition.module';
+import { VersionModule } from './version/version.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { StatusTransitionModule } from './status-transition/status-transition.mo
     FundamentalsModule,
     HelpModule,
     ListTickerModule,
+    MenuModule,
     NotifyModule,
     RemoveTickerModule,
     RemoveTickerListModule,
@@ -37,6 +40,7 @@ import { StatusTransitionModule } from './status-transition/status-transition.mo
 
     FirebaseModule,
     StatusTransitionModule,
+    VersionModule,
   ],
   providers: [BotUpdate, FirebaseSessionMiddleware],
   exports: [FirebaseSessionMiddleware],

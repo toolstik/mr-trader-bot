@@ -8,15 +8,13 @@ import { Telegraf } from 'telegraf';
 
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { MessageStatsCreatedEvent } from '../../events/message-stats-created.event';
-import { AssetStateKey, AssetStatus, FundamentalData, paginate } from '../../types/commons';
+import { AssetStatus, FundamentalData, paginate, StatusChangedKey } from '../../types/commons';
 import { MarketData } from '../../types/market-data';
 import { MyContext, TgSession } from '../../types/my-context';
 import { AnalysisService } from '../analysis/analysis.service';
 import { AssetService } from '../asset/asset.service';
 import { SessionService } from '../session/session.service';
 import { TemplateService } from '../template/template.service';
-
-type StatusChangedKey = AssetStateKey | 'STOP_BOTTOM' | 'STOP_TOP';
 
 type AssetStatusChangedData = {
   ticker: string;
@@ -201,7 +199,12 @@ export class NotificationService {
         ? 'STOP_TOP'
         : event.from === 'REACH_BOTTOM'
         ? 'STOP_BOTTOM'
-        : 'NONE';
+        : null;
+
+    // do not notify if status is not defined
+    if (!status) {
+      return;
+    }
 
     const data: AssetStatusChangedData = {
       ticker: event.symbol,
@@ -220,10 +223,12 @@ export class NotificationService {
 
     const message = this.templateService.apply(`change_status`, data);
     for (const n of recipients) {
-      await this.bot.telegram.sendMessage(n.chatId, message, {
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true,
-      });
+      if (!!n.settings?.subscribeAll || !!n.settings?.subscriptionStatuses?.includes(status)) {
+        await this.bot.telegram.sendMessage(n.chatId, message, {
+          parse_mode: 'Markdown',
+          disable_web_page_preview: true,
+        });
+      }
     }
   }
 }

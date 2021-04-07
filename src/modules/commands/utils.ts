@@ -12,11 +12,22 @@ export function parseTickerList(args: string) {
   return uniq(values);
 }
 
-export function recordMap<T, U>(record: Record<string, T>, func: (x: T) => U): Record<string, U> {
+export function recordMap<
+  InKey extends string | number | symbol,
+  InValue,
+  OutKey extends string | number | symbol,
+  OutValue
+>(
+  record: Record<InKey, InValue>,
+  valueFunc: (x: InValue) => OutValue,
+  keyFunc: (x: InKey) => OutKey = identity,
+): Record<OutKey, OutValue> {
   return Object.entries(record).reduce((prev, [key, value]) => {
-    prev[key] = func(value);
+    const newKey = keyFunc(key as InKey);
+    const newValue = valueFunc(value as InValue);
+    prev[newKey] = newValue;
     return prev;
-  }, {} as Record<string, U>);
+  }, {} as Record<OutKey, OutValue>);
 }
 
 export function flatMerge<T extends Object>(

@@ -18,6 +18,7 @@ import { UpdateModule } from './commands/update/update.module';
 import { UpdateHistoryModule } from './commands/update-history/update-history.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { StatusTransitionModule } from './status-transition/status-transition.module';
+import { VersionModule } from './version/version.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { StatusTransitionModule } from './status-transition/status-transition.mo
 
     FirebaseModule,
     StatusTransitionModule,
+    VersionModule,
   ],
   providers: [BotUpdate, FirebaseSessionMiddleware],
   exports: [FirebaseSessionMiddleware],

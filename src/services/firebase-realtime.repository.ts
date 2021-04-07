@@ -6,6 +6,7 @@ import { shareReplay, take } from 'rxjs/operators';
 
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { RefEntity, RefEntityObject } from '../types/commons';
+import { classToRecord, recordToClass } from '../utils/record-transform';
 import { IRepository } from './i-repository.interface';
 
 export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
@@ -90,19 +91,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   async findAll() {
     const value = await this.getSnapshotValue();
     const entityType = this.getEntityType();
-    return plainToClass(RefEntityObject, value, {
-      targetMaps: [
-        {
-          target: RefEntityObject,
-          properties: Object.keys(value).reduce((prev, cur) => {
-            return {
-              ...prev,
-              [cur]: entityType,
-            };
-          }, {}),
-        },
-      ],
-    }) as RefEntity<T>;
+    return recordToClass(entityType, value);
   }
 
   async findByKey(key: string) {
@@ -116,24 +105,24 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
     const entityType = this.getEntityType();
 
     const goodValue = Object.entries(value).reduce((prev, [key, val]) => {
-      return Object.assign(prev, {
-        [this.normalizeKey(key)]: val,
-      });
+      prev[this.normalizeKey(key)] = val;
+      return prev;
     }, new RefEntityObject());
 
-    return classToPlain(goodValue, {
-      targetMaps: [
-        {
-          target: RefEntityObject,
-          properties: Object.keys(goodValue).reduce((prev, cur) => {
-            return {
-              ...prev,
-              [cur]: entityType,
-            };
-          }, {}),
-        },
-      ],
-    });
+    return classToRecord(entityType, goodValue as any);
+    // return classToPlain(goodValue, {
+    //   targetMaps: [
+    //     {
+    //       target: RefEntityObject,
+    //       properties: Object.keys(goodValue).reduce((prev, cur) => {
+    //         return {
+    //           ...prev,
+    //           [cur]: entityType,
+    //         };
+    //       }, {}),
+    //     },
+    //   ],
+    // });
   }
 
   async saveAll(value: RefEntity<T>) {

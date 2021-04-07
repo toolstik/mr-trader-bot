@@ -24,7 +24,7 @@ export class FirebaseSessionMiddleware implements MiddlewareObj<MyContext> {
           enabled: true,
           subscriptionTickers: [],
           settings: {
-            notificationStatuses: [],
+            subscribeAll: true,
           },
         };
 

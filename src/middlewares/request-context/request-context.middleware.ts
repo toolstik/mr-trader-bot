@@ -14,7 +14,7 @@ export const requestContextMiddleware: MiddlewareFn<MyContext> = async (
   ctx: MyContext,
   next: () => Promise<void>,
 ) => {
-  // console.log('###update', ctx.updateType, ctx.update);
+  console.log('###update', ctx.updateType, ctx.update);
   const requestContext = new RequestContext(ctx);
   RequestContext.CLS.setContext(requestContext);
   await next();

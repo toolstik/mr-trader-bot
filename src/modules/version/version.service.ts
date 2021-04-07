@@ -74,6 +74,6 @@ export class VersionService implements OnModuleInit {
   }
 
   private async updateTo1() {
-    console.log('##### UPDATE');
+    // this.sessionService.
   }
 }

@@ -8,6 +8,10 @@ import {
   TransformationType,
 } from 'class-transformer';
 
+export type RecordTransformOptions<T, R extends Record<any, T>> = ClassTransformOptions & {
+  recordType?: ClassConstructor<R>;
+};
+
 function getOptions<R extends Record<any, T>, T>(
   options: ClassTransformOptions,
   roottype: ClassConstructor<R>,
@@ -31,55 +35,48 @@ function getOptions<R extends Record<any, T>, T>(
   };
 }
 
-export type RecordTransformOptions<R> = ClassTransformOptions & {
-  recordType?: ClassConstructor<R>;
-};
-
-type RecordKey<T> = T extends Record<infer K, any> ? K : never;
-type RecordValue<T> = T extends Record<any, infer V> ? V : never;
-
-export function recordToClass<R extends Record<any, T>, T>(
+export function plainToRecord<R extends Record<any, T>, T>(
   type: ClassConstructor<T>,
   value: any,
-  options?: RecordTransformOptions<R>,
+  options?: RecordTransformOptions<T, R>,
 ): R {
-  console.log('%%%% recordToClass', value);
-
-  const recordType: ClassConstructor<R> = options?.recordType || (Dictionary as any);
+  const recordType: ClassConstructor<R> =
+    options?.recordType ||
+    (class InternalDictionary {
+      [key: string]: T;
+    } as any);
   return plainToClass(recordType, value, getOptions(options, recordType, type, value));
 }
 
 /**
  * This method doesn't work properly yet
  */
-export function classToRecord<R extends Record<any, T>, T>(
+export function recordToPlain<R extends Record<any, T>, T>(
   type: ClassConstructor<T>,
   value: R,
-  options?: RecordTransformOptions<R>,
+  options?: RecordTransformOptions<T, R>,
 ) {
-  console.log('%%%% classToRecord', value);
-
-  // const valueType = value.constructor as any;
-  return classToPlain(value, getOptions(options, options?.recordType, type, value));
-}
-
-class Dictionary<T = any> implements Record<any, T> {
-  [key: string]: T;
+  const recordType = options?.recordType || (value.constructor as ClassConstructor<R>);
+  return classToPlain(value, getOptions(options, recordType, type, value));
 }
 
 export function RecordType<T, R extends Record<any, T>>(
   itemType: ClassConstructor<T>,
   recordType?: ClassConstructor<R>,
 ) {
-  recordType = recordType || (Dictionary as any);
-
   return Transform(params => {
     if (params.type === TransformationType.PLAIN_TO_CLASS) {
-      return recordToClass(itemType, params.value, { ...params.options, recordType });
+      return plainToRecord(itemType, params.value, {
+        ...params.options,
+        recordType,
+      });
     }
 
     if (params.type === TransformationType.CLASS_TO_PLAIN) {
-      return classToRecord(itemType, params.value, { ...params.options, recordType });
+      return recordToPlain(itemType, params.value, {
+        ...params.options,
+        recordType,
+      });
     }
 
     return params.value;

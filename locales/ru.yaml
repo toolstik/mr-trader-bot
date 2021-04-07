@@ -8,6 +8,9 @@ menu:
   main: На главную…
   settings:
     notification:
+      ALL:
+        NO: '<<<ПОДПИСАТЬСЯ НА ВСЕ СТАТУСЫ>>>'
+        YES: '<<<ВЫБРАТЬ СТАТУСЫ УВЕДОМЛЕНИЙ>>>'
       REACH_TOP: 'Пробитие MAX'
       APPROACH_TOP: 'Приближение MAX'
       STOP_TOP: 'Стоп MAX'

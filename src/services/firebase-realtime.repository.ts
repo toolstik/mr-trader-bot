@@ -1,12 +1,13 @@
+import _ = require('lodash');
 import { ClassConstructor, classToPlain, plainToClass } from 'class-transformer';
 import { database } from 'firebase-admin';
-import _ = require('lodash');
 import { Observable } from 'rxjs';
 import { shareReplay, take } from 'rxjs/operators';
 
+import { createObject, recordMap } from '../modules/commands/utils';
 import { FirebaseService } from '../modules/firebase/firebase.service';
 import { RefEntity, RefEntityObject } from '../types/commons';
-import { classToRecord, recordToClass } from '../utils/record-transform';
+import { plainToRecord, recordToPlain } from '../utils/record-transform';
 import { IRepository } from './i-repository.interface';
 
 export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
@@ -91,7 +92,7 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   async findAll() {
     const value = await this.getSnapshotValue();
     const entityType = this.getEntityType();
-    return recordToClass(entityType, value);
+    return plainToRecord(entityType, value);
   }
 
   async findByKey(key: string) {
@@ -104,25 +105,15 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
   private manyToPlain(value: RefEntity<T>) {
     const entityType = this.getEntityType();
 
-    const goodValue = Object.entries(value).reduce((prev, [key, val]) => {
-      prev[this.normalizeKey(key)] = val;
-      return prev;
-    }, new RefEntityObject());
+    value = recordMap(
+      value,
+      v => v,
+      k => this.normalizeKey(k),
+    );
 
-    return classToRecord(entityType, goodValue as any);
-    // return classToPlain(goodValue, {
-    //   targetMaps: [
-    //     {
-    //       target: RefEntityObject,
-    //       properties: Object.keys(goodValue).reduce((prev, cur) => {
-    //         return {
-    //           ...prev,
-    //           [cur]: entityType,
-    //         };
-    //       }, {}),
-    //     },
-    //   ],
-    // });
+    value = createObject(RefEntityObject, value) as RefEntity<T>;
+
+    return recordToPlain(entityType, value);
   }
 
   async saveAll(value: RefEntity<T>) {
@@ -132,6 +123,8 @@ export abstract class FirebaseRealtimeRepository<T> implements IRepository<T> {
 
   async saveOne(key: string, value: T) {
     const goodKey = this.normalizeKey(key);
+    value = plainToClass(this.getEntityType(), value);
+    // console.log(value.constructor.name);
     const plainValue = classToPlain(value);
     await this.ref.child(goodKey).set(plainValue);
   }

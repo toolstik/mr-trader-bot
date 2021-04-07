@@ -223,7 +223,7 @@ export class NotificationService {
 
     const message = this.templateService.apply(`change_status`, data);
     for (const n of recipients) {
-      if (n.settings.notificationStatuses.includes(status)) {
+      if (!!n.settings?.subscribeAll || !!n.settings?.subscriptionStatuses?.includes(status)) {
         await this.bot.telegram.sendMessage(n.chatId, message, {
           parse_mode: 'Markdown',
           disable_web_page_preview: true,

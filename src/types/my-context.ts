@@ -14,7 +14,8 @@ export interface TgSession extends Scenes.SceneSession {
   subscriptionTickers: string[];
   enabled: boolean;
   settings: {
-    notificationStatuses: StatusChangedKey[];
+    subscribeAll: boolean;
+    subscriptionStatuses: StatusChangedKey[];
   };
 }
 

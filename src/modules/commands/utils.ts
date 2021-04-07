@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Type } from '@nestjs/common';
 import flatten = require('flat');
 import { identity, uniq } from 'lodash';
 import _ = require('lodash');
@@ -70,4 +71,8 @@ export function defaultsDeep<T>(dest: T, src: T, key?: string): T {
   }
 
   return dest;
+}
+
+export function createObject<T>(type: Type<T>, value: Partial<T>): T {
+  return Object.assign(new type(), value);
 }

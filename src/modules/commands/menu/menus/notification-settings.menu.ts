@@ -20,7 +20,7 @@ menuTemplate.select('notificationSettingsMenu-select-all', ['ALL'], {
   set: async (c, key, state) => {
     c.session.settings.subscribeAll = state;
 
-    if (state && !c.session.settings.subscriptionStatuses?.length) {
+    if (!state && !c.session.settings.subscriptionStatuses?.length) {
       c.session.settings.subscriptionStatuses = [...StatusChangedArray];
     }
 

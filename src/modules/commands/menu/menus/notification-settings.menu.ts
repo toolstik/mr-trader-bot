@@ -4,8 +4,10 @@ import { MenuTemplate } from 'telegraf-inline-menu/dist/source';
 import { StatusChangedArray, StatusChangedKey } from '../../../../types/commons';
 import { MyContext } from '../../../../types/my-context';
 
-const menuTemplate = new MenuTemplate<MyContext>(
-  c => `Выберите статусы, по которым хотите получать уведомления`,
+const menuTemplate = new MenuTemplate<MyContext>(c =>
+  !c.session.settings?.subscribeAll
+    ? `Выберите статусы, по которым хотите получать уведомления`
+    : `Сейчас вы подписаны на ВСЕ статусы. Нажмите на кнопку, чтобы выбрать статусы, по которым хотите получать уведомления`,
 );
 
 menuTemplate.select('notificationSettingsMenu-select-all', ['ALL'], {
@@ -17,6 +19,11 @@ menuTemplate.select('notificationSettingsMenu-select-all', ['ALL'], {
   isSet: c => !!c.session.settings?.subscribeAll,
   set: async (c, key, state) => {
     c.session.settings.subscribeAll = state;
+
+    if (state && !c.session.settings.subscriptionStatuses?.length) {
+      c.session.settings.subscriptionStatuses = [...StatusChangedArray];
+    }
+
     return true;
   },
 });

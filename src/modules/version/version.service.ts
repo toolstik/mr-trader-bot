@@ -1,8 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import _ = require('lodash');
+import { PartialDeep } from 'type-fest';
 
+import { TgSession } from '../../types/my-context';
+import { defaultsDeep } from '../commands/utils';
 import { Configuration } from '../global/configuration';
 import { PlainLogger } from '../global/plain-logger';
-import { SessionService } from '../session/session.service';
+import { SessionRepository } from '../session/session.repository';
 import { VersionEntity, VersionInfo, VersionRepository } from './version.repository';
 
 @Injectable()
@@ -13,7 +17,7 @@ export class VersionService implements OnModuleInit {
     private log: PlainLogger,
     private repository: VersionRepository,
     private config: Configuration,
-    private sessionService: SessionService,
+    private sessionRepository: SessionRepository,
   ) {}
 
   private async getState() {
@@ -36,13 +40,14 @@ export class VersionService implements OnModuleInit {
   }
 
   async upgrade() {
-    // await this.updateToVersion(
-    //   {
-    //     num: 1,
-    //     description: 'Menu initialization. Notification settings menu',
-    //   },
-    //   () => this.updateTo1(),
-    // );
+    await this.updateToVersion(
+      {
+        num: 1,
+        description:
+          'Menu initialization. Notification settings menu. Initialize session settings.subscribeAll',
+      },
+      () => this.updateTo1(),
+    );
   }
 
   async updateToVersion(verInfo: VersionInfo, updateFunc: () => Promise<void>) {
@@ -74,6 +79,23 @@ export class VersionService implements OnModuleInit {
   }
 
   private async updateTo1() {
-    // this.sessionService.
+    const all = await this.sessionRepository.findAll();
+
+    const defaults: PartialDeep<TgSession> = {
+      enabled: true,
+      subscriptionTickers: [],
+      settings: {
+        subscribeAll: true,
+      },
+    };
+
+    _(all)
+      .values()
+      .flatMap(e => Object.values(e))
+      .forEach(s => {
+        _.mergeWith(s, defaults, defaultsDeep);
+      });
+
+    await this.sessionRepository.saveAll(all);
   }
 }

@@ -7,6 +7,6 @@ import { SessionService } from './session.service';
 @Module({
   imports: [FirebaseModule],
   providers: [SessionService, SessionRepository],
-  exports: [SessionService],
+  exports: [SessionService, SessionRepository],
 })
 export class SessionModule {}

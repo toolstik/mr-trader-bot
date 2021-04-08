@@ -1,13 +1,14 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
 import _ = require('lodash');
-import { PartialDeep } from 'type-fest';
+import { Injectable, OnModuleInit, Type } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 
-import { TgSession } from '../../types/my-context';
-import { defaultsDeep } from '../commands/utils';
-import { Configuration } from '../global/configuration';
 import { PlainLogger } from '../global/plain-logger';
-import { SessionRepository } from '../session/session.repository';
+import { AbstractVersion, REGISTERED_VERSIONS } from './abstract-version';
 import { VersionEntity, VersionInfo, VersionRepository } from './version.repository';
+
+type UpdatableVersion = VersionInfo & {
+  type: Type<AbstractVersion>;
+};
 
 @Injectable()
 export class VersionService implements OnModuleInit {
@@ -16,8 +17,7 @@ export class VersionService implements OnModuleInit {
   constructor(
     private log: PlainLogger,
     private repository: VersionRepository,
-    private config: Configuration,
-    private sessionRepository: SessionRepository,
+    private moduleRef: ModuleRef,
   ) {}
 
   private async getState() {
@@ -40,62 +40,55 @@ export class VersionService implements OnModuleInit {
   }
 
   async upgrade() {
-    await this.updateToVersion(
-      {
-        num: 1,
-        description:
-          'Menu initialization. Notification settings menu. Initialize session settings.subscribeAll',
-      },
-      () => this.updateTo1(),
-    );
+    const actualVersions = _(REGISTERED_VERSIONS)
+      .entries()
+      .map(([key, value]) => {
+        return {
+          ...value,
+          num: Number(key),
+        } as UpdatableVersion;
+      })
+      .sortBy(v => v.num)
+      .value();
+
+    for (const version of actualVersions) {
+      await this.updateToVersion(version);
+    }
   }
 
-  async updateToVersion(verInfo: VersionInfo, updateFunc: () => Promise<void>) {
+  async updateToVersion(version: UpdatableVersion) {
     const state = await this.getState();
 
-    if (verInfo.num <= state.current) {
+    // just skip old versions
+    if (version.num <= state.current) {
       return;
     }
 
-    if (verInfo.num !== state.current + 1) {
+    if (version.num !== state.current + 1) {
       throw new Error(
-        `Application can not be updated to version ${verInfo.num}. Current version is ${
+        `Application can not be updated to version ${version.num}. Current version is ${
           state.current
-        } but ${verInfo.num - 1} expected. Versions have to be installed sequentially`,
+        } but ${version.num - 1} expected. Versions have to be installed sequentially`,
       );
     }
 
-    await updateFunc();
+    try {
+      const instance = await this.moduleRef.create(version.type);
+      await instance.update();
 
-    state.current = verInfo.num;
-    state.installed[verInfo.num] = {
-      ...verInfo,
-      installDate: new Date(),
-    };
+      state.current = version.num;
+      state.installed[version.num] = {
+        num: version.num,
+        description: version.description,
+        installDate: new Date(),
+      };
 
-    await this.saveState(state);
+      await this.saveState(state);
 
-    this.log.info(`Application has been updated to version ${verInfo.num}`, verInfo);
-  }
-
-  private async updateTo1() {
-    const all = await this.sessionRepository.findAll();
-
-    const defaults: PartialDeep<TgSession> = {
-      enabled: true,
-      subscriptionTickers: [],
-      settings: {
-        subscribeAll: true,
-      },
-    };
-
-    _(all)
-      .values()
-      .flatMap(e => Object.values(e))
-      .forEach(s => {
-        _.mergeWith(s, defaults, defaultsDeep);
-      });
-
-    await this.sessionRepository.saveAll(all);
+      this.log.info(`Application has been updated to version ${version.num}`);
+    } catch (e) {
+      this.log.error(`Error ocurred while updating to version ${version.num}`, e);
+      throw e;
+    }
   }
 }

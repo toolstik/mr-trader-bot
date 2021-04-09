@@ -9,7 +9,7 @@ type TemplateResolver = (data: any) => string;
 type TranslateMap = Map<string, TemplateResolver>;
 
 const DEFAULT_LANG: SUPPORTED_LANGUAGES = 'ru';
-const TEMPLATE_PATH = 'templates';
+const TEMPLATE_PATH = 'assets/templates';
 
 function diff(value: number, target: number) {
   const result = value && Math.abs(1 - target / value);

@@ -19,7 +19,7 @@ export class Configuration {
   private readonly _env: Environment;
 
   constructor() {
-    this._env = require('../../../env.json');
+    this._env = require('../../../assets/environments/env.json');
   }
 
   get env() {

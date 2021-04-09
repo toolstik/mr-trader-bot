@@ -24,8 +24,18 @@ const args = minimist<ArgsType>(process.argv.slice(2), {
 @Gulpclass()
 export class Gulpfile {
   @Task()
-  copy_secret() {
-    return gulp.src(`env.${args.profile}.json`).pipe(rename('env.json')).pipe(gulp.dest('dist'));
+  copy_env() {
+    return gulp
+      .src(`assets/environments/env.${args.profile}.json`)
+      .pipe(rename('env.json'))
+      .pipe(gulp.dest('dist/assets/environments'));
+  }
+
+  @Task()
+  copy_assets() {
+    return gulp
+      .src([`assets/**/*`, '!assets/environments/**/*'], { base: '.' })
+      .pipe(gulp.dest('dist'));
   }
 
   @Task()
@@ -40,7 +50,7 @@ export class Gulpfile {
 
   @SequenceTask()
   build() {
-    return ['clean_dist', 'tsc', 'copy_secret'];
+    return ['clean_dist', 'tsc', 'copy_assets', 'copy_env'];
   }
 
   @Task()

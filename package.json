@@ -12,7 +12,7 @@
     "build": "gulp build",
     "build:prod": "gulp build -p=production",
     "lint:fix": "eslint --fix --quiet .",
-    "serve": "gulp serve",
+    "serve:local": "gulp serve",
     "serve:staging": "gulp serve_remote -p=staging",
     "serve:prod": "gulp serve_remote -p=production",
     "deploy_bot:staging": "gulp deploy_bot",

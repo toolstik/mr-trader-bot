@@ -1,5 +1,6 @@
 import * as del from 'del';
 import * as gulp from 'gulp';
+import * as confirm from 'gulp-confirm';
 import * as rename from 'gulp-rename';
 import * as shell from 'gulp-shell';
 import { Gulpclass, SequenceTask, Task } from 'gulpclass/Decorators';
@@ -64,14 +65,29 @@ export class Gulpfile {
     return shell.task(`firebase -P ${args.profile} emulators:start --only functions`)();
   }
 
+  @Task()
+  confirm_deploy() {
+    return gulp.src('./package.json').pipe(
+      confirm({
+        question: `Type word '${args.profile}' to proceed deployment`,
+        proceed: function (answer: string) {
+          if (answer === args.profile) {
+            return true;
+          }
+          throw new Error('Deployment aborted');
+        },
+      }),
+    );
+  }
+
   @SequenceTask()
   deploy() {
-    return ['build', 'fb_deploy'];
+    return ['confirm_deploy', 'build', 'fb_deploy'];
   }
 
   @SequenceTask()
   deploy_bot() {
-    return ['build', 'fb_deploy_bot'];
+    return ['confirm_deploy', 'build', 'fb_deploy_bot'];
   }
 
   @SequenceTask()

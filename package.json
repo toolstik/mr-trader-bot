@@ -81,6 +81,7 @@
     "firebase-functions-test": "^0.2.0",
     "firebase-tools": "^9.5.0",
     "gulp": "^4.0.2",
+    "gulp-confirm": "^1.0.8",
     "gulp-rename": "^2.0.0",
     "gulp-shell": "^0.8.0",
     "gulpclass": "^0.2.0",

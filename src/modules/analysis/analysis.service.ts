@@ -238,7 +238,7 @@ export class AnalysisService {
                 cond: (ctx, { payload: data }) => {
                   return bottomStop(data);
                 },
-                actions: myAction({ from: 'APPROACH_BOTTOM', to: 'REACH_BOTTOM' }),
+                actions: myAction({ from: 'APPROACH_BOTTOM', to: 'NONE' }),
               },
             ],
           },

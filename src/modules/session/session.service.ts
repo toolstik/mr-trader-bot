@@ -22,6 +22,6 @@ export class SessionService {
 
   async getSessionTickers(sessions?: TgSession[]) {
     sessions = sessions ?? (await this.getSessions());
-    return _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers)));
+    return _.uniq(_.flatten(sessions.map(s => s.subscriptionTickers || [])));
   }
 }

@@ -19,7 +19,12 @@ export class UpdateHistoryScene {
   private async process() {
     const ctx = currentContext();
     const status = await this.assetService.updateHistory();
-    const keys = Object.keys(status);
-    await ctx.reply(`Обновлены данные по ${keys.length} активам`);
+
+    const keys = Object.keys(status.newValue);
+    const errors = status.errors.map(e => e.item).join(', ');
+
+    await ctx.reply(
+      `Обновлены данные по ${keys.length} активам.` + (errors ? ` Ошибки: ${errors}` : ''),
+    );
   }
 }

@@ -150,9 +150,13 @@ export class YahooService {
 
     const today = moment().startOf('day');
     const toDate = today.clone();
-    const fromDate = toDate.clone().add({ days: -(daysBack + 20) });
+    const fromDate = toDate.clone().add({ days: -daysBack });
 
     const action = async (collection: string[]) => {
+      if (!collection?.length) {
+        return {};
+      }
+
       const opts = {
         symbols: collection,
         // maxConcurrentSymbols: 20,
@@ -180,12 +184,11 @@ export class YahooService {
 
       for (const [key, val] of Object.entries(x)) {
         val.forEach(normalizeHistory);
-        x[key] = _(val).take(daysBack).value();
+        x[key] = _(val).value();
       }
 
       return x;
     };
-
     return await catchDivide(symbols, action);
   }
 

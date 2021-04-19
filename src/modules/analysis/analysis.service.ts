@@ -9,7 +9,9 @@ import { FsmContext, FsmEvent, FsmState } from '../../types/fsm-types';
 import { Donchian, MarketData } from '../../types/market-data';
 import { AssetEntity } from '../asset/asset.entity';
 import { AssetService } from '../asset/asset.service';
+import { clone } from '../commands/utils';
 import { EventEmitterService } from '../global/event-emitter.service';
+import { PlainLogger } from '../global/plain-logger';
 import { YahooService } from '../yahoo/yahoo.service';
 
 const APPROACH_RATE = 0.005;
@@ -55,6 +57,7 @@ function bottomStop(data: MarketData) {
 @Injectable()
 export class AnalysisService {
   constructor(
+    private log: PlainLogger,
     private assetService: AssetService,
     private yahooService: YahooService,
     private eventEmitter: EventEmitterService,
@@ -125,7 +128,18 @@ export class AnalysisService {
     const today = moment().startOf('day').toDate().getTime();
 
     const donchian = asset.history
-      .filter(a => a.date.getDate() < today) //before today only
+      .filter(a => {
+        if (!a.date || !a.high || !a.low) {
+          return false;
+        }
+
+        //before today only
+        if (a.date.getDate() >= today) {
+          return false;
+        }
+
+        return true;
+      })
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, daysBack)
       .reduce(
@@ -297,19 +311,36 @@ export class AnalysisService {
   private async fsmDeepTransition(asset: AssetEntity, marketData: MarketData) {
     // console.time('fsm');
 
-    const context: FsmContext = {
+    const initContext: FsmContext = {
       asset,
       events: [],
     };
+
+    const context = clone(initContext);
+
+    const metStates = new Set<AssetStateKey>();
 
     let i = 0;
     while (i < 5) {
       // console.timeLog('fsm', 'transition', newState.value, newState.changed);
 
+      metStates.add(context.asset.state || 'NONE');
+
       const ctx = await this.fsmTransition(context.asset, marketData);
 
+      // no transition ocurred
       if (context && !ctx.events.length) {
         break;
+      }
+
+      // fsm cycle detected
+      if (metStates.has(ctx.asset.state)) {
+        this.log.warn('FSM cycle detected', {
+          asset,
+          marketData,
+          cycleState: ctx.asset.state,
+        });
+        return initContext;
       }
 
       context.asset = ctx.asset;

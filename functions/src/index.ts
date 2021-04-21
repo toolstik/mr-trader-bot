@@ -11,7 +11,7 @@ const debug = d('trader_bot:main');
 
 const DEFAULT_OPTIONS: functions.RuntimeOptions = {
   memory: '1GB',
-  timeoutSeconds: 8 * 60, //540 is max,
+  timeoutSeconds: 9 * 60, //540 is max,
 };
 
 async function main() {
@@ -64,10 +64,10 @@ exports.bot = functions
       debug('--------Request received-------');
       await values.bot.handleUpdate(req.body, res);
       debug('--------Update handled-------');
-      res.send();
+      // res.send();
     } catch (e) {
-      console.error(e);
-      res.status(500).send(e);
+      values.log.error('Request processing error', e);
+      // res.status(500).send(e);
     }
   });
 

@@ -34,7 +34,7 @@ import { MenuPlugin } from './plugins/menu.plugin';
           token: configService.env.bot_token,
           launchOptions: false,
           options: {
-            handlerTimeout: 10 * 60 * 1000, // 10 min
+            handlerTimeout: 7.5 * 60 * 1000, // 7.5 min
           },
           middlewares: [
             responceTimeMiddleware.middleware(),

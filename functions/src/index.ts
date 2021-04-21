@@ -11,7 +11,7 @@ const debug = d('trader_bot:main');
 
 const DEFAULT_OPTIONS: functions.RuntimeOptions = {
   memory: '1GB',
-  timeoutSeconds: 180,
+  timeoutSeconds: 8 * 60, //540 is max,
 };
 
 async function main() {
@@ -84,6 +84,7 @@ exports.updateHistoryScheduler = functions
 exports.notificationScheduler = functions
   .runWith({
     ...DEFAULT_OPTIONS,
+    timeoutSeconds: 4 * 60,
   })
   .pubsub.schedule('*/5 * * * *')
   .onRun(async () => {

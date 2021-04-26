@@ -62,12 +62,16 @@ exports.bot = functions
     const values = await exportPromise;
     try {
       debug('--------Request received-------');
-      await values.bot.handleUpdate(req.body, res);
+      await values.bot.handleUpdate(req.body, res).catch(e => {
+        values.log.error('Handle update error', e);
+      });
       debug('--------Update handled-------');
       // res.send();
     } catch (e) {
       values.log.error('Request processing error', e);
       // res.status(500).send(e);
+    } finally {
+      res.status(200).end();
     }
   });
 

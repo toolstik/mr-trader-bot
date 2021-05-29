@@ -12,6 +12,7 @@
   "compileOnSave": true,
   "include": [
     "src",
+    "tools",
     "functions/src",
     "gulpfile.ts"
   ],

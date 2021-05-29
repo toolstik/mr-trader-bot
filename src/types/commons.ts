@@ -90,14 +90,27 @@ export function dateTo(targetType: 'string' | 'number'): Parameters<typeof Trans
       if (typeof value !== 'object') {
         return new Date(value);
       }
+      // if (value instanceof FirebaseFirestore.Timestamp) {
+      //   return value.toDate();
+      // }
       return value;
     }
 
     if (type === TransformationType.CLASS_TO_PLAIN) {
       if (value instanceof Date) {
-        const result = targetType === 'number' ? value.getTime() : value.toISOString();
+        if (targetType === 'number') {
+          return value.getTime();
+        }
+
+        if (targetType === 'string') {
+          return value.toISOString();
+        }
+
+        // if (targetType === 'timestamp') {
+        //   return FirebaseFirestore.Timestamp.fromDate(value);
+        // }
+
         // console.log('%%%%%', { targetType, value, result });
-        return result;
       }
       return value;
     }

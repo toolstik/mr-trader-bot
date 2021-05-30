@@ -195,6 +195,26 @@ export function assetRun(symbol: string) {
         return [];
       }
 
+      const reportPrice = (() => {
+        switch (transitionResult.asset.state) {
+          case 'REACH_TOP':
+            return transitionResult.marketData.donchianOuter.maxValue;
+          case 'REACH_BOTTOM':
+            return transitionResult.marketData.donchianOuter.minValue;
+          case 'NONE':
+            return transitionResult.event.from === 'REACH_TOP' ||
+              transitionResult.event.from === 'APPROACH_BOTTOM'
+              ? transitionResult.marketData.donchianInner.minValue
+              : transitionResult.marketData.donchianInner.maxValue;
+          default:
+            return transitionResult.marketData.price;
+        }
+      })();
+
+      transitionResult.asset.stateData.enterPrice = reportPrice;
+      transitionResult.marketData.price = reportPrice;
+      transitionResult.event.currentPrice = reportPrice;
+
       assetState = transitionResult.asset;
 
       transitionResult.minPrice = transitionMinPrice;
@@ -234,7 +254,7 @@ export async function getAllSymbolsEvents() {
   });
 
   const symbols = _(snpSymbols())
-    // .take(20)
+    .take(20)
     .value();
   const symbolsLeft = new Set(symbols);
 

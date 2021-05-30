@@ -10,6 +10,8 @@
 import * as fs from 'fs';
 import _ = require('lodash');
 import { Column, Workbook } from 'exceljs';
+import { flattenDeep } from 'lodash';
+import { StaticPool } from 'node-worker-threads-pool-ts';
 import * as path from 'path';
 
 import { AssetStatusChangedEvent } from '../../src/events/asset-status-changed.event';
@@ -22,6 +24,7 @@ import {
 import { AssetEntity } from '../../src/modules/asset/asset.entity';
 import { SnP500ListItem } from '../../src/modules/datahub/datahub.service';
 import { YahooService } from '../../src/modules/yahoo/yahoo.service';
+import { AssetStateKey } from '../../src/types/commons';
 import { MarketHistory, MultipleHistory } from '../../src/types/history';
 import { MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
@@ -33,6 +36,12 @@ const PARAMETERS = {
   donchianInner: 5,
   historyDateFrom: '2020-01-01',
 };
+
+const isExit = (i: TransitionResult) =>
+  i.event.to === 'NONE' && (i.event.from === 'REACH_TOP' || i.event.from === 'REACH_BOTTOM');
+
+const isEnter = (i: TransitionResult) =>
+  i.event.to === 'REACH_TOP' || i.event.to === 'REACH_BOTTOM';
 
 function snpData() {
   const result = require('./snp-list.json') as SnP500ListItem[];
@@ -72,11 +81,12 @@ type TransitionResult = {
   marketData: MarketData;
 };
 type ReportData = TransitionResult & {
+  previousEnterState: AssetStateKey;
   oldMarketData: MarketData;
   minPrice: number;
   maxPrice: number;
 };
-function assetRun(symbol: string) {
+export function assetRun(symbol: string) {
   const assetHistory = historyData()[symbol]?.sort(compareMarketHistoryDesc);
 
   if (!assetHistory) {
@@ -92,6 +102,7 @@ function assetRun(symbol: string) {
   let transitionMinPrice: number = null;
   let transitionMaxPrice: number = null;
   let prevMarketData: MarketData = null;
+  let previousEnterState: AssetStateKey = null;
 
   const donchian = (date: Date, daysBack: number) => {
     const value = donchianFunc(assetHistory, date, daysBack);
@@ -189,6 +200,11 @@ function assetRun(symbol: string) {
       transitionResult.minPrice = transitionMinPrice;
       transitionResult.maxPrice = transitionMaxPrice;
       transitionResult.oldMarketData = prevMarketData;
+      transitionResult.previousEnterState = previousEnterState;
+
+      if (isExit(transitionResult)) {
+        previousEnterState = transitionResult.event.from;
+      }
 
       transitionMinPrice = transitionResult.historyState.low;
       transitionMaxPrice = transitionResult.historyState.high;
@@ -211,30 +227,44 @@ function assetRun(symbol: string) {
   // }
 }
 
-function getAllSymbolsEvents() {
-  return (
-    _(snpSymbols())
-      // .filter(i => i === 'AAPL')
-      .flatMap((symbol, i, collection) => {
-        const result = assetRun(symbol);
-        console.log(`(${i + 1}/${collection.length}) ${symbol} - ${result.length} events`);
-        return result;
-      })
-      .value()
+export async function getAllSymbolsEvents() {
+  const staticPool = new StaticPool({
+    size: 10,
+    task: path.join(__dirname, 'worker.ts'),
+  });
+
+  const symbols = _(snpSymbols())
+    // .take(20)
+    .value();
+  const symbolsLeft = new Set(symbols);
+
+  console.time('calculation');
+
+  const unflattenResult = await Promise.all(
+    symbols.map(async symbol => {
+      const data = (await staticPool.exec(symbol)) as ReturnType<typeof assetRun>;
+      symbolsLeft.delete(symbol);
+      console.log(
+        `(${symbols.length - symbolsLeft.size}/${symbols.length}) ${symbol} - ${
+          data.length
+        } events`,
+      );
+      return data;
+    }),
   );
+
+  console.timeEnd('calculation');
+
+  return flattenDeep(unflattenResult);
 }
 
-async function saveReport(events: ReportData[]) {
-  const isExit = (i: ReportData) =>
-    i.event.to === 'NONE' && (i.event.from === 'REACH_TOP' || i.event.from === 'REACH_BOTTOM');
-
-  // const isEnter = (i: AssetStatusChangedEvent) => i.to === 'REACH_TOP' || i.to === 'REACH_BOTTOM';
-
+export async function saveReport(events: ReportData[]) {
   const data2 = events.filter(isExit).map(i => {
     return {
       // Id: i.id,
       Symbol: i.event.symbol,
       'Enter Status': i.event.from,
+      'Previous Enter Status': i.previousEnterState,
       'Enter Date': i.event.oldPriceDate,
       'Enter Price': i.event.oldPrice,
       'Enter STOP Price':
@@ -267,15 +297,5 @@ async function saveReport(events: ReportData[]) {
 
   console.log('finish');
 }
-
-void (async () => {
-  // console.log(symbols.length, symbols);
-  // const data = historyData();
-  // const aapl = data['AAPL'];
-  // console.log(aapl);
-
-  const data = getAllSymbolsEvents();
-  await saveReport(data);
-})();
 
 // console.log(snpData()[0]);

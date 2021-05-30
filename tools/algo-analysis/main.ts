@@ -70,8 +70,11 @@ type TransitionResult = {
   event: AssetStatusChangedEvent;
   historyState: MarketHistory;
   marketData: MarketData;
-  minPrice?: number;
-  maxPrice?: number;
+};
+type ReportData = TransitionResult & {
+  oldMarketData: MarketData;
+  minPrice: number;
+  maxPrice: number;
 };
 function assetRun(symbol: string) {
   const assetHistory = historyData()[symbol]?.sort(compareMarketHistoryDesc);
@@ -88,6 +91,7 @@ function assetRun(symbol: string) {
 
   let transitionMinPrice: number = null;
   let transitionMaxPrice: number = null;
+  let prevMarketData: MarketData = null;
 
   const donchian = (date: Date, daysBack: number) => {
     const value = donchianFunc(assetHistory, date, daysBack);
@@ -165,7 +169,7 @@ function assetRun(symbol: string) {
   return _(assetHistory)
     .sort(compareMarketHistoryAsc)
     .flatMap(historyEntry => {
-      const transitionResult = transition(historyEntry);
+      const transitionResult = transition(historyEntry) as ReportData;
 
       transitionMinPrice =
         transitionMinPrice == null
@@ -184,9 +188,11 @@ function assetRun(symbol: string) {
 
       transitionResult.minPrice = transitionMinPrice;
       transitionResult.maxPrice = transitionMaxPrice;
+      transitionResult.oldMarketData = prevMarketData;
 
       transitionMinPrice = transitionResult.historyState.low;
       transitionMaxPrice = transitionResult.historyState.high;
+      prevMarketData = transitionResult.marketData;
 
       return [transitionResult];
     })
@@ -206,18 +212,20 @@ function assetRun(symbol: string) {
 }
 
 function getAllSymbolsEvents() {
-  return _(snpSymbols())
-    .filter(i => i === 'AAPL')
-    .flatMap((symbol, i, collection) => {
-      const result = assetRun(symbol);
-      console.log(`(${i + 1}/${collection.length}) ${symbol} - ${result.length} events`);
-      return result;
-    })
-    .value();
+  return (
+    _(snpSymbols())
+      // .filter(i => i === 'AAPL')
+      .flatMap((symbol, i, collection) => {
+        const result = assetRun(symbol);
+        console.log(`(${i + 1}/${collection.length}) ${symbol} - ${result.length} events`);
+        return result;
+      })
+      .value()
+  );
 }
 
-async function saveReport(events: TransitionResult[]) {
-  const isExit = (i: TransitionResult) =>
+async function saveReport(events: ReportData[]) {
+  const isExit = (i: ReportData) =>
     i.event.to === 'NONE' && (i.event.from === 'REACH_TOP' || i.event.from === 'REACH_BOTTOM');
 
   // const isEnter = (i: AssetStatusChangedEvent) => i.to === 'REACH_TOP' || i.to === 'REACH_BOTTOM';
@@ -229,6 +237,10 @@ async function saveReport(events: TransitionResult[]) {
       'Enter Status': i.event.from,
       'Enter Date': i.event.oldPriceDate,
       'Enter Price': i.event.oldPrice,
+      'Enter STOP Price':
+        i.event.from === 'REACH_TOP'
+          ? i.oldMarketData?.donchianInner.minValue
+          : i.oldMarketData?.donchianInner.maxValue,
       'Exit Price': i.event.currentPrice,
       'Exit Date': i.event.currentPriceDate,
       'Min Price': i.minPrice,

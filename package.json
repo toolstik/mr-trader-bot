@@ -87,6 +87,7 @@
     "gulp-shell": "^0.8.0",
     "gulpclass": "^0.2.0",
     "minimist": "^1.2.5",
+    "node-worker-threads-pool": "^1.4.3",
     "nyc": "^15.0.0",
     "prettier": "^2.2.1",
     "ts-node": "^9.0.0",

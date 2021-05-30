@@ -10,6 +10,8 @@
 import * as fs from 'fs';
 import _ = require('lodash');
 import { Column, Workbook } from 'exceljs';
+import { flattenDeep } from 'lodash';
+import { StaticPool } from 'node-worker-threads-pool';
 import * as path from 'path';
 
 import { AssetStatusChangedEvent } from '../../src/events/asset-status-changed.event';
@@ -211,17 +213,31 @@ function assetRun(symbol: string) {
   // }
 }
 
-function getAllSymbolsEvents() {
-  return (
-    _(snpSymbols())
-      // .filter(i => i === 'AAPL')
-      .flatMap((symbol, i, collection) => {
-        const result = assetRun(symbol);
-        console.log(`(${i + 1}/${collection.length}) ${symbol} - ${result.length} events`);
-        return result;
-      })
-      .value()
+async function getAllSymbolsEvents() {
+  const staticPool = new StaticPool({
+    size: 10,
+    task(symbol: string) {
+      return assetRun(symbol);
+    },
+  });
+
+  const symbols = snpSymbols();
+  const symbolsLeft = new Set(symbols);
+
+  const unflattenResult = await Promise.all(
+    symbols.map(async symbol => {
+      const data = await staticPool.exec(symbol);
+      symbolsLeft.delete(symbol);
+      console.log(
+        `(${symbols.length - symbolsLeft.size}/${symbols.length}) ${symbol} - ${
+          data.length
+        } events`,
+      );
+      return data;
+    }),
   );
+
+  return flattenDeep(unflattenResult);
 }
 
 async function saveReport(events: ReportData[]) {
@@ -274,7 +290,7 @@ void (async () => {
   // const aapl = data['AAPL'];
   // console.log(aapl);
 
-  const data = getAllSymbolsEvents();
+  const data = await getAllSymbolsEvents();
   await saveReport(data);
 })();
 

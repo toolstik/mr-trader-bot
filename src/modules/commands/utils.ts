@@ -52,7 +52,8 @@ export function flatMerge<T extends Object>(
 }
 
 export function clone<T>(x: T) {
-  return JSON.parse(JSON.stringify(x)) as T;
+  // return JSON.parse(JSON.stringify(x)) as T;
+  return _(x).cloneDeep();
 }
 
 export function defaultsDeep<T>(dest: T, src: T, key?: string): T {

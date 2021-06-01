@@ -1,11 +1,5 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable @typescript-eslint/no-var-requires */
-/*
-1. +get snp list
-2. +get history for every symbol
-3. get transitions
-4. build report
-*/
 
 import * as fs from 'fs';
 import _ = require('lodash');
@@ -22,20 +16,28 @@ import {
   fsmDeepTransition,
 } from '../../src/modules/analysis/analysis.service';
 import { AssetEntity } from '../../src/modules/asset/asset.entity';
+import { recordMap } from '../../src/modules/commands/utils';
 import { SnP500ListItem } from '../../src/modules/datahub/datahub.service';
 import { YahooService } from '../../src/modules/yahoo/yahoo.service';
 import { AssetStateKey } from '../../src/types/commons';
-import { MarketHistory, MultipleHistory } from '../../src/types/history';
+import { MarketHistory } from '../../src/types/history';
 import { MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
+import moment = require('moment');
 
 const HISTORY_FILE_PATH = path.join(__dirname, 'history-data.json');
 
 const PARAMETERS = {
   donchianOuter: 20,
   donchianInner: 5,
-  historyDateFrom: '2020-01-01',
+  historyDateFrom: '2019-01-01',
+  reportDateFrom: '2020-01-01',
 };
+
+class MarketHistoryExtended extends MarketHistory {
+  sma50: number;
+  sma200: number;
+}
 
 const isExit = (i: TransitionResult) =>
   i.event.to === 'NONE' && (i.event.from === 'REACH_TOP' || i.event.from === 'REACH_BOTTOM');
@@ -56,14 +58,14 @@ function snpSymbols() {
 
 function historyData() {
   let result = require(HISTORY_FILE_PATH);
-  result = plainToRecord(MarketHistory, result);
-  return result as MultipleHistory;
+  result = plainToRecord(MarketHistoryExtended, result);
+  return result as Record<string, MarketHistoryExtended[]>;
 }
 
-async function downloadSymbolHistory(...symbols: string[]) {
+export async function downloadSymbolHistory(...symbols: string[]) {
   const yahoo = new YahooService();
 
-  if (!symbols) {
+  if (!symbols?.length) {
     symbols = snpSymbols();
   }
 
@@ -74,15 +76,40 @@ async function downloadSymbolHistory(...symbols: string[]) {
   return data;
 }
 
+export function updateHistory() {
+  const history = historyData();
+
+  const sma = (index: number, periods: number, col: MarketHistoryExtended[]) => {
+    if (index + 1 < periods) {
+      return null;
+    }
+
+    const tail = _.slice(col, index + 1 - periods, index + 1);
+
+    return tail.reduce((prev, cur) => prev + cur.close, 0) / (tail.length || 1);
+  };
+
+  recordMap(history, assetHist => {
+    assetHist.sort(compareMarketHistoryAsc).forEach((item, i, collection) => {
+      item.sma50 = sma(i, 50, collection);
+      item.sma200 = sma(i, 200, collection);
+    });
+  });
+
+  const stringData = JSON.stringify(history, null, 2);
+  fs.writeFileSync(HISTORY_FILE_PATH, stringData);
+}
+
 type TransitionResult = {
   asset: AssetEntity;
   event: AssetStatusChangedEvent;
-  historyState: MarketHistory;
+  historyState: MarketHistoryExtended;
   marketData: MarketData;
 };
 type ReportData = TransitionResult & {
   previousEnterState: AssetStateKey;
   oldMarketData: MarketData;
+  oldHistoryState: MarketHistoryExtended;
   minPrice: number;
   maxPrice: number;
 };
@@ -102,6 +129,7 @@ export function assetRun(symbol: string) {
   let transitionMinPrice: number = null;
   let transitionMaxPrice: number = null;
   let prevMarketData: MarketData = null;
+  let prevMarketHistory: MarketHistoryExtended = null;
   let previousEnterState: AssetStateKey = null;
 
   const donchian = (date: Date, daysBack: number) => {
@@ -118,7 +146,9 @@ export function assetRun(symbol: string) {
     return value;
   };
 
-  const transition: (hist: MarketHistory) => TransitionResult = (historyEntry: MarketHistory) => {
+  const transition: (hist: MarketHistoryExtended) => TransitionResult = (
+    historyEntry: MarketHistoryExtended,
+  ) => {
     const defaultResult: TransitionResult = {
       asset: assetState,
       event: null,
@@ -178,6 +208,7 @@ export function assetRun(symbol: string) {
   };
 
   return _(assetHistory)
+    .filter(a => a.date.getTime() >= moment(PARAMETERS.reportDateFrom).toDate().getTime())
     .sort(compareMarketHistoryAsc)
     .flatMap(historyEntry => {
       const transitionResult = transition(historyEntry) as ReportData;
@@ -195,6 +226,7 @@ export function assetRun(symbol: string) {
         return [];
       }
 
+      // we use high/low prices to trigger fsm but the real price we want to use is based on donchian values
       const reportPrice = (() => {
         switch (transitionResult.asset.state) {
           case 'REACH_TOP':
@@ -220,6 +252,7 @@ export function assetRun(symbol: string) {
       transitionResult.minPrice = transitionMinPrice;
       transitionResult.maxPrice = transitionMaxPrice;
       transitionResult.oldMarketData = prevMarketData;
+      transitionResult.oldHistoryState = prevMarketHistory;
       transitionResult.previousEnterState = previousEnterState;
 
       if (isExit(transitionResult)) {
@@ -229,6 +262,7 @@ export function assetRun(symbol: string) {
       transitionMinPrice = transitionResult.historyState.low;
       transitionMaxPrice = transitionResult.historyState.high;
       prevMarketData = transitionResult.marketData;
+      prevMarketHistory = transitionResult.historyState;
 
       return [transitionResult];
     })
@@ -249,12 +283,12 @@ export function assetRun(symbol: string) {
 
 export async function getAllSymbolsEvents() {
   const staticPool = new StaticPool({
-    size: 10,
+    size: 12,
     task: path.join(__dirname, 'worker.ts'),
   });
 
   const symbols = _(snpSymbols())
-    .take(20)
+    // .take(20)
     .value();
   const symbolsLeft = new Set(symbols);
 
@@ -291,8 +325,12 @@ export async function saveReport(events: ReportData[]) {
         i.event.from === 'REACH_TOP'
           ? i.oldMarketData?.donchianInner.minValue
           : i.oldMarketData?.donchianInner.maxValue,
+      'Enter SMA(50)': i.oldHistoryState.sma50,
+      'Enter SMA(200)': i.oldHistoryState.sma200,
       'Exit Price': i.event.currentPrice,
       'Exit Date': i.event.currentPriceDate,
+      'Exit SMA(50)': i.historyState.sma50,
+      'Exit SMA(200)': i.historyState.sma200,
       'Min Price': i.minPrice,
       'Max Price': i.maxPrice,
     };

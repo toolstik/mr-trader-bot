@@ -13,13 +13,15 @@ export function parseTickerList(args: string) {
   return uniq(values);
 }
 
+type ValueOf<T> = T[keyof T]
 export function recordMap<
-  InKey extends string | number | symbol,
-  InValue,
+  R extends Record<InKey, InValue>,
+  InKey extends keyof R,
+  InValue extends ValueOf<R>,
   OutKey extends string | number | symbol,
   OutValue
 >(
-  record: Record<InKey, InValue>,
+  record: R,
   valueFunc: (x: InValue) => OutValue,
   keyFunc: (x: InKey) => OutKey = identity,
 ): Record<OutKey, OutValue> {

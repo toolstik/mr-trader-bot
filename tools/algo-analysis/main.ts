@@ -3,6 +3,8 @@
 
 import * as fs from 'fs';
 import _ = require('lodash');
+import moment = require('moment');
+import { Type } from 'class-transformer';
 import { Column, Workbook } from 'exceljs';
 import { flattenDeep } from 'lodash';
 import { StaticPool } from 'node-worker-threads-pool-ts';
@@ -21,16 +23,16 @@ import { AssetStateKey } from '../../src/types/commons';
 import { MarketHistory } from '../../src/types/history';
 import { Donchian, MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
-import moment = require('moment');
-import { Type } from 'class-transformer';
-
 import { FractalBounds, Indicators } from './indicators';
 
 const HISTORY_FILE_PATH = path.join(__dirname, 'history-data.json');
 
+type StopMode = 'donchian' | 'fractal';
 const PARAMETERS = {
   donchianOuter: 20,
   donchianInner: 5,
+  fractal: 2, // по 2 в каждую сторону, т.е. всего 5 дней
+  stopMode: 'fractal' as StopMode,
   historyDateFrom: '2015-01-01',
   reportDateFrom: '2016-01-01',
 };
@@ -158,11 +160,13 @@ type ReportData = TransitionResult & {
 
 export function assetRun(symbol: string) {
   const plainHistory = historyData()[symbol];
-  const assetHistory = updateHistory(plainHistory);
 
-  if (!assetHistory) {
+  if (!plainHistory) {
     return [];
   }
+
+  // console.log('&&&&&&&&&&', symbol, plainHistory?.length ?? 'null');
+  const assetHistory = updateHistory(plainHistory);
 
   let assetState = {
     symbol,
@@ -200,23 +204,46 @@ export function assetRun(symbol: string) {
       historyState: historyEntry,
     };
 
-    const donchianOuter = donchian(historyEntry.date, PARAMETERS.donchianOuter);
+    const outerBounds = historyEntry.indicators.donchianOuter;
 
-    if (!donchianOuter) {
+    if (!outerBounds) {
       return defaultResult;
     }
 
-    const donchianInner = donchian(historyEntry.date, PARAMETERS.donchianInner);
+    const innerBounds =
+      // если фрактал старше внешнего дончиана, то берем внешний дончиан
+      PARAMETERS.stopMode === 'fractal'
+        ? ({
+            ...(moment(historyEntry.date).diff(historyEntry.indicators.fractal5.minDate, 'day') <=
+            PARAMETERS.donchianOuter
+              ? {
+                  minValue: historyEntry.indicators.fractal5.minValue,
+                }
+              : {
+                  minValue: historyEntry.indicators.donchianOuter.minValue,
+                  minDays: historyEntry.indicators.donchianOuter.minDays,
+                }),
+            ...(moment(historyEntry.date).diff(historyEntry.indicators.fractal5.maxDate, 'day') <=
+            PARAMETERS.donchianOuter
+              ? {
+                  maxValue: historyEntry.indicators.fractal5.maxValue,
+                }
+              : {
+                  maxValue: historyEntry.indicators.donchianOuter.maxValue,
+                  maxDays: historyEntry.indicators.donchianOuter.maxValue,
+                }),
+          } as Donchian)
+        : historyEntry.indicators.donchianInner;
 
-    if (!donchianInner) {
+    if (!innerBounds) {
       return defaultResult;
     }
 
     const marketDataHigh = {
       date: historyEntry.date,
       price: historyEntry.high,
-      donchianOuter: donchianOuter,
-      donchianInner: donchianInner,
+      donchianOuter: outerBounds,
+      donchianInner: innerBounds,
     } as MarketData;
 
     const stateHigh = fsmDeepTransition(assetState, marketDataHigh);
@@ -233,8 +260,8 @@ export function assetRun(symbol: string) {
     const marketDataLow = {
       date: historyEntry.date,
       price: historyEntry.low,
-      donchianOuter: donchianOuter,
-      donchianInner: donchianInner,
+      donchianOuter: outerBounds,
+      donchianInner: innerBounds,
     } as MarketData;
 
     const stateLow = fsmDeepTransition(assetState, marketDataLow);
@@ -381,6 +408,8 @@ export async function saveReport(events: ReportData[]) {
       'Exit SMA(200)': i.historyState.indicators.sma200,
       'Exit RSI(2)': i.historyState.indicators.rsi2,
       'Exit RSI(14)': i.historyState.indicators.rsi14,
+      [`Exit MIN(${PARAMETERS.donchianOuter})`]: i.historyState.indicators.donchianOuter.minValue,
+      [`Exit MAX(${PARAMETERS.donchianOuter})`]: i.historyState.indicators.donchianOuter.maxValue,
       'Min Price': i.minPrice,
       'Max Price': i.maxPrice,
     };

@@ -6,7 +6,7 @@ void (async () => {
   // console.log(symbols.length, symbols);
   const data = historyData();
   const aapl = data['AAPL'];
-  const aaplExtended = updateHistory(aapl).slice(0, 20);
+  const aaplExtended = updateHistory(aapl).slice(20, 40);
   console.log(util.inspect(aaplExtended, false, null, true /* enable colors */));
 
   // console.time('history download');

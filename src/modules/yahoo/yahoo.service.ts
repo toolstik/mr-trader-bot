@@ -182,7 +182,7 @@ export class YahooService {
         period: 'd', // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
       };
 
-      const hist = await yahoo.historical(opts);
+      const hist = await yahoo.historical(opts).catch(e => console.log(e));
 
       const x = plainToClass(MultipleHistoryClass, hist, {
         targetMaps: [

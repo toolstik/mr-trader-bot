@@ -6,6 +6,11 @@ void (async () => {
   // const aapl = data['AAPL'];
   // console.log(aapl);
 
-  await downloadSymbolHistory();
+
+  console.time('history download');
+  await downloadSymbolHistory(['AAPL'], '2021-01-01');
+  console.timeEnd('history download');
+  console.time('history update');
   updateHistory();
+  console.timeEnd('history update');
 })();

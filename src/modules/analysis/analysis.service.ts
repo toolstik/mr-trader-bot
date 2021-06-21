@@ -50,7 +50,12 @@ export function compareMarketHistoryAsc(a: MarketHistory, b: MarketHistory) {
   return -compareMarketHistoryDesc(a, b);
 }
 
-export function donchianFunc(history: SymbolHistory, date: moment.MomentInput, daysBack: number) {
+export function donchianFunc(
+  history: SymbolHistory,
+  date: moment.MomentInput,
+  daysBack: number,
+  historySortedDesc = false,
+) {
   const today = moment(date).startOf('day').toDate().getTime();
 
   history = history.filter(a => {
@@ -66,7 +71,9 @@ export function donchianFunc(history: SymbolHistory, date: moment.MomentInput, d
     return false;
   });
 
-  history = history.sort(compareMarketHistoryDesc);
+  if (!historySortedDesc) {
+    history = history.sort(compareMarketHistoryDesc);
+  }
 
   history = history.slice(0, daysBack);
 

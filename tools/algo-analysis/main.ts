@@ -7,24 +7,24 @@ import { Column, Workbook } from 'exceljs';
 import { flattenDeep } from 'lodash';
 import { StaticPool } from 'node-worker-threads-pool-ts';
 import * as path from 'path';
-import { rsi, sma } from 'technicalindicators';
 
 import { AssetStatusChangedEvent } from '../../src/events/asset-status-changed.event';
 import {
   compareMarketHistoryAsc,
-  compareMarketHistoryDesc,
   donchianFunc,
   fsmDeepTransition,
 } from '../../src/modules/analysis/analysis.service';
 import { AssetEntity } from '../../src/modules/asset/asset.entity';
-import { recordMap } from '../../src/modules/commands/utils';
 import { SnP500ListItem } from '../../src/modules/datahub/datahub.service';
 import { YahooService } from '../../src/modules/yahoo/yahoo.service';
 import { AssetStateKey } from '../../src/types/commons';
 import { MarketHistory } from '../../src/types/history';
-import { MarketData } from '../../src/types/market-data';
+import { Donchian, MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
 import moment = require('moment');
+import { Type } from 'class-transformer';
+
+import { FractalBounds, Indicators } from './indicators';
 
 const HISTORY_FILE_PATH = path.join(__dirname, 'history-data.json');
 
@@ -35,16 +35,23 @@ const PARAMETERS = {
   reportDateFrom: '2016-01-01',
 };
 
-type MarketHistoryIndicators = {
+class MarketHistoryIndicators {
+  sma5: number;
   sma50: number;
   sma200: number;
   rsi2: number;
   rsi14: number;
-};
 
-class MarketHistoryExtended extends MarketHistory {
+  @Type(() => FractalBounds)
+  fractal5: FractalBounds;
+  donchianInner: Donchian;
+  donchianOuter: Donchian;
+}
+
+export class MarketHistoryExtended extends MarketHistory {
   // sma50: number;
   // sma200: number;
+  @Type(() => MarketHistoryIndicators)
   indicators: MarketHistoryIndicators;
 }
 
@@ -65,59 +72,10 @@ function snpSymbols() {
     .sort();
 }
 
-function historyData() {
+export function historyData() {
   let result = require(HISTORY_FILE_PATH);
-  result = plainToRecord(MarketHistoryExtended, result);
-  return result as Record<string, MarketHistoryExtended[]>;
-}
-
-type IndicatorId<T extends keyof Indicators = keyof Indicators> = T extends `${infer K}Indicator`
-  ? K
-  : never;
-type IndicatorKey<T extends IndicatorId> = Extract<`${T}Indicator`, keyof Indicators>;
-type IndicatorArgs<K extends IndicatorId> = Indicators[IndicatorKey<K>] extends (
-  args: infer P,
-) => any[]
-  ? P
-  : never;
-type IndicatorResult<K extends IndicatorId> = Indicators[IndicatorKey<K>] extends (
-  ...args: any[]
-) => (infer R)[]
-  ? R
-  : never;
-type IndicatorFunc<T extends IndicatorId> = (arg: IndicatorArgs<T>) => IndicatorResult<T>[];
-// const f: IndicatorKey<'sma'>;
-
-class Indicators {
-  private readonly sortedCollection: MarketHistoryExtended[];
-
-  constructor(inputCollection: MarketHistoryExtended[]) {
-    this.sortedCollection = inputCollection.sort(compareMarketHistoryAsc);
-  }
-
-  smaIndicator(period: number): number[] {
-    const values = this.sortedCollection.map(i => i.close);
-    return [...Array(period - 1).fill(null), ...sma({ period, values })];
-  }
-
-  rsiIndicator(period: number): number[] {
-    const values = this.sortedCollection.map(i => i.close);
-    return [...Array(period).fill(null), ...rsi({ period, values })];
-  }
-
-  apply<K extends IndicatorId>(
-    indicator: K,
-    arg: IndicatorArgs<K>,
-    func: (item: MarketHistoryExtended, val: IndicatorResult<K>) => void,
-  ) {
-    let indicatorFunc: IndicatorFunc<K> = this[`${indicator}Indicator`];
-    indicatorFunc = indicatorFunc.bind(this);
-    const resultArray = indicatorFunc(arg);
-
-    this.sortedCollection.forEach((item, i) => {
-      func(item, resultArray[i]);
-    });
-  }
+  result = plainToRecord(MarketHistory, result);
+  return result as Record<string, MarketHistory[]>;
 }
 
 export async function downloadSymbolHistory(symbols?: string[], dateFrom?: moment.MomentInput) {
@@ -138,74 +96,50 @@ export async function downloadSymbolHistory(symbols?: string[], dateFrom?: momen
   return data;
 }
 
-export function updateHistory() {
-  const history = historyData();
+export function updateHistory(assetHist: MarketHistory[]) {
+  const indicators = new Indicators(assetHist);
 
-  // const mySma = (index: number, periods: number, col: MarketHistoryExtended[]) => {
-  //   if (index + 1 < periods) {
-  //     return null;
-  //   }
-
-  //   const tail = _.slice(col, index + 1 - periods, index + 1);
-
-  //   return tail.reduce((prev, cur) => prev + cur.close, 0) / (tail.length || 1);
-  // };
-
-  // const externalSma = (index: number, periods: number, col: MarketHistoryExtended[]) => {
-  //   if (index + 1 < periods) {
-  //     return null;
-  //   }
-
-  //   const tail = _.slice(col, index + 1 - periods, index + 1).map(i => i.close);
-
-  //   return sma({ period: periods, values: tail })[0];
-  // };
-
-  // recordMap(history, assetHist => {
-  //   assetHist.sort(compareMarketHistoryAsc).forEach((item, i, collection) => {
-  //     item.indicators = {
-  //       ...item.indicators,
-  //       sma50: mySma(i, 50, collection),
-  //       sma50_2: externalSma(i, 50, collection),
-  //       sma200: mySma(i, 200, collection),
-  //     };
-  //   });
-  // });
-
-  recordMap(history, assetHist => {
-    const indicators = new Indicators(assetHist);
-
-    indicators.apply('sma', 50, (item, value) => {
-      item.indicators = {
-        ...item.indicators,
+  return indicators
+    .apply('sma', 5, value => ({
+      indicators: {
+        sma5: value,
+      },
+    }))
+    .apply('sma', 50, value => ({
+      indicators: {
         sma50: value,
-      };
-    });
-
-    indicators.apply('sma', 200, (item, value) => {
-      item.indicators = {
-        ...item.indicators,
+      },
+    }))
+    .apply('sma', 200, value => ({
+      indicators: {
         sma200: value,
-      };
-    });
-
-    indicators.apply('rsi', 2, (item, value) => {
-      item.indicators = {
-        ...item.indicators,
+      },
+    }))
+    .apply('rsi', 2, value => ({
+      indicators: {
         rsi2: value,
-      };
-    });
-
-    indicators.apply('rsi', 14, (item, value) => {
-      item.indicators = {
-        ...item.indicators,
+      },
+    }))
+    .apply('rsi', 14, value => ({
+      indicators: {
         rsi14: value,
-      };
-    });
-  });
-
-  const stringData = JSON.stringify(history, null, 2);
-  fs.writeFileSync(HISTORY_FILE_PATH, stringData);
+      },
+    }))
+    .apply('fractal', 2, value => ({
+      indicators: {
+        fractal5: value,
+      },
+    }))
+    .apply('donchian', PARAMETERS.donchianInner, value => ({
+      indicators: {
+        donchianInner: value,
+      },
+    }))
+    .apply('donchian', PARAMETERS.donchianOuter, value => ({
+      indicators: {
+        donchianOuter: value,
+      },
+    })).valueSortedDesc;
 }
 
 type TransitionResult = {
@@ -221,8 +155,10 @@ type ReportData = TransitionResult & {
   minPrice: number;
   maxPrice: number;
 };
+
 export function assetRun(symbol: string) {
-  const assetHistory = historyData()[symbol]?.sort(compareMarketHistoryDesc);
+  const plainHistory = historyData()[symbol];
+  const assetHistory = updateHistory(plainHistory);
 
   if (!assetHistory) {
     return [];
@@ -241,7 +177,7 @@ export function assetRun(symbol: string) {
   let previousEnterState: AssetStateKey = null;
 
   const donchian = (date: Date, daysBack: number) => {
-    const value = donchianFunc(assetHistory, date, daysBack);
+    const value = donchianFunc(assetHistory, date, daysBack, true);
 
     // if (!value) {
     //   console.log(
@@ -391,7 +327,7 @@ export function assetRun(symbol: string) {
 
 export async function getAllSymbolsEvents() {
   const staticPool = new StaticPool({
-    size: 12,
+    size: 8,
     task: path.join(__dirname, 'worker.ts'),
   });
 
@@ -433,12 +369,18 @@ export async function saveReport(events: ReportData[]) {
         i.event.from === 'REACH_TOP'
           ? i.oldMarketData?.donchianInner.minValue
           : i.oldMarketData?.donchianInner.maxValue,
+      'Enter SMA(5)': i.oldHistoryState.indicators.sma5,
       'Enter SMA(50)': i.oldHistoryState.indicators.sma50,
       'Enter SMA(200)': i.oldHistoryState.indicators.sma200,
+      'Enter RSI(2)': i.oldHistoryState.indicators.rsi2,
+      'Enter RSI(14)': i.oldHistoryState.indicators.rsi14,
       'Exit Price': i.event.currentPrice,
       'Exit Date': i.event.currentPriceDate,
+      'Exit SMA(5)': i.historyState.indicators.sma5,
       'Exit SMA(50)': i.historyState.indicators.sma50,
       'Exit SMA(200)': i.historyState.indicators.sma200,
+      'Exit RSI(2)': i.historyState.indicators.rsi2,
+      'Exit RSI(14)': i.historyState.indicators.rsi14,
       'Min Price': i.minPrice,
       'Max Price': i.maxPrice,
     };

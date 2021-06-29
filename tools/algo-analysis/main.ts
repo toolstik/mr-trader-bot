@@ -1,11 +1,9 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import * as fs from 'fs';
-import _ = require('lodash');
-import moment = require('moment');
 import { Type } from 'class-transformer';
 import { Column, Workbook } from 'exceljs';
+import * as fs from 'fs';
 import { flattenDeep } from 'lodash';
 import { StaticPool } from 'node-worker-threads-pool-ts';
 import * as path from 'path';
@@ -17,13 +15,15 @@ import {
   fsmDeepTransition,
 } from '../../src/modules/analysis/analysis.service';
 import { AssetEntity } from '../../src/modules/asset/asset.entity';
-import { SnP500ListItem } from '../../src/modules/datahub/datahub.service';
 import { YahooService } from '../../src/modules/yahoo/yahoo.service';
 import { AssetStateKey } from '../../src/types/commons';
 import { MarketHistory } from '../../src/types/history';
 import { Donchian, MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
 import { FractalBounds, Indicators } from './indicators';
+import _ = require('lodash');
+import moment = require('moment');
+import { customSymbols1plus2 } from './symbols';
 
 const HISTORY_FILE_PATH = path.join(__dirname, 'history-data.json');
 
@@ -31,6 +31,7 @@ type StopMode = 'donchian' | 'fractal';
 const PARAMETERS = {
   donchianOuter: 20,
   donchianInner: 5,
+  symbols: customSymbols1plus2(),
   fractal: 2, // по 2 в каждую сторону, т.е. всего 5 дней
   stopMode: 'fractal' as StopMode,
   historyDateFrom: '2015-01-01',
@@ -63,17 +64,6 @@ const isExit = (i: TransitionResult) =>
 const isEnter = (i: TransitionResult) =>
   i.event.to === 'REACH_TOP' || i.event.to === 'REACH_BOTTOM';
 
-function snpData() {
-  const result = require('./snp-list.json') as SnP500ListItem[];
-  return result;
-}
-
-function snpSymbols() {
-  return snpData()
-    .map(i => i.Symbol)
-    .sort();
-}
-
 export function historyData() {
   let result = require(HISTORY_FILE_PATH);
   result = plainToRecord(MarketHistory, result);
@@ -84,7 +74,7 @@ export async function downloadSymbolHistory(symbols?: string[], dateFrom?: momen
   const yahoo = new YahooService();
 
   if (!symbols?.length) {
-    symbols = snpSymbols();
+    symbols = PARAMETERS.symbols;
     // exclude error symbols
     symbols = symbols
       .filter(i => !['ETFC', 'BRK.B', 'CXO', 'BF.B', 'MYL', 'NBL', 'TIF', 'CTL'].includes(i))
@@ -358,7 +348,7 @@ export async function getAllSymbolsEvents() {
     task: path.join(__dirname, 'worker.ts'),
   });
 
-  const symbols = _(snpSymbols())
+  const symbols = _(PARAMETERS.symbols)
     // .take(20)
     .value();
   const symbolsLeft = new Set(symbols);

@@ -6,6 +6,7 @@ import * as moment from 'moment-timezone';
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { AssetStateKey, AssetStatus } from '../../types/commons';
 import { FsmContext, FsmEvent, FsmState } from '../../types/fsm-types';
+import { MarketHistory, SymbolHistory } from '../../types/history';
 import { Donchian, MarketData } from '../../types/market-data';
 import { AssetEntity } from '../asset/asset.entity';
 import { AssetService } from '../asset/asset.service';
@@ -25,6 +26,281 @@ const DEFAULT_GET_ASSET_STATUS_OPTIONS: GetAssetStatusOptions = {
   emitEvents: false,
   fundamentals: false,
 };
+
+export function compareMarketHistoryDesc(a: MarketHistory, b: MarketHistory) {
+  const aTime = a?.date?.getDate();
+  const bTime = b?.date?.getDate();
+
+  if (!bTime && !aTime) {
+    return 0;
+  }
+
+  if (!aTime) {
+    return 1;
+  }
+
+  if (!aTime) {
+    return -1;
+  }
+
+  return b.date.getTime() - a.date.getTime();
+}
+
+export function compareMarketHistoryAsc(a: MarketHistory, b: MarketHistory) {
+  return -compareMarketHistoryDesc(a, b);
+}
+
+export function donchianFunc(
+  history: SymbolHistory,
+  date: moment.MomentInput,
+  daysBack: number,
+  historySortedDesc = false,
+) {
+  const today = moment(date).startOf('day').toDate().getTime();
+
+  history = history.filter(a => {
+    if (!a.date || !a.high || !a.low) {
+      return false;
+    }
+
+    //before today only
+    if (a.date.getTime() < today) {
+      return true;
+    }
+
+    return false;
+  });
+
+  if (!historySortedDesc) {
+    history = history.sort(compareMarketHistoryDesc);
+  }
+
+  history = history.slice(0, daysBack);
+
+  if (history.length < daysBack) {
+    return null;
+  }
+
+  const donchian = history.reduce(
+    (prev, cur) => {
+      return {
+        ...prev,
+        minValue: cur.low ? Math.min(prev.minValue, cur.low) : prev.minValue,
+        maxValue: cur.high ? Math.max(prev.maxValue, cur.high) : prev.maxValue,
+      };
+    },
+    {
+      minDays: daysBack,
+      minValue: Number.MAX_VALUE,
+      maxDays: daysBack,
+      maxValue: 0,
+    } as Donchian,
+  );
+
+  return donchian;
+}
+
+export function fsmTransition(asset: AssetEntity, marketData: MarketData) {
+  const myAction = (transition: { from: AssetStateKey; to: AssetStateKey }) => {
+    return (ctx: FsmContext, e: FsmEvent) => {
+      // console.debug(transition);
+      const event: AssetStatusChangedEvent = {
+        symbol: ctx.asset.symbol,
+        from: transition.from,
+        to: transition.to,
+        oldPrice: ctx.asset.stateData?.enterPrice,
+        oldPriceDate: ctx.asset.stateData?.enterTimestamp,
+        currentPrice: e.payload.price,
+        currentPriceDate: marketData.date,
+        marketData,
+      };
+
+      // return this.eventEmitter.emitAsync(AssetStatusChangedEvent, event);
+      ctx.asset.state = transition.to;
+      ctx.asset.stateData = {
+        enterTimestamp: marketData.date,
+        enterPrice: e.payload.price,
+      };
+      ctx.events.push(event);
+
+      // console.log(ctx);
+    };
+  };
+
+  const context: FsmContext = {
+    asset,
+    events: [],
+  };
+
+  const fsm = createMachine<FsmContext, FsmEvent, FsmState>({
+    initial: asset.state ?? 'NONE',
+    context: context,
+    states: {
+      REACH_TOP: {
+        on: {
+          update: [
+            {
+              target: 'NONE',
+              cond: (ctx, { payload: data }) => {
+                return topStop(data);
+              },
+              actions: myAction({ from: 'REACH_TOP', to: 'NONE' }),
+            },
+          ],
+        },
+      },
+      APPROACH_TOP: {
+        on: {
+          update: [
+            {
+              target: 'REACH_TOP',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'REACH_TOP';
+              },
+              actions: myAction({ from: 'APPROACH_TOP', to: 'REACH_TOP' }),
+            },
+            {
+              target: 'NONE',
+              cond: (ctx, { payload: data }) => {
+                return topStop(data);
+              },
+              actions: myAction({ from: 'APPROACH_TOP', to: 'NONE' }),
+            },
+          ],
+        },
+      },
+      REACH_BOTTOM: {
+        on: {
+          update: [
+            {
+              target: 'NONE',
+              cond: (ctx, { payload: data }) => {
+                return bottomStop(data);
+              },
+              actions: myAction({ from: 'REACH_BOTTOM', to: 'NONE' }),
+            },
+          ],
+        },
+      },
+      APPROACH_BOTTOM: {
+        on: {
+          update: [
+            {
+              target: 'REACH_BOTTOM',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'REACH_BOTTOM';
+              },
+              actions: myAction({ from: 'APPROACH_BOTTOM', to: 'REACH_BOTTOM' }),
+            },
+            {
+              target: 'NONE',
+              cond: (ctx, { payload: data }) => {
+                return bottomStop(data);
+              },
+              actions: myAction({ from: 'APPROACH_BOTTOM', to: 'NONE' }),
+            },
+          ],
+        },
+      },
+      NONE: {
+        on: {
+          update: [
+            {
+              target: 'REACH_TOP',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'REACH_TOP';
+              },
+              actions: myAction({ from: 'NONE', to: 'REACH_TOP' }),
+            },
+            {
+              target: 'APPROACH_TOP',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'APPROACH_TOP';
+              },
+              actions: myAction({ from: 'NONE', to: 'APPROACH_TOP' }),
+            },
+            {
+              target: 'REACH_BOTTOM',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'REACH_BOTTOM';
+              },
+              actions: myAction({ from: 'NONE', to: 'REACH_BOTTOM' }),
+            },
+            {
+              target: 'APPROACH_BOTTOM',
+              cond: (ctx, { payload: data }) => {
+                return getMarketState(data) === 'APPROACH_BOTTOM';
+              },
+              actions: myAction({ from: 'NONE', to: 'APPROACH_BOTTOM' }),
+            },
+          ],
+        },
+      },
+    },
+  });
+
+  const fsmEvent: FsmEvent<'update'> = {
+    type: 'update',
+    payload: marketData,
+  };
+
+  const newState = fsm.transition(fsm.initialState, fsmEvent);
+
+  for (const action of newState.actions || []) {
+    action.exec(context, fsmEvent);
+  }
+
+  return context;
+}
+
+export function fsmDeepTransition(asset: AssetEntity, marketData: MarketData, log?: PlainLogger) {
+  // console.time('fsm');
+
+  if (!log) {
+    log = console;
+  }
+
+  const initContext: FsmContext = {
+    asset,
+    events: [],
+  };
+
+  const context = clone(initContext);
+
+  const visitedStates = new Set<AssetStateKey>();
+
+  let i = 0;
+  while (i < 5) {
+    // console.timeLog('fsm', 'transition', newState.value, newState.changed);
+
+    visitedStates.add(context.asset.state || 'NONE');
+
+    const ctx = fsmTransition(context.asset, marketData);
+
+    // no transition ocurred
+    if (context && !ctx.events.length) {
+      break;
+    }
+
+    // fsm cycle detected
+    if (visitedStates.has(ctx.asset.state)) {
+      log.warn('FSM cycle detected', {
+        asset,
+        marketData,
+        cycleState: ctx.asset.state,
+      });
+      return initContext;
+    }
+
+    context.asset = ctx.asset;
+    context.events.push(...ctx.events);
+
+    i++;
+  }
+
+  // console.timeEnd('fsm');
+  return context;
+}
 
 function getMarketState(data: MarketData): AssetStateKey {
   if (data.price > data.donchianOuter.maxValue) {
@@ -78,7 +354,7 @@ export class AnalysisService {
     if (asset === null || marketData === null) {
       return null;
     }
-    const result = await this.fsmDeepTransition(asset, marketData);
+    const result = fsmDeepTransition(asset, marketData, this.log);
 
     if (options.emitEvents) {
       for (const e of result.events) {
@@ -111,6 +387,7 @@ export class AnalysisService {
     }
 
     return {
+      date: new Date(),
       price: price.regularMarketPrice,
       asset: _.omit(price, 'regularMarketPrice'),
       donchianOuter: donchian20,
@@ -127,229 +404,6 @@ export class AnalysisService {
 
     const today = moment().startOf('day').toDate().getTime();
 
-    const donchian = asset.history
-      .filter(a => {
-        if (!a.date || !a.high || !a.low) {
-          return false;
-        }
-
-        //before today only
-        if (a.date.getDate() >= today) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, daysBack)
-      .reduce(
-        (prev, cur) => {
-          return {
-            ...prev,
-            minValue: cur.low ? Math.min(prev.minValue, cur.low) : prev.minValue,
-            maxValue: cur.high ? Math.max(prev.maxValue, cur.high) : prev.maxValue,
-          };
-        },
-        {
-          minDays: daysBack,
-          minValue: Number.MAX_VALUE,
-          maxDays: daysBack,
-          maxValue: Number.MIN_VALUE,
-        } as Donchian,
-      );
-
-    return donchian;
-  }
-
-  private async fsmTransition(asset: AssetEntity, marketData: MarketData) {
-    const myAction = (transition: { from: AssetStateKey; to: AssetStateKey }) => {
-      return (ctx: FsmContext, e: FsmEvent) => {
-        // console.debug(transition);
-        const event: AssetStatusChangedEvent = {
-          symbol: ctx.asset.symbol,
-          from: transition.from,
-          to: transition.to,
-          oldPrice: ctx.asset.stateData?.enterPrice,
-          currentPrice: e.payload.price,
-          marketData,
-        };
-
-        // return this.eventEmitter.emitAsync(AssetStatusChangedEvent, event);
-        ctx.asset.state = transition.to;
-        ctx.events.push(event);
-
-        // console.log(ctx);
-      };
-    };
-
-    const context: FsmContext = {
-      asset,
-      events: [],
-    };
-
-    const fsm = createMachine<FsmContext, FsmEvent, FsmState>({
-      initial: asset.state ?? 'NONE',
-      context: context,
-      states: {
-        REACH_TOP: {
-          on: {
-            update: [
-              {
-                target: 'NONE',
-                cond: (ctx, { payload: data }) => {
-                  return topStop(data);
-                },
-                actions: myAction({ from: 'REACH_TOP', to: 'NONE' }),
-              },
-            ],
-          },
-        },
-        APPROACH_TOP: {
-          on: {
-            update: [
-              {
-                target: 'REACH_TOP',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'REACH_TOP';
-                },
-                actions: myAction({ from: 'APPROACH_TOP', to: 'REACH_TOP' }),
-              },
-              {
-                target: 'NONE',
-                cond: (ctx, { payload: data }) => {
-                  return topStop(data);
-                },
-                actions: myAction({ from: 'APPROACH_TOP', to: 'NONE' }),
-              },
-            ],
-          },
-        },
-        REACH_BOTTOM: {
-          on: {
-            update: [
-              {
-                target: 'NONE',
-                cond: (ctx, { payload: data }) => {
-                  return bottomStop(data);
-                },
-                actions: myAction({ from: 'REACH_BOTTOM', to: 'NONE' }),
-              },
-            ],
-          },
-        },
-        APPROACH_BOTTOM: {
-          on: {
-            update: [
-              {
-                target: 'REACH_BOTTOM',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'REACH_BOTTOM';
-                },
-                actions: myAction({ from: 'APPROACH_BOTTOM', to: 'REACH_BOTTOM' }),
-              },
-              {
-                target: 'NONE',
-                cond: (ctx, { payload: data }) => {
-                  return bottomStop(data);
-                },
-                actions: myAction({ from: 'APPROACH_BOTTOM', to: 'NONE' }),
-              },
-            ],
-          },
-        },
-        NONE: {
-          on: {
-            update: [
-              {
-                target: 'REACH_TOP',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'REACH_TOP';
-                },
-                actions: myAction({ from: 'NONE', to: 'REACH_TOP' }),
-              },
-              {
-                target: 'APPROACH_TOP',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'APPROACH_TOP';
-                },
-                actions: myAction({ from: 'NONE', to: 'APPROACH_TOP' }),
-              },
-              {
-                target: 'REACH_BOTTOM',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'REACH_BOTTOM';
-                },
-                actions: myAction({ from: 'NONE', to: 'REACH_BOTTOM' }),
-              },
-              {
-                target: 'APPROACH_BOTTOM',
-                cond: (ctx, { payload: data }) => {
-                  return getMarketState(data) === 'APPROACH_BOTTOM';
-                },
-                actions: myAction({ from: 'NONE', to: 'APPROACH_BOTTOM' }),
-              },
-            ],
-          },
-        },
-      },
-    });
-
-    const fsmEvent: FsmEvent<'update'> = {
-      type: 'update',
-      payload: marketData,
-    };
-
-    const newState = fsm.transition(fsm.initialState, fsmEvent);
-
-    for (const action of newState.actions || []) {
-      action.exec(context, fsmEvent);
-    }
-
-    return context;
-  }
-
-  private async fsmDeepTransition(asset: AssetEntity, marketData: MarketData) {
-    // console.time('fsm');
-
-    const initContext: FsmContext = {
-      asset,
-      events: [],
-    };
-
-    const context = clone(initContext);
-
-    const metStates = new Set<AssetStateKey>();
-
-    let i = 0;
-    while (i < 5) {
-      // console.timeLog('fsm', 'transition', newState.value, newState.changed);
-
-      metStates.add(context.asset.state || 'NONE');
-
-      const ctx = await this.fsmTransition(context.asset, marketData);
-
-      // no transition ocurred
-      if (context && !ctx.events.length) {
-        break;
-      }
-
-      // fsm cycle detected
-      if (metStates.has(ctx.asset.state)) {
-        this.log.warn('FSM cycle detected', {
-          asset,
-          marketData,
-          cycleState: ctx.asset.state,
-        });
-        return initContext;
-      }
-
-      context.asset = ctx.asset;
-      context.events.push(...ctx.events);
-
-      i++;
-    }
-
-    // console.timeEnd('fsm');
-    return context;
+    return donchianFunc(asset.history, today, daysBack);
   }
 }

@@ -13,13 +13,15 @@ export function parseTickerList(args: string) {
   return uniq(values);
 }
 
+type ValueOf<T> = T[keyof T]
 export function recordMap<
-  InKey extends string | number | symbol,
-  InValue,
+  R extends Record<InKey, InValue>,
+  InKey extends keyof R,
+  InValue extends ValueOf<R>,
   OutKey extends string | number | symbol,
   OutValue
 >(
-  record: Record<InKey, InValue>,
+  record: R,
   valueFunc: (x: InValue) => OutValue,
   keyFunc: (x: InKey) => OutKey = identity,
 ): Record<OutKey, OutValue> {
@@ -52,7 +54,8 @@ export function flatMerge<T extends Object>(
 }
 
 export function clone<T>(x: T) {
-  return JSON.parse(JSON.stringify(x)) as T;
+  // return JSON.parse(JSON.stringify(x)) as T;
+  return _(x).cloneDeep();
 }
 
 export function defaultsDeep<T>(dest: T, src: T, key?: string): T {

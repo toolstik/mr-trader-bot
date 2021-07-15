@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import Axios from 'axios';
 
-type NasdaqListItem = {
+export type NasdaqListItem = {
   Symbol: string;
 };
 
-type SnP500ListItem = {
+export type SnP500ListItem = {
   Symbol: string;
 };
 

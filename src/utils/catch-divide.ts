@@ -26,10 +26,12 @@ export async function catchDivide<T, R>(
     };
   }
 
-  // console.debug(`Catch divide with ${collection}`);
+  console.debug(`START: Catch divide with ${collection.length} items: ${collection}`);
 
   try {
     const result = await action(collection);
+    console.debug(`END: Catch divide with ${collection.length} items: ${collection}`);
+
     return {
       result,
       errors: [],
@@ -40,7 +42,7 @@ export async function catchDivide<T, R>(
     }
 
     if (collection.length === 1) {
-      // console.debug(`Error on single item: ${collection}`);
+      console.debug(`Error on single item: ${collection}`);
 
       return {
         result: null,
@@ -54,6 +56,7 @@ export async function catchDivide<T, R>(
     }
 
     // console.debug(`Error on ${collection.length} items`);
+    console.debug(`ERROR: Catch divide with ${collection.length} items: ${collection}`);
 
     const chunkSize = Math.max(1, Math.ceil(collection.length / 2));
     const chunks = _(collection).chunk(chunkSize).value();

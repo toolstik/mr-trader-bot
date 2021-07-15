@@ -140,7 +140,19 @@ function normalizeHistory(hist: MarketHistory) {
 
 @Injectable()
 export class YahooService {
-  async getHistory(symbols: string[], daysBack = 20) {
+  getHistory(symbols: string[], daysBack = 20) {
+    const today = moment().startOf('day');
+    const toDate = today.clone();
+    const fromDate = toDate.clone().add({ days: -(daysBack + 20) });
+
+    return this.getHistoryDates(symbols, fromDate, toDate);
+  }
+
+  async getHistoryDates(
+    symbols: string[],
+    fromDate: moment.MomentInput,
+    toDate?: moment.MomentInput,
+  ) {
     if (!symbols?.length) {
       return {
         result: {},
@@ -148,9 +160,13 @@ export class YahooService {
       } as CatchDivideResult<string, MultipleHistory>;
     }
 
-    const today = moment().startOf('day');
-    const toDate = today.clone();
-    const fromDate = toDate.clone().add({ days: -daysBack });
+    if (!fromDate) {
+      fromDate = moment().add(-7, 'day');
+    }
+
+    if (!toDate) {
+      toDate = moment();
+    }
 
     const action = async (collection: string[]) => {
       if (!collection?.length) {
@@ -161,12 +177,12 @@ export class YahooService {
         symbols: collection,
         // maxConcurrentSymbols: 20,
         error: true,
-        from: fromDate.format('YYYY-MM-DD'),
-        to: toDate.format('YYYY-MM-DD'),
+        from: moment(fromDate).startOf('day').format('YYYY-MM-DD'),
+        to: moment(toDate).startOf('day').format('YYYY-MM-DD'),
         period: 'd', // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
       };
 
-      const hist = await yahoo.historical(opts);
+      const hist = await yahoo.historical(opts).catch(e => console.log(e));
 
       const x = plainToClass(MultipleHistoryClass, hist, {
         targetMaps: [
@@ -184,7 +200,7 @@ export class YahooService {
 
       for (const [key, val] of Object.entries(x)) {
         val.forEach(normalizeHistory);
-        x[key] = _(val).value();
+        x[key] = val;
       }
 
       return x;

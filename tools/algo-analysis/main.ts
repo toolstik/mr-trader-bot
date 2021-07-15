@@ -29,7 +29,7 @@ const HISTORY_FILE_PATH = path.join(__dirname, 'history-data.json');
 
 type StopMode = 'donchian' | 'fractal';
 const PARAMETERS = {
-  donchianOuter: 20,
+  donchianOuter: 50,
   donchianInner: 5,
   symbols: customSymbols1plus2(),
   fractal: 2, // по 2 в каждую сторону, т.е. всего 5 дней

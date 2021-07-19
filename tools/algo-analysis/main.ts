@@ -11,16 +11,15 @@ import * as path from 'path';
 import { AssetStatusChangedEvent } from '../../src/events/asset-status-changed.event';
 import {
   compareMarketHistoryAsc,
-  donchianFunc,
   fsmDeepTransition,
 } from '../../src/modules/analysis/analysis.service';
+import { Donchian, FractalBounds, Indicators } from '../../src/modules/analysis/indicators';
 import { AssetEntity } from '../../src/modules/asset/asset.entity';
 import { YahooService } from '../../src/modules/yahoo/yahoo.service';
 import { AssetStateKey } from '../../src/types/commons';
 import { MarketHistory } from '../../src/types/history';
-import { Donchian, MarketData } from '../../src/types/market-data';
+import { MarketData } from '../../src/types/market-data';
 import { plainToRecord } from '../../src/utils/record-transform';
-import { FractalBounds, Indicators } from './indicators';
 import _ = require('lodash');
 import moment = require('moment');
 import { customSymbols1plus2 } from './symbols';
@@ -89,7 +88,7 @@ export async function downloadSymbolHistory(symbols?: string[], dateFrom?: momen
 }
 
 export function updateHistory(assetHist: MarketHistory[]) {
-  const indicators = new Indicators(assetHist);
+  const indicators = new Indicators<MarketHistoryExtended>(assetHist);
 
   return indicators
     .apply('sma', 5, value => ({
@@ -169,20 +168,6 @@ export function assetRun(symbol: string) {
   let prevMarketData: MarketData = null;
   let prevMarketHistory: MarketHistoryExtended = null;
   let previousEnterState: AssetStateKey = null;
-
-  const donchian = (date: Date, daysBack: number) => {
-    const value = donchianFunc(assetHistory, date, daysBack, true);
-
-    // if (!value) {
-    //   console.log(
-    //     symbol,
-    //     date.toISOString(),
-    //     `${PARAMETERS.donchianOuter}-days donchian can not be determined`,
-    //   );
-    // }
-
-    return value;
-  };
 
   const transition: (hist: MarketHistoryExtended) => TransitionResult = (
     historyEntry: MarketHistoryExtended,

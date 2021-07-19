@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { createMachine } from '@xstate/fsm';
-import * as _ from 'lodash';
 import * as moment from 'moment-timezone';
 
 import { AssetStatusChangedEvent } from '../../events/asset-status-changed.event';
 import { AssetStateKey, AssetStatus } from '../../types/commons';
 import { FsmContext, FsmEvent, FsmState } from '../../types/fsm-types';
-import { MarketHistory, SymbolHistory } from '../../types/history';
-import { Donchian, MarketData } from '../../types/market-data';
+import { MarketHistory } from '../../types/history';
+import { Bounds, MarketData } from '../../types/market-data';
 import { AssetEntity } from '../asset/asset.entity';
 import { AssetService } from '../asset/asset.service';
 import { clone } from '../commands/utils';
 import { EventEmitterService } from '../global/event-emitter.service';
 import { PlainLogger } from '../global/plain-logger';
 import { YahooService } from '../yahoo/yahoo.service';
+import { Indicators } from './indicators';
 
 const APPROACH_RATE = 0.005;
 
@@ -48,56 +48,6 @@ export function compareMarketHistoryDesc(a: MarketHistory, b: MarketHistory) {
 
 export function compareMarketHistoryAsc(a: MarketHistory, b: MarketHistory) {
   return -compareMarketHistoryDesc(a, b);
-}
-
-export function donchianFunc(
-  history: SymbolHistory,
-  date: moment.MomentInput,
-  daysBack: number,
-  historySortedDesc = false,
-) {
-  const today = moment(date).startOf('day').toDate().getTime();
-
-  history = history.filter(a => {
-    if (!a.date || !a.high || !a.low) {
-      return false;
-    }
-
-    //before today only
-    if (a.date.getTime() < today) {
-      return true;
-    }
-
-    return false;
-  });
-
-  if (!historySortedDesc) {
-    history = history.sort(compareMarketHistoryDesc);
-  }
-
-  history = history.slice(0, daysBack);
-
-  if (history.length < daysBack) {
-    return null;
-  }
-
-  const donchian = history.reduce(
-    (prev, cur) => {
-      return {
-        ...prev,
-        minValue: cur.low ? Math.min(prev.minValue, cur.low) : prev.minValue,
-        maxValue: cur.high ? Math.max(prev.maxValue, cur.high) : prev.maxValue,
-      };
-    },
-    {
-      minDays: daysBack,
-      minValue: Number.MAX_VALUE,
-      maxDays: daysBack,
-      maxValue: 0,
-    } as Donchian,
-  );
-
-  return donchian;
 }
 
 export function fsmTransition(asset: AssetEntity, marketData: MarketData) {
@@ -303,19 +253,19 @@ export function fsmDeepTransition(asset: AssetEntity, marketData: MarketData, lo
 }
 
 function getMarketState(data: MarketData): AssetStateKey {
-  if (data.price > data.donchianOuter.maxValue) {
+  if (data.price > data.bounds.top.value) {
     return 'REACH_TOP';
   }
 
-  if (data.price * (1 + APPROACH_RATE) > data.donchianOuter.maxValue) {
+  if (data.price * (1 + APPROACH_RATE) > data.bounds.top.value) {
     return 'APPROACH_TOP';
   }
 
-  if (data.price < data.donchianOuter.minValue) {
+  if (data.price < data.bounds.bottom.value) {
     return 'REACH_BOTTOM';
   }
 
-  if (data.price * (1 - APPROACH_RATE) < data.donchianOuter.minValue) {
+  if (data.price * (1 - APPROACH_RATE) < data.bounds.bottom.value) {
     return 'APPROACH_BOTTOM';
   }
 
@@ -323,11 +273,11 @@ function getMarketState(data: MarketData): AssetStateKey {
 }
 
 function topStop(data: MarketData) {
-  return data.price < data.donchianInner.minValue;
+  return data.price < data.bounds.stopTop.value;
 }
 
 function bottomStop(data: MarketData) {
-  return data.price > data.donchianInner.maxValue;
+  return data.price > data.bounds.stopBottom.value;
 }
 
 @Injectable()
@@ -379,31 +329,78 @@ export class AnalysisService {
       return null;
     }
 
-    const donchian20 = await this.getDonchian(symbol, 20);
-    const donchian5 = await this.getDonchian(symbol, 5);
+    const asset = await this.assetService.findOne(symbol);
+
+    const today = moment().startOf('day').utc(true);
+
+    const currentMarketHistory = {
+      symbol: asset.symbol,
+      date: today.toDate(),
+      volume: price.regularMarketVolume,
+      high: price.regularMarketDayHigh,
+      low: price.regularMarketDayLow,
+      close: price.regularMarketPrice,
+      adjClose: price.regularMarketPrice,
+      open: price.regularMarketOpen,
+    } as MarketHistory;
+
+    const history =
+      today.diff(asset.history[0].date, 'hour') > 6
+        ? [currentMarketHistory, ...asset.history]
+        : asset.history;
+
+    const indicators = new Indicators(history.reverse(), true);
+
+    const donchian20 = indicators.getLast('donchian', 20);
+    const donchian5 = indicators.getLast('donchian', 5);
+    const fractals = indicators.getLast('fractal', 2);
 
     if (!donchian20 || !donchian5) {
       return null;
     }
 
+    const bounds = {
+      top: {
+        type: 'donchian',
+        value: donchian20.maxValue,
+        periods: donchian20.maxDays,
+      },
+      bottom: {
+        type: 'donchian',
+        value: donchian20.minValue,
+        periods: donchian20.minDays,
+      },
+      stopTop: fractals.minValue
+        ? {
+            type: 'fractal',
+            value: fractals.minValue,
+          }
+        : {
+            type: 'donchian',
+            value: donchian5.minValue,
+            periods: donchian5.minDays,
+          },
+
+      stopBottom: fractals.maxValue
+        ? {
+            type: 'fractal',
+            value: fractals.maxValue,
+          }
+        : {
+            type: 'donchian',
+            value: donchian5.maxValue,
+            periods: donchian5.maxDays,
+          },
+    } as Bounds;
+
     return {
       date: new Date(),
       price: price.regularMarketPrice,
-      asset: _.omit(price, 'regularMarketPrice'),
+      asset: price,
       donchianOuter: donchian20,
       donchianInner: donchian5,
+      fractals,
+      bounds,
     };
-  }
-
-  private async getDonchian(symbol: string, daysBack: number) {
-    const asset = await this.assetService.findOne(symbol);
-
-    if (!asset?.history) {
-      return null;
-    }
-
-    const today = moment().startOf('day').toDate().getTime();
-
-    return donchianFunc(asset.history, today, daysBack);
   }
 }

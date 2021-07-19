@@ -3,10 +3,8 @@ import _ = require('lodash');
 import { rsi, sma } from 'technicalindicators';
 import { PartialDeep } from 'type-fest';
 
-import { compareMarketHistoryAsc } from '../../src/modules/analysis/analysis.service';
-import { MarketHistory } from '../../src/types/history';
-import { Donchian } from '../../src/types/market-data';
-import { MarketHistoryExtended } from './main';
+import { MarketHistory } from '../../types/history';
+import { compareMarketHistoryAsc } from './analysis.service';
 
 type IndicatorId<T extends keyof Indicators = keyof Indicators> = T extends `${infer K}Indicator`
   ? K
@@ -37,23 +35,32 @@ export class FractalBounds {
   maxDate: Date;
 }
 
-export class Indicators {
+export class Donchian {
+  minDays: number;
+  minValue: number;
+  maxDays: number;
+  maxValue: number;
+}
+
+export class Indicators<H extends MarketHistory = MarketHistory> {
   private readonly sortedCollection: MarketHistory[];
 
-  constructor(private inputCollection: MarketHistory[]) {
-    this.sortedCollection = inputCollection.sort(compareMarketHistoryAsc);
+  constructor(private inputCollection: MarketHistory[], isSortedAsc = false) {
+    this.sortedCollection = isSortedAsc
+      ? inputCollection
+      : inputCollection.sort(compareMarketHistoryAsc);
   }
 
   get value() {
-    return this.inputCollection as MarketHistoryExtended[];
+    return this.inputCollection as H[];
   }
 
   get valueSortedDesc() {
-    return this.sortedCollection.reverse() as MarketHistoryExtended[];
+    return this.sortedCollection.reverse() as H[];
   }
 
   get valueSortedAsc() {
-    return this.sortedCollection as MarketHistoryExtended[];
+    return this.sortedCollection as H[];
   }
 
   smaIndicator(period: number): number[] {
@@ -165,20 +172,17 @@ export class Indicators {
     });
   }
 
-  apply<K extends IndicatorId>(
+  apply<K extends IndicatorId = IndicatorId>(
     indicator: K,
     arg: IndicatorArgs<K>,
-    func: (
-      val: IndicatorResult<K>,
-      item?: MarketHistoryExtended,
-    ) => PartialDeep<MarketHistoryExtended> | void,
+    func: (val: IndicatorResult<K>, item?: H) => PartialDeep<H> | void,
   ) {
     let indicatorFunc: IndicatorFunc<K> = this[`${indicator}Indicator`];
     indicatorFunc = indicatorFunc.bind(this);
     const resultArray = indicatorFunc(arg);
 
     this.sortedCollection.forEach((item, i) => {
-      const res = func(resultArray[i], item as MarketHistoryExtended);
+      const res = func(resultArray[i], item as H);
 
       if (typeof res === 'object') {
         _.merge(item, res);
@@ -186,5 +190,15 @@ export class Indicators {
     });
 
     return this;
+  }
+
+  getLast<K extends IndicatorId = IndicatorId>(
+    indicator: K,
+    arg: IndicatorArgs<K>,
+  ): IndicatorResult<K> {
+    let indicatorFunc: IndicatorFunc<K> = this[`${indicator}Indicator`];
+    indicatorFunc = indicatorFunc.bind(this);
+    const resultArray = indicatorFunc(arg);
+    return resultArray[resultArray.length - 1];
   }
 }

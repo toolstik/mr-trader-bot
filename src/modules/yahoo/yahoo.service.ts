@@ -12,6 +12,11 @@ export type SummaryModuleKey = 'price' | 'summaryDetail' | 'defaultKeyStatistics
 export type PriceModule = {
   postMarketSource: string; //"DELAYED",
   regularMarketPrice: number;
+  regularMarketDayHigh: number;
+  regularMarketDayLow: number;
+  regularMarketVolume: number;
+  regularMarketPreviousClose: number;
+  regularMarketOpen: number;
   exchange: string; // "NMS",
   exchangeName: string; //"NasdaqGS",
   quoteType: string; // "EQUITY",
@@ -122,6 +127,19 @@ export type DefaultKeyStatisticsModule = {
   SandP52WeekChange: number;
 };
 
+// type Pattern<P, T extends P> = T;
+
+// type Mapping = Pattern<
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   Record<SummaryModuleKey, any>,
+//   {
+//     price: PriceModule;
+//     summaryDetail: SummaryDetailModule;
+//     defaultKeyStatistics: DefaultKeyStatisticsModule;
+//     financialData: FinancialDataModule;
+//   }
+// >;
+
 export type SymbolSummary<M extends SummaryModuleKey> = {} & ('price' extends M
   ? { price: PriceModule }
   : {}) &
@@ -209,22 +227,7 @@ export class YahooService {
   }
 
   async getPrices(symbol: string): Promise<PriceModule> {
-    const quote = await this.getQuote(symbol, ['price']);
-    // remove unnecessary fields
-    const price = _.pick(quote?.price, [
-      'symbol',
-      'postMarketSource',
-      'regularMarketPrice',
-      'exchange',
-      'exchangeName',
-      'quoteType',
-      'shortName',
-      'longName',
-      'currency',
-      'quoteSourceName',
-      'currencySymbol',
-    ]);
-
+    const { price } = await this.getQuote(symbol, ['price']);
     return price;
   }
 
@@ -241,7 +244,7 @@ export class YahooService {
     } as SummaryDetailModule & DefaultKeyStatisticsModule & FinancialDataModule;
   }
 
-  private async getQuote<T extends SummaryModuleKey>(symbol: string, modules: T[]) {
+  async getQuote<T extends SummaryModuleKey>(symbol: string, modules: T[]) {
     try {
       const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
       return x;

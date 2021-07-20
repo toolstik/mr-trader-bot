@@ -12,6 +12,11 @@ export type SummaryModuleKey = 'price' | 'summaryDetail' | 'defaultKeyStatistics
 export type PriceModule = {
   postMarketSource: string; //"DELAYED",
   regularMarketPrice: number;
+  regularMarketDayHigh: number;
+  regularMarketDayLow: number;
+  regularMarketVolume: number;
+  regularMarketPreviousClose: number;
+  regularMarketOpen: number;
   exchange: string; // "NMS",
   exchangeName: string; //"NasdaqGS",
   quoteType: string; // "EQUITY",
@@ -122,6 +127,19 @@ export type DefaultKeyStatisticsModule = {
   SandP52WeekChange: number;
 };
 
+// type Pattern<P, T extends P> = T;
+
+// type Mapping = Pattern<
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   Record<SummaryModuleKey, any>,
+//   {
+//     price: PriceModule;
+//     summaryDetail: SummaryDetailModule;
+//     defaultKeyStatistics: DefaultKeyStatisticsModule;
+//     financialData: FinancialDataModule;
+//   }
+// >;
+
 export type SymbolSummary<M extends SummaryModuleKey> = {} & ('price' extends M
   ? { price: PriceModule }
   : {}) &
@@ -140,7 +158,19 @@ function normalizeHistory(hist: MarketHistory) {
 
 @Injectable()
 export class YahooService {
-  async getHistory(symbols: string[], daysBack = 20) {
+  getHistory(symbols: string[], daysBack = 40) {
+    const today = moment().startOf('day');
+    const toDate = today.clone();
+    const fromDate = toDate.clone().add({ days: -daysBack });
+
+    return this.getHistoryDates(symbols, fromDate, toDate);
+  }
+
+  async getHistoryDates(
+    symbols: string[],
+    fromDate: moment.MomentInput,
+    toDate?: moment.MomentInput,
+  ) {
     if (!symbols?.length) {
       return {
         result: {},
@@ -148,9 +178,13 @@ export class YahooService {
       } as CatchDivideResult<string, MultipleHistory>;
     }
 
-    const today = moment().startOf('day');
-    const toDate = today.clone();
-    const fromDate = toDate.clone().add({ days: -daysBack });
+    if (!fromDate) {
+      fromDate = moment().add(-7, 'day');
+    }
+
+    if (!toDate) {
+      toDate = moment();
+    }
 
     const action = async (collection: string[]) => {
       if (!collection?.length) {
@@ -161,12 +195,12 @@ export class YahooService {
         symbols: collection,
         // maxConcurrentSymbols: 20,
         error: true,
-        from: fromDate.format('YYYY-MM-DD'),
-        to: toDate.format('YYYY-MM-DD'),
+        from: moment(fromDate).startOf('day').format('YYYY-MM-DD'),
+        to: moment(toDate).startOf('day').format('YYYY-MM-DD'),
         period: 'd', // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
       };
 
-      const hist = await yahoo.historical(opts);
+      const hist = await yahoo.historical(opts).catch(e => console.log(e));
 
       const x = plainToClass(MultipleHistoryClass, hist, {
         targetMaps: [
@@ -184,7 +218,7 @@ export class YahooService {
 
       for (const [key, val] of Object.entries(x)) {
         val.forEach(normalizeHistory);
-        x[key] = _(val).value();
+        x[key] = val;
       }
 
       return x;
@@ -193,22 +227,7 @@ export class YahooService {
   }
 
   async getPrices(symbol: string): Promise<PriceModule> {
-    const quote = await this.getQuote(symbol, ['price']);
-    // remove unnecessary fields
-    const price = _.pick(quote?.price, [
-      'symbol',
-      'postMarketSource',
-      'regularMarketPrice',
-      'exchange',
-      'exchangeName',
-      'quoteType',
-      'shortName',
-      'longName',
-      'currency',
-      'quoteSourceName',
-      'currencySymbol',
-    ]);
-
+    const { price } = await this.getQuote(symbol, ['price']);
     return price;
   }
 
@@ -225,7 +244,7 @@ export class YahooService {
     } as SummaryDetailModule & DefaultKeyStatisticsModule & FinancialDataModule;
   }
 
-  private async getQuote<T extends SummaryModuleKey>(symbol: string, modules: T[]) {
+  async getQuote<T extends SummaryModuleKey>(symbol: string, modules: T[]) {
     try {
       const x: SymbolSummary<T> = await yahoo.quote(symbol, modules);
       return x;

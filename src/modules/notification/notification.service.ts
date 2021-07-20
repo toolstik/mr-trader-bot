@@ -190,8 +190,6 @@ export class NotificationService {
       return;
     }
 
-    const fundamentals = await this.assetService.getFundamentals(event.symbol);
-
     const status: StatusChangedKey =
       event.to !== 'NONE'
         ? event.to
@@ -205,6 +203,8 @@ export class NotificationService {
     if (!status) {
       return;
     }
+
+    const fundamentals = await this.assetService.getFundamentals(event.symbol);
 
     const data: AssetStatusChangedData = {
       ticker: event.symbol,

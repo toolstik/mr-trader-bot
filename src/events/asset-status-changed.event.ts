@@ -8,6 +8,8 @@ export class AssetStatusChangedEvent {
   from: AssetStateKey;
   to: AssetStateKey;
   oldPrice: number;
+  oldPriceDate: Date;
   currentPrice: number;
+  currentPriceDate: Date;
   marketData: MarketData;
 }

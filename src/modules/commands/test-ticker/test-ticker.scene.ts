@@ -33,7 +33,7 @@ export class TestTickerScene {
     }
 
     for (const ticker of tickers) {
-      const status = await this.analysisService.getAssetStatus(ticker);
+      const status = await this.analysisService.getAssetStatus(ticker, { fundamentals: true });
 
       if (!status) {
         await ctx.reply(ctx.i18n.t('commands.test-ticker.ticker-not-found', { ticker }));

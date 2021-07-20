@@ -4,13 +4,17 @@ coverage
 dist
 node_modules
 
-# botfiles
-bot-token.txt
-persist
+# Firebase files
 firebase-debug.log
 ui-debug.log
 database-debug.log
 firestore-debug.log
+
+# YARN files
 yarn-error.log
+
+# botfiles
+bot-token.txt
+persist
 assets/environments/*.json
 assets/secrets

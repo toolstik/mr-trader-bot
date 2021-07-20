@@ -3,11 +3,11 @@
     "source": ".",
     "runtime": "nodejs14",
     "ignore": [
-      "./src/**",
+      "tools",
+      "coverage",
       "**/node_modules/**",
-      ".git",
       "*.log",
-      "./.*"
+      ".*"
     ]
   },
   "database": {

@@ -15,7 +15,7 @@ import { AssetRepository } from './asset.repository';
 
 @Injectable()
 export class AssetService extends BaseEntityService<AssetEntity> {
-  private readonly HISTORY_DAYS_BACK = 20;
+  private readonly HISTORY_DAYS_BACK = 300;
 
   constructor(
     private log: PlainLogger,
@@ -30,7 +30,7 @@ export class AssetService extends BaseEntityService<AssetEntity> {
   async updateHistory(symbols?: string[]) {
     const symbs = symbols ?? (await this.sessionService.getSessionTickers());
 
-    const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK + 20);
+    const histories = await this.yahoo.getHistory(symbs, this.HISTORY_DAYS_BACK);
     const value = (await this.repository.findAll()) ?? {};
 
     const newValue = Object.entries(histories.result || {}).reduce((prev, [key, val]) => {

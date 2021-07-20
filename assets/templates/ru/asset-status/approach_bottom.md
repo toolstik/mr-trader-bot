@@ -1,5 +1,5 @@
-*Приближение к порогу {{donchianOuter.minDays}}-дневный MIN*
+*Приближение к порогу {{bounds.bottom.periods}}-дневный MIN*
 Текущее значение: {{format price}} {{asset.currencySymbol}}
-{{donchianOuter.minDays}}-дневный MIN: {{format donchianOuter.minValue}} {{asset.currencySymbol}}
-Stop-loss: {{format donchianInner.maxValue}} {{asset.currencySymbol}}
-Разница: {{diff price donchianOuter.minValue}} %
+{{bounds.bottom.periods}}-дневный MIN: {{format bounds.bottom.value}} {{asset.currencySymbol}}
+Stop-loss: {{format bounds.top.value}} {{asset.currencySymbol}}
+Разница: {{diff price bounds.bottom.value}} %

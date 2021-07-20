@@ -35,7 +35,7 @@ function getOptions<R extends Record<any, T>, T>(
   };
 }
 
-export function plainToRecord<R extends Record<any, T>, T>(
+export function plainToRecord<R extends Record<string, T>, T>(
   type: ClassConstructor<T>,
   value: any,
   options?: RecordTransformOptions<T, R>,
@@ -51,7 +51,7 @@ export function plainToRecord<R extends Record<any, T>, T>(
 /**
  * This method doesn't work properly yet
  */
-export function recordToPlain<R extends Record<any, T>, T>(
+export function recordToPlain<R extends Record<string, T>, T>(
   type: ClassConstructor<T>,
   value: R,
   options?: RecordTransformOptions<T, R>,

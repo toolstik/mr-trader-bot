@@ -103,13 +103,13 @@ exports.notificationScheduler = functions
 // 		await values.fundamentals();
 // 	});
 
-exports.statusScheduler = functions
-  .runWith({
-    ...DEFAULT_OPTIONS,
-  })
-  .pubsub.schedule('5 11 * * MON,TUE,WED,THU,FRI')
-  .timeZone('Europe/Moscow')
-  .onRun(async () => {
-    const values = await exportPromise;
-    await values.status();
-  });
+// exports.statusScheduler = functions
+//   .runWith({
+//     ...DEFAULT_OPTIONS,
+//   })
+//   .pubsub.schedule('5 11 * * MON,TUE,WED,THU,FRI')
+//   .timeZone('Europe/Moscow')
+//   .onRun(async () => {
+//     const values = await exportPromise;
+//     await values.status();
+//   });

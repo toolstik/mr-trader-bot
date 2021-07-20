@@ -5,6 +5,7 @@ import * as admin from 'firebase-admin';
 import moment = require('moment');
 
 import { AppModule } from './app.module';
+import { Donchian } from './modules/analysis/indicators';
 import { AssetEntity } from './modules/asset/asset.entity';
 import { AssetService } from './modules/asset/asset.service';
 import { flatMerge } from './modules/commands/utils';
@@ -12,7 +13,6 @@ import { DatahubService } from './modules/datahub/datahub.service';
 import { FirebaseService } from './modules/firebase/firebase.service';
 import { YahooService } from './modules/yahoo/yahoo.service';
 import { FundamentalData, RefEntity, RefEntityObject } from './types/commons';
-import { Donchian } from './types/market-data';
 
 // async function fetchAllFinvizData(ticker: string): Promise<FinVizObject> {
 // 	try {

@@ -158,10 +158,10 @@ function normalizeHistory(hist: MarketHistory) {
 
 @Injectable()
 export class YahooService {
-  getHistory(symbols: string[], daysBack = 20) {
+  getHistory(symbols: string[], daysBack = 40) {
     const today = moment().startOf('day');
     const toDate = today.clone();
-    const fromDate = toDate.clone().add({ days: -(daysBack + 20) });
+    const fromDate = toDate.clone().add({ days: -daysBack });
 
     return this.getHistoryDates(symbols, fromDate, toDate);
   }
